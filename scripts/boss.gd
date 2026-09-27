@@ -35,7 +35,7 @@ func _ready() -> void:
 
 
 func _active() -> bool:
-	return main.cam_left >= main.BOSS_ARENA - 1.0
+	return main.cam_left >= main.boss_arena - 1.0
 
 
 func _physics_process(delta: float) -> void:
@@ -46,6 +46,7 @@ func _physics_process(delta: float) -> void:
 		if int(die_t * 10) != int((die_t + delta) * 10):
 			main.explode(position + Vector2(randf() * WIDTH, -randf() * HEIGHT), randf_range(12, 26))
 		if die_t <= 0.0:
+			main.blast(position + Vector2(WIDTH / 2, -HEIGHT / 2), 60.0, false, 10)
 			main.stage_clear()
 			queue_free()
 		queue_redraw()
@@ -66,6 +67,7 @@ func _physics_process(delta: float) -> void:
 				b.vel = d.rotated(a) * 110.0
 				b.position = from
 				get_parent().add_child(b)
+		Game.sfx("cannon", -8.0)
 	spawn_t -= delta
 	if spawn_t <= 0.0:
 		spawn_t = 3.5
@@ -85,6 +87,7 @@ func take_damage(n: int) -> void:
 		dying = true
 		die_t = 2.5
 		main.add_score(10000)
+		main.shake(6.0)
 
 
 func _draw() -> void:

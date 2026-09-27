@@ -38,14 +38,26 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Godot 4.7.2 exacto en los dos equipos (versiones distintas reescriben archivos del proyecto).
 - GDScript con tabuladores, tipado estático cuando se pueda, comentarios en español.
 - Sin `class_name` por ahora: los scripts se cargan con `preload`.
-- Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes (se atraviesan desde abajo).
+- Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes (se atraviesan desde abajo), 16 objetos (barriles, minas).
+- Autoload `Game` (`scripts/game.gd`): vidas, puntos, récord, misión actual, controles, sonido (`Game.sfx("boom")`) y pausa.
+- Escenas: `intro.tscn` → `menu.tscn` → `level.tscn`. Las misiones son datos en `scripts/levels.gd`; para crear una basta con añadir un bloque ahí.
+- Explosiones que hacen daño: `level.blast(pos, radio, daña_jugador)`; solo visuales: `level.explode(pos, radio)`.
 - Resolución interna 480x270, escalada a la ventana.
 
 ## Probar
 
 ```
-godot --headless --path . --quit-after 600
-godot --path . --script res://tests/autoplay.gd -- <carpeta_capturas> [boss]
+godot --path . -- autoplay out=<carpeta_capturas> level=0
+godot --path . -- autoplay out=<carpeta_capturas> level=1 boss
+godot --path . -- autoplay out=<carpeta_capturas> scene=intro
 ```
 
-La segunda juega el nivel sola (o empieza en el jefe con `boss`) y guarda capturas; no debe imprimir ningún `ERROR`.
+Juega la misión sola (invencible salvo en los fosos), guarda capturas y debe terminar con `FIN: estado=clear` y sin ningún `ERROR`. `boss` empieza justo antes del jefe; `scene=intro` solo captura la intro y el menú.
+
+## Versión jugable (.exe)
+
+GitHub Actions (`.github/workflows/build.yml`) exporta el juego a Windows en cada push:
+- En cualquier rama, el .zip queda en la pestaña Actions de esa ejecución (artifact).
+- En `main`, además se publica en Releases como `ultima-version`.
+
+Si añades archivos que no deben ir en el .exe, exclúyelos en `export_presets.cfg`.

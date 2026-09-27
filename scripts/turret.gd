@@ -37,6 +37,7 @@ func _physics_process(delta: float) -> void:
 		b.vel = aim * 110.0
 		b.position = position + Vector2(0, -12) + aim * 12
 		get_parent().add_child(b)
+		Game.sfx("shot", -18.0, 0.55)
 	if position.x < main.cam_left - 60:
 		queue_free()
 	queue_redraw()
@@ -45,6 +46,7 @@ func _physics_process(delta: float) -> void:
 func take_damage(n: int) -> void:
 	hp -= n
 	flash = 0.06
+	Game.sfx("hit", -18.0)
 	if hp <= 0 and not is_queued_for_deletion():
 		main.add_score(500)
 		main.explode(position + Vector2(0, -10), 18)

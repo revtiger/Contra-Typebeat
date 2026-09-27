@@ -49,6 +49,7 @@ func _physics_process(delta: float) -> void:
 			b.vel = aim * 120.0
 			b.position = position + Vector2(0, -17) + aim * 10
 			get_parent().add_child(b)
+			Game.sfx("shot", -20.0, 0.7)
 	move_and_slide()
 	if mode == "run" and is_on_wall() and is_on_floor():
 		velocity.y = -300.0
@@ -62,6 +63,7 @@ func take_damage(n: int) -> void:
 	if hp <= 0 and not is_queued_for_deletion():
 		main.add_score(200 if mode == "sniper" else 100)
 		main.explode(position + Vector2(0, -12), 10)
+		Game.sfx("death", -18.0, 1.8)
 		queue_free()
 
 
@@ -77,12 +79,17 @@ func _r(x: float, y: float, w: float, h: float, c: Color) -> void:
 
 
 func _draw() -> void:
+	var desert: bool = main.theme == "desert"
+	var uniform := Color(0.78, 0.66, 0.45) if desert else UNIFORM
+	var helmet := Color(0.6, 0.2, 0.15) if desert else HELMET
 	var ph := sin(anim_t * 16.0) * 3.0 if mode == "run" and is_on_floor() else 0.0
-	_r(-4 + ph, -10, 4, 10, UNIFORM.darkened(0.3))
-	_r(0 - ph, -10, 4, 10, UNIFORM.darkened(0.3))
-	_r(-4, -20, 8, 11, UNIFORM)
+	_r(-4 + ph, -10, 4, 10, uniform.darkened(0.3))
+	_r(0 - ph, -10, 4, 10, uniform.darkened(0.3))
+	_r(-4, -20, 8, 11, uniform)
 	_r(-3, -25, 7, 5, SKIN)
-	_r(-4, -27, 9, 3, HELMET)
+	_r(-4, -27, 9, 3, helmet)
+	if desert:
+		_r(-6, -26, 3, 5, helmet)
 	if mode == "sniper":
 		var sh := Vector2(0, -17)
 		draw_line(sh, sh + aim * 11, Color(0.2, 0.2, 0.2), 2)
