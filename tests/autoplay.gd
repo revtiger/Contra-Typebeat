@@ -14,6 +14,7 @@ var boss := false
 var only_intro := false
 var frame := 0
 var level_frame := 0
+var last_scene = null
 
 
 func _ready() -> void:
@@ -39,20 +40,37 @@ func _shot(tag: String) -> void:
 func _physics_process(_delta: float) -> void:
 	frame += 1
 	if only_intro:
-		if frame % 90 == 0:
+		if frame % 60 == 0 and frame < 840:
 			_shot("intro")
-		if frame == 900:
+		if frame == 880:
 			Input.action_press("down")
-		if frame == 902:
+		if frame == 882:
 			Input.action_release("down")
-		if frame > 960:
+		if frame > 900:
 			_shot("menu")
 			get_tree().quit()
 		return
 
 	var lvl = get_tree().current_scene
+	if lvl != null and lvl.is_in_group("map"):
+		# mapa: captura y pulsar para continuar
+		if frame % 150 == 100:
+			_shot("mapa")
+		if frame % 150 == 120:
+			Input.action_press("restart")
+		elif frame % 150 == 125:
+			Input.action_release("restart")
+		return
+	if lvl != null and lvl.name == "Menu":
+		_shot("menu_final")
+		print("FIN: vuelta al menú. puntos=%d" % Game.score)
+		get_tree().quit()
+		return
 	if lvl == null or not lvl.is_in_group("level"):
 		return
+	if lvl != last_scene:
+		last_scene = lvl
+		level_frame = 0
 	level_frame += 1
 	var p = lvl.player
 	if level_frame == 3 and boss:
@@ -72,6 +90,18 @@ func _physics_process(_delta: float) -> void:
 		else:
 			Input.action_release("left")
 			Input.action_release("right")
+	elif lvl.lock_left < INF:
+		# mini jefe: acercarse hasta ~60 px y quedarse mirándolo
+		var mb = null
+		for n in get_tree().get_nodes_in_group("enemy"):
+			if n.get("home_x") != null:
+				mb = n
+		Input.action_release("left")
+		Input.action_release("right")
+		if mb:
+			var mdx: float = mb.position.x - p.position.x
+			if absf(mdx) > 60.0 or signf(mdx) != float(p.facing):
+				Input.action_press("right" if mdx > 0 else "left")
 	elif at_boss:
 		# muro: quedarse quieto disparando a la derecha
 		Input.action_release("right")
@@ -95,6 +125,13 @@ func _physics_process(_delta: float) -> void:
 			boss_info = "  jefe=%s vida=%d pos=%s" % [lvl.boss.get("state"), lvl.boss.hp, lvl.boss.position.round()]
 		print("frame %d  x=%.0f cam=%.0f puntos=%d estado=%s arma=%s%s" % [
 			level_frame, p.position.x, lvl.cam_left, Game.score, lvl.state, p.weapon, boss_info])
+	if lvl.state == "clear" and "campaign" in OS.get_cmdline_user_args():
+		# modo campaña: seguir a la siguiente misión pasando por el mapa
+		if level_frame % 60 == 0:
+			Input.action_press("restart")
+		elif level_frame % 60 == 5:
+			Input.action_release("restart")
+		return
 	if lvl.state == "clear" or level_frame > 9000:
 		_shot("final")
 		print("FIN: estado=%s puntos=%d frames=%d" % [lvl.state, Game.score, level_frame])

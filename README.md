@@ -25,14 +25,17 @@ godot --path .
 
 Armas: dispara a la cápsula voladora para soltar **M** (metralleta), **S** (spread), **L** (láser) o **F** (fuego).
 
-Misiones: 1 Jungla, 2 Desierto Rojo.
+Campaña: 1 Argentina–Brasil (Triple Frontera), 2 Bolivia (Quebradas de Tupiza), 3 México–EE.UU. (próximamente). Cada misión tiene mini jefe y jefe final, y entre misiones hay un mapa con la ruta.
+
+Las armas que no se recogen parpadean y desaparecen a los 9 segundos.
 
 ## Estructura
 - `scripts/game.gd`: autoload con vidas, puntos, récord, controles, sonido y pausa
 - `scripts/levels.gd`: datos de las misiones (suelo, plataformas, enemigos)
-- `scripts/intro.gd`, `menu.gd`, `level.gd`: las tres escenas
+- `scripts/intro.gd`, `menu.gd`, `map.gd`, `level.gd`: las escenas (intro, menú, mapa de campaña, misión)
+- `scripts/city.gd`, `portrait.gd`: ciudad en llamas y caras pixeladas de la intro
 - `scripts/player.gd`: jugador
-- `scripts/soldier.gd`, `turret.gd`, `tank.gd`, `boss.gd`, `heli.gd`: enemigos y jefes
+- `scripts/soldier.gd`, `turret.gd`, `tank.gd`, `miniboss.gd`, `boss.gd`, `heli.gd`: enemigos, mini jefes y jefes
 - `scripts/barrel.gd`, `mine.gd`, `jet.gd`, `bomb.gd`: peligros del desierto
 - `scripts/pickup.gd`: cápsula y armas
 - `scripts/sfx.gd`: sintetizador de efectos y música

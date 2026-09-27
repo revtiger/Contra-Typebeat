@@ -1,13 +1,13 @@
 extends Node2D
 ## Menú principal: jugar, elegir misión, controles y salir. Muestra el récord.
 
-const Background = preload("res://scripts/background.gd")
+const City = preload("res://scripts/city.gd")
 const Explosion = preload("res://scripts/explosion.gd")
 const Levels = preload("res://scripts/levels.gd")
 
 const CONTROLS := "Moverse / apuntar ....... Flechas o WASD\nSaltar ....................... Z, Espacio o K\nDisparar (mantener) ...... X o J\nTumbarse .................. Abajo\nBajar de un puente ........ Abajo + Saltar\nPausa ....................... Esc\n\nMando: cruceta o stick, A saltar, X disparar, Start pausa"
 
-var cam_left := 0.0
+var city := City.new()
 var page := "main"
 var items: Array = []
 var sel := 0
@@ -21,18 +21,12 @@ var footer := Label.new()
 
 
 func _ready() -> void:
-	add_to_group("main")
 	RenderingServer.set_default_clear_color(Color.BLACK)
-	for k in [["sky", 0.0], ["mountains", 0.85], ["jungle", 0.55]]:
-		var bg := Background.new()
-		bg.kind = k[0]
-		bg.factor = k[1]
-		bg.theme = "jungle"
-		bg.screen_scroll = true
-		bg.main = self
-		add_child(bg)
+	city.burning = true
+	city.burn_t = 5.0
+	add_child(city)
 	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.35)
+	shade.color = Color(0, 0, 0, 0.3)
 	shade.size = Vector2(480, 270)
 	shade.z_index = 5
 	add_child(shade)
@@ -64,7 +58,7 @@ func _ready() -> void:
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	footer.position.y = -4
 	footer.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.2" % Game.record
+	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.3" % Game.record
 	_open("main")
 	Game.play_music("menu")
 
@@ -74,7 +68,7 @@ func _open(p: String) -> void:
 	sel = 0
 	match p:
 		"main":
-			items = ["JUGAR", "ELEGIR MISIÓN", "CONTROLES", "SALIR"]
+			items = ["JUGAR", "ELEGIR MISIÓN", "CONTROLES", "VER INTRO", "SALIR"]
 		"levels":
 			items = []
 			for l in Levels.LIST:
@@ -100,14 +94,12 @@ func _refresh() -> void:
 
 func _process(delta: float) -> void:
 	t += delta
-	cam_left += 25.0 * delta
 	boom_t -= delta
 	if boom_t <= 0.0:
-		boom_t = randf_range(0.8, 2.0)
+		boom_t = randf_range(0.6, 1.6)
 		var e := Explosion.new()
-		e.position = Vector2(randf_range(20, 460), randf_range(180, 215))
-		e.r = randf_range(8, 16)
-		e.z_index = 1
+		e.position = city.tower_top() + Vector2(randf_range(-34, 34), randf_range(0, 50))
+		e.r = randf_range(8, 18)
 		add_child(e)
 
 	if Input.is_action_just_pressed("up"):
@@ -132,6 +124,7 @@ func _choose(item: String) -> void:
 				"JUGAR": Game.start_game(0)
 				"ELEGIR MISIÓN": _open("levels")
 				"CONTROLES": _open("controls")
+				"VER INTRO": Game.go_intro()
 				"SALIR": get_tree().quit()
 		"levels":
 			if item == "VOLVER":

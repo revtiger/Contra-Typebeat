@@ -8,6 +8,8 @@ var main
 var t := 0.0
 var base_y := 60.0
 var vel := Vector2.ZERO
+## Segundos que el arma se queda en el suelo antes de desaparecer (parpadea los últimos 3).
+var item_life := 9.0
 
 
 func _ready() -> void:
@@ -36,6 +38,10 @@ func _physics_process(delta: float) -> void:
 		if position.x > main.cam_left + 520:
 			queue_free()
 	else:
+		item_life -= delta
+		if item_life <= 0.0:
+			queue_free()
+			return
 		vel.y += 500.0 * delta
 		position += vel * delta
 		var gy: float = main.ground_y_at(position.x) - 6
@@ -75,6 +81,8 @@ func _draw() -> void:
 		draw_line(Vector2(-4, -5), Vector2(-10, -8 - wing), Color(0.9, 0.9, 0.95), 2)
 		draw_line(Vector2(4, -5), Vector2(10, -8 - wing), Color(0.9, 0.9, 0.95), 2)
 	else:
+		if item_life < 3.0 and int(t * (8.0 if item_life > 1.0 else 16.0)) % 2 == 0:
+			return
 		draw_circle(Vector2.ZERO, 7, Color(0.9, 0.15, 0.15))
 		draw_line(Vector2(-12, -2), Vector2(-5, 0), Color(0.9, 0.8, 0.2), 3)
 		draw_line(Vector2(12, -2), Vector2(5, 0), Color(0.9, 0.8, 0.2), 3)

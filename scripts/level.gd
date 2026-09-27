@@ -11,6 +11,7 @@ const Tank = preload("res://scripts/tank.gd")
 const Barrel = preload("res://scripts/barrel.gd")
 const Mine = preload("res://scripts/mine.gd")
 const Jet = preload("res://scripts/jet.gd")
+const Miniboss = preload("res://scripts/miniboss.gd")
 const Pickup = preload("res://scripts/pickup.gd")
 const Terrain = preload("res://scripts/terrain.gd")
 const Background = preload("res://scripts/background.gd")
@@ -30,6 +31,8 @@ var boss
 var camera := Camera2D.new()
 var cam_left := 0.0
 var shake_amt := 0.0
+var lock_left := INF
+var boss_announced := false
 var state := "play"  # play | over | clear
 var spawn_t := 2.5
 var next_entity := 0
@@ -122,7 +125,7 @@ func _add_block(rect: Rect2, one_way: bool) -> void:
 
 func _physics_process(delta: float) -> void:
 	if not player.dead:
-		cam_left = clampf(maxf(cam_left, player.position.x - SCREEN_W * 0.4), 0.0, boss_arena)
+		cam_left = clampf(maxf(cam_left, player.position.x - SCREEN_W * 0.4), 0.0, minf(boss_arena, lock_left))
 	shake_amt = maxf(shake_amt - 18.0 * delta, 0.0)
 	camera.position = Vector2(roundf(cam_left), 0)
 	camera.offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)).round() * shake_amt
@@ -138,8 +141,10 @@ func _physics_process(delta: float) -> void:
 			s.dir = 1 if from_left else -1
 			s.position = Vector2(cam_left - 10 if from_left else cam_left + SCREEN_W + 10, 90)
 			add_child(s)
-	if boss and cam_left >= boss_arena - 1.0 and state == "play":
+	if boss and cam_left >= boss_arena - 1.0 and state == "play" and not boss_announced:
+		boss_announced = true
 		Game.play_music("boss")
+		show_banner("¡JEFE FINAL!\n" + data["boss_name"], 2.0)
 
 	if banner_t > 0.0:
 		banner_t -= delta
@@ -152,10 +157,7 @@ func _physics_process(delta: float) -> void:
 		elif Input.is_action_just_pressed("quit_menu"):
 			Game.to_menu()
 	elif state == "clear" and banner_t <= 0.0 and Game.accept_pressed():
-		if Game.has_next_level():
-			Game.next_level()
-		else:
-			Game.to_menu()
+		Game.next_level()
 
 	hud.text = "VIDAS %s   PUNTOS %06d   RÉCORD %06d\nARMA %s" % [
 		"♥".repeat(maxi(Game.lives, 0)), Game.score, Game.record, Game.WEAPON_NAMES[player.weapon]]
@@ -179,6 +181,9 @@ func _spawn_entities() -> void:
 				n = Mine.new()
 			"tank":
 				n = Tank.new()
+			"miniboss":
+				n = Miniboss.new()
+				n.kind = e[3]
 			"jet":
 				n = Jet.new()
 				pos = Vector2(cam_left + SCREEN_W + 40, 26)
@@ -207,6 +212,25 @@ func safe_x(x: float) -> float:
 		if x <= g[1] - 10:
 			return x
 	return x
+
+
+func show_banner(text: String, duration: float) -> void:
+	if state == "play":
+		banner.text = text
+		banner_t = duration
+
+
+## Bloquea la cámara en x (mini jefe) hasta que se llame a unlock_camera().
+func lock_camera(x: float, title: String) -> void:
+	lock_left = x
+	show_banner("¡ALERTA!\n" + title, 2.0)
+	Game.play_music("boss")
+
+
+func unlock_camera() -> void:
+	lock_left = INF
+	show_banner("¡MINI JEFE DERROTADO!", 1.5)
+	Game.play_music(data["music"])
 
 
 func add_score(n: int) -> void:
@@ -260,7 +284,4 @@ func stage_clear() -> void:
 	Game.save_record()
 	Game.stop_music()
 	Game.sfx("pickup")
-	if Game.has_next_level():
-		banner.text = "¡MISIÓN CUMPLIDA!\nPuntos: %d\n\nPulsa para continuar" % Game.score
-	else:
-		banner.text = "¡VICTORIA TOTAL!\nPuntos: %d   Récord: %d\n\nPulsa para volver al menú" % [Game.score, Game.record]
+	banner.text = "¡MISIÓN CUMPLIDA!\nPuntos: %d   Récord: %d\n\nPulsa para ver el mapa" % [Game.score, Game.record]

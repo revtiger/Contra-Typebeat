@@ -98,11 +98,20 @@ func accept_pressed() -> bool:
 
 # ---------- flujo de partida ----------
 
+## Empieza una partida nueva en la misión lv, pasando antes por el mapa.
 func start_game(lv := 0) -> void:
 	score = 0
 	lives = START_LIVES
 	level = lv
+	_go("res://scenes/map.tscn")
+
+
+func go_level() -> void:
 	_go("res://scenes/level.tscn")
+
+
+func go_intro() -> void:
+	_go("res://scenes/intro.tscn")
 
 
 func retry_level() -> void:
@@ -115,9 +124,10 @@ func has_next_level() -> bool:
 	return level + 1 < Levels.LIST.size()
 
 
+## Tras cumplir una misión: al mapa, que lleva a la siguiente (o avisa de que aún no existe).
 func next_level() -> void:
 	level += 1
-	_go("res://scenes/level.tscn")
+	_go("res://scenes/map.tscn")
 
 
 func to_menu() -> void:
