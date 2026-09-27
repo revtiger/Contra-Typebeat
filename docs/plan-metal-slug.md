@@ -56,7 +56,7 @@ Hoy todo se dibuja con `_draw()` y se construye por código. Sirvió para el pro
 | Fase | Contenido | Resultado |
 |---|---|---|
 | **v0.4 Base Metal Slug** ✅ | Controles estilo MS (adelante/arriba/abajo en el aire, sin salto en bola), granadas con límite, cuchillo automático de cerca, armas con munición (H, R, F, L, S), autoload `Juice`, soldados que se asustan y huyen | Se juega como Metal Slug, aunque aún con formas simples |
-| **v0.5 Corte vertical de arte** | Arquitectura de escenas y componentes; jugador y soldado con sprites reales de Aseprite; un tramo corto de nivel con decorado destructible | Un minuto de juego que ya "parece" el juego final |
+| **v0.5 Corte vertical de arte** ✅ (en curso: faltan torretas, tanques y jefes 1-2) | Arquitectura de escenas y componentes; jugador y soldado con sprites reales de Aseprite; un tramo corto de nivel con decorado destructible | Un minuto de juego que ya "parece" el juego final |
 | **v0.6 Prisioneros y vehículo** | Prisioneros que dan armas o puntos; tanque tipo "Slug" que se monta y se abandona | Los dos rasgos más reconocibles de la saga |
 | **v0.7 Jefe por piezas** | Primer jefe mecha gigante con brazos y armas independientes, fases y partes que se rompen (tipo referencia 1) | Jefe "de póster" |
 | **v0.8 Cooperativo** | 2 jugadores en la misma pantalla (teclado + mando) | Jugar juntos |

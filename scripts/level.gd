@@ -12,6 +12,7 @@ const Barrel = preload("res://scripts/barrel.gd")
 const Mine = preload("res://scripts/mine.gd")
 const Jet = preload("res://scripts/jet.gd")
 const Miniboss = preload("res://scripts/miniboss.gd")
+const Mecha = preload("res://scripts/mecha.gd")
 const Bomb = preload("res://scripts/bomb.gd")
 const Pickup = preload("res://scripts/pickup.gd")
 const Terrain = preload("res://scripts/terrain.gd")
@@ -66,6 +67,8 @@ func _ready() -> void:
 	var layers := [["mountains", 0.85, -9], ["jungle", 0.55, -8], ["water", 0.0, -5]]
 	if theme == "desert":
 		layers = [["mesas", 0.85, -9], ["dunes", 0.55, -8], ["chasm", 0.0, -5]]
+	elif theme == "city":
+		layers = [["colonial", 0.85, -9], ["ruins", 0.55, -8], ["sewer", 0.0, -5]]
 	for k in layers:
 		var bg := Background.new()
 		bg.kind = k[0]
@@ -194,7 +197,10 @@ func _spawn_entities() -> void:
 				n = Jet.new()
 				pos = Vector2(cam_left + SCREEN_W + 40, 26)
 			"boss":
-				n = Boss.new() if e[3] == "wall" else Heli.new()
+				match e[3]:
+					"wall": n = Boss.new()
+					"heli": n = Heli.new()
+					_: n = Mecha.new()
 				boss = n
 			"capsule":
 				n = Pickup.new()

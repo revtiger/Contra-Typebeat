@@ -99,6 +99,8 @@ func _physics_process(_delta: float) -> void:
 		Input.action_release("left")
 		Input.action_release("right")
 		Input.action_release("up")
+		if mb and level_frame % 120 == 0:
+			print("  [mini jefe] jugador x=%.0f y=%.0f suelo=%s | mini jefe x=%.0f vida=%d" % [p.position.x, p.position.y, p.is_on_floor(), mb.position.x, mb.hp])
 		if mb:
 			var mdx: float = mb.position.x - p.position.x
 			if absf(mdx) > 60.0 or signf(mdx) != float(p.facing):
@@ -124,7 +126,7 @@ func _physics_process(_delta: float) -> void:
 		Input.action_press("grenade")
 	elif level_frame % 150 == 77:
 		Input.action_release("grenade")
-	if level_frame % 50 == 0:
+	if level_frame % 50 == 0 and (lvl.lock_left == INF or p.position.y < 200.0):
 		Input.action_press("jump")
 	elif level_frame % 50 == 25:
 		Input.action_release("jump")
@@ -137,7 +139,7 @@ func _physics_process(_delta: float) -> void:
 		_shot("nivel%d" % Game.level)
 		var boss_info := ""
 		if is_instance_valid(lvl.boss) and lvl.cam_left >= lvl.boss_arena - 1.0:
-			boss_info = "  jefe=%s vida=%d pos=%s" % [lvl.boss.get("state"), lvl.boss.hp, lvl.boss.position.round()]
+			boss_info = "  jefe=%s vida=%s pos=%s" % [lvl.boss.get("state"), str(lvl.boss.hp), lvl.boss.position.round()]
 		print("frame %d  x=%.0f cam=%.0f puntos=%d estado=%s arma=%s%s" % [
 			level_frame, p.position.x, lvl.cam_left, Game.score, lvl.state, p.weapon, boss_info])
 	if lvl.state == "clear" and "campaign" in OS.get_cmdline_user_args():

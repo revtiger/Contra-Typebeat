@@ -9,6 +9,7 @@ const STOPS := [
 	{"name": "ARGENTINA - BRASIL", "sub": "Triple Frontera · Selva de Iguazú", "lon": -54.6, "lat": -25.6, "label": "below"},
 	{"name": "BOLIVIA", "sub": "Quebradas de Tupiza", "lon": -65.7, "lat": -21.4, "label": "left"},
 	{"name": "MÉXICO - EE.UU.", "sub": "Frontera norte", "lon": -106.4, "lat": 31.7, "label": "right"},
+	{"name": "EE.UU. - ONU", "sub": "Nueva York · reunión secreta", "lon": -74.0, "lat": 40.7, "label": "left"},
 ]
 
 # Contornos simplificados (lon, lat)

@@ -6,6 +6,7 @@ extends CharacterBody2D
 ## Al morir sale despedido hacia atrás girando, en vez de desaparecer.
 
 const Bullet = preload("res://scripts/bullet.gd")
+const SpriteUtil = preload("res://scripts/sprite_util.gd")
 
 const PANIC_TIME := 0.7
 
@@ -22,6 +23,7 @@ var state := "normal"  # normal | panic | flee | dead
 var state_t := 0.0
 var flash := 0.0
 var can_panic := true
+var spr: AnimatedSprite2D
 
 
 func _ready() -> void:
@@ -31,11 +33,12 @@ func _ready() -> void:
 	collision_mask = 1 | 8
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(10, 24)
+	r.size = Vector2(12, 28)
 	cs.shape = r
-	cs.position = Vector2(0, -12)
+	cs.position = Vector2(0, -14)
 	add_child(cs)
 	can_panic = randf() < 0.45
+	_setup_sprite()
 	match mode:
 		"sniper":
 			hp = 2
@@ -50,6 +53,7 @@ func _physics_process(delta: float) -> void:
 	velocity.y += 900.0 * delta
 	if state == "dead":
 		_dead_process(delta)
+		_animate()
 		return
 	var p = main.player
 	var dx: float = p.position.x - position.x
@@ -83,7 +87,7 @@ func _physics_process(delta: float) -> void:
 						var b := Bullet.new()
 						b.from_player = false
 						b.vel = aim * 120.0
-						b.position = position + Vector2(0, -17) + aim * 10
+						b.position = position + Vector2(0, -22) + aim * 14
 						get_parent().add_child(b)
 						Game.sfx("shot", -20.0, 0.7)
 				"grenadier":
@@ -98,7 +102,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -300.0
 	if position.y > 320 or position.x < main.cam_left - 60 or position.x > main.cam_left + 560:
 		queue_free()
-	queue_redraw()
+	_animate()
 
 
 func _dead_process(delta: float) -> void:
@@ -131,51 +135,57 @@ func take_damage(n: int) -> void:
 		Juice.hitstop(0.03)
 
 
-const UNIFORM := Color(0.45, 0.5, 0.35)
-const HELMET := Color(0.3, 0.35, 0.25)
-const SKIN := Color(0.85, 0.65, 0.5)
+# ---------- sprites (assets/sprites/soldier_*.png, generados por tools/sprites/humans.py) ----------
+
+func _setup_sprite() -> void:
+	var meta := SpriteUtil.meta("res://assets/sprites/soldier_meta.json")
+	var R: Dictionary = meta["rows"]
+	var theme_name: String = "desert" if main.theme == "desert" else "jungle"
+	spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/soldier_%s.png" % theme_name, 48, 48, {
+		"idle": [R["idle"], 1, 1, true], "run": [R["run"], 8, 14, true], "panic": [R["panic"], 2, 6, true],
+		"throw": [R["throw"], 2, 1, false], "aim": [R["aim"], 4, 1, false], "flee": [R["flee"], 8, 18, true]}),
+		SpriteUtil.v(meta["feet"]))
+	add_child(spr)
 
 
-func _r(x: float, y: float, w: float, h: float, c: Color) -> void:
-	if dir < 0:
-		x = -x - w
-	draw_rect(Rect2(x, y, w, h), c)
-
-
-func _draw() -> void:
-	var desert: bool = main.theme == "desert"
-	var uniform := Color(0.78, 0.66, 0.45) if desert else UNIFORM
-	var helmet := Color(0.6, 0.2, 0.15) if desert else HELMET
-	var skin := SKIN
-	if flash > 0.0:
-		uniform = Color.WHITE
-		skin = Color.WHITE
-	var running := state == "flee" or (state == "normal" and mode == "run")
-	var ph := sin(anim_t * (22.0 if state == "flee" else 16.0)) * 3.0 if running and is_on_floor() else 0.0
-	_r(-4 + ph, -10, 4, 10, uniform.darkened(0.3))
-	_r(0 - ph, -10, 4, 10, uniform.darkened(0.3))
-	_r(-4, -20, 8, 11, uniform)
-	_r(-3, -25, 7, 5, skin)
-	_r(-4, -27, 9, 3, helmet)
-	if desert:
-		_r(-6, -26, 3, 5, helmet)
+func _animate() -> void:
+	spr.scale.x = dir
+	spr.modulate = Color(4, 4, 4) if flash > 0.0 else Color.WHITE
 	match state:
-		"panic", "dead":
-			# brazos arriba y cara de susto
-			_r(-6, -31, 2, 12, skin)
-			_r(4, -31, 2, 12, skin)
-			_r(1, -23, 2, 2, Color(0.1, 0.1, 0.1))
-			if state == "panic":
-				draw_string(ThemeDB.fallback_font, Vector2(-3, -34), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.9, 0.2))
+		"panic":
+			_play("panic")
 		"flee":
-			_r(-7, -21, 4, 2, skin)
+			_play("flee")
+		"dead":
+			spr.animation = "panic"
+			spr.frame = 1
 		_:
-			if mode == "sniper":
-				var sh := Vector2(0, -17)
-				draw_line(sh, sh + aim * 11, Color(0.2, 0.2, 0.2), 2)
-			elif mode == "grenadier":
-				var k := clampf(1.0 - shoot_t, 0.0, 1.0)
-				_r(-2, -22 - k * 6, 3, 8, skin)
-				_r(-2, -24 - k * 6, 3, 3, Color(0.25, 0.32, 0.2))
-			else:
-				_r(3, -17, 5, 2, Color(0.2, 0.2, 0.2))
+			match mode:
+				"run":
+					_play("run" if is_on_floor() else "idle")
+				"sniper":
+					# fotogramas: adelante, diagonal arriba, arriba, diagonal abajo
+					var ang := rad_to_deg(Vector2(absf(aim.x), aim.y).angle())
+					var idx := 0
+					if ang < -67.0:
+						idx = 2
+					elif ang < -22.0:
+						idx = 1
+					elif ang > 22.0:
+						idx = 3
+					spr.animation = "aim"
+					spr.frame = idx
+				"grenadier":
+					if shoot_t < 0.5:
+						spr.animation = "throw"
+						spr.frame = 0
+					elif shoot_t > 1.9:
+						spr.animation = "throw"
+						spr.frame = 1
+					else:
+						spr.animation = "idle"
+
+
+func _play(anim: String) -> void:
+	if spr.animation != anim or not spr.is_playing():
+		spr.play(anim)

@@ -46,6 +46,8 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Mini jefes (`scripts/miniboss.gd`) bloquean la cámara con `level.lock_camera()` y la liberan al morir.
 - Explosiones que hacen daño: `level.blast(pos, radio, daña_jugador)`; solo visuales: `level.explode(pos, radio)`.
 - Resolución interna 480x270, escalada a la ventana.
+- **Sprites:** los PNG de `assets/sprites/` los generan `tools/sprites/humans.py` (protagonista y soldados) y `tools/sprites/mecha.py` (jefe mecha), con Python + Pillow. Para cambiar un sprite: editar el generador y ejecutarlo (`python tools/sprites/humans.py`), o retocar el PNG en Aseprite. Los `*_meta.json` guardan filas de animación, pivotes y bocas de cañón: si se mueve el arma en el sprite, hay que regenerar el meta. Fotogramas de 48x48 con los pies en (24, 46).
+- `scripts/sprite_util.gd` carga las hojas (una fila por animación) como SpriteFrames.
 
 ## Probar
 

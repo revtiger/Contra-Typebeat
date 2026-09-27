@@ -1,6 +1,6 @@
 # Documento de diseño: Contra-Typebeat
 
-Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.4)
+Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.5)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
@@ -12,14 +12,14 @@ Contra-Typebeat es un run and gun 2D de desplazamiento lateral inspirado en Cont
 
 **Historia (intro):** año 2087. El General Zarko tomó el continente. Solo dos soldados pueden detenerlo.
 
-**Ruta de la campaña:** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. → ☐ (sigue).
+**Ruta de la campaña:** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. → EE.UU.: reunión secreta de la ONU en Nueva York (propuesta de Eduardo, próximamente).
 
 | Aspecto | Definición |
 |---|---|
 | Género | Run and gun / acción arcade |
 | Motor | Godot 4.7.2 |
 | Plataforma | PC (Windows) ☐ ¿también navegador? |
-| Duración de un nivel | 3 a 5 minutos (2 misiones jugables en la v0.3) |
+| Duración de un nivel | 3 a 5 minutos (3 misiones jugables en la v0.5) |
 | Público | Fans de los arcade clásicos que buscan reto |
 | Meta del jugador | Llegar al final del nivel y vencer al jefe sin perder todas las vidas |
 
@@ -70,6 +70,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Bombardeo aéreo | Evento | Un caza cruza y suelta 4 bombas; marcas rojas avisan dónde caen | ✅ |
 | Helicóptero | Jefe (misión 2) | Ráfagas apuntadas, bombas con aviso y abanico de balas a media vida. 110 de vida | ✅ |
 | Comandante Kruger | Mini jefe (misión 1) | Ametralladora a la altura del pecho (se esquiva tumbándose), granadas con aviso, salto con triple disparo. 45 de vida | ✅ |
+| La Presidenta Mecha | Jefe (misión 3) | Mecha gigante por piezas con patas de araña: brazo ametralladora (ráfagas en abanico), dos cápsulas de misiles que caen con aviso y pisotón con onda que hay que saltar. Cada pieza se rompe por separado y se lleva su ataque; la cabeza es punto débil (daño doble) | ✅ |
 | Camión lanzacohetes | Mini jefe (misión 2) | Cohetes que caen del cielo con marca en el suelo (5 a media vida) y artillero que apunta. 60 de vida | ✅ |
 | Cápsula voladora | Objeto | Cruza la pantalla; al dispararle suelta un arma o una caja de bombas (B, +10). Si no se recoge, parpadea y desaparece a los 9 s | ✅ |
 | Pistola | Arma | Munición infinita; es el arma a la que se vuelve | ✅ |
@@ -91,13 +92,14 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 
 1. **Argentina–Brasil: Triple Frontera** ✅ (selva): fosos de agua, puentes, un escalón elevado, mini jefe Comandante Kruger y el Muro de Zarko al final.
 2. **Bolivia: Quebradas de Tupiza** ✅ (árido): mesetas rojas, dunas y cactus; cañones sin fondo, barriles, minas, 2 tanques, 2 bombardeos, mini jefe Camión lanzacohetes y el Helicóptero Cóndor al final.
-3. **Frontera México–EE.UU.** ☐: empieza en una escuela y luego… (pendiente de definir).
+3. **Frontera México–EE.UU.** ✅ (ciudad al atardecer): calles en ruinas, edificios coloniales con cúpulas, carteles de propaganda inventados, 2 tanques, 2 bombardeos, mini jefe Comandante Kruger y La Presidenta Mecha al final. ☐ Falta el tramo de la escuela del que se habló.
+4. **EE.UU.: reunión secreta de la ONU** ☐ (próximamente).
 
 ## Estilo visual y sonido
 
 - Pixel art a 480x270, fondos con parallax (cielo al atardecer, montañas, palmeras).
 - Intro y menú estilo póster de *Duro de matar*: ciudad de noche, un rascacielos que estalla y arde, y las caras pixeladas del reparto con traje (Gwyn, Eduardo, Gral. Zarko y El Socio; se editan en `CAST` de `scripts/intro.gd`).
-- Ahora mismo todo son formas dibujadas por código; ☐ decidir quién hace los sprites y con qué programa (Aseprite recomendado).
+- **Sprites (v0.5):** el protagonista (traje, banda presidencial tricolor, mochila y rifle; cara inventada), los soldados (selva y desierto) y La Presidenta Mecha ya son sprites PNG en `assets/sprites/`. Los generan los programas de `tools/sprites/` y se pueden retocar en Aseprite. El protagonista tiene piernas y torso separados, como en Metal Slug. Siguen dibujados por código: torretas, tanques, mini jefes, jefes de las misiones 1 y 2 y objetos.
 - Música y efectos generados por código (estilo 8 bits): tema de menú, uno por misión y uno de jefe. ☐ Sustituir por música compuesta si alguien se anima.
 
 ## Alcance del primer prototipo

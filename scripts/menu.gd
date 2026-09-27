@@ -68,7 +68,7 @@ func _ready() -> void:
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	footer.position.y = -4
 	footer.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.4" % Game.record
+	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.5" % Game.record
 	_open("main")
 	Game.play_music("menu")
 
