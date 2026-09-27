@@ -2,6 +2,8 @@
 
 Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.3)
 
+> **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
+
 > Sustituye al borrador de Word ("Colibrí Veloz"), que era un ejemplo de plantilla. Se mantiene su estructura. Lo marcado con ☐ está por decidir.
 
 ## Resumen
