@@ -108,6 +108,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 - **Letras de logo cinceladas** (`tools/sprites/logo.py`): cursiva, bisel y relieve 3D, en piedra, oro y acero. Se usan en la intro, el menú y los títulos de pantalla.
 - **ELIGE TU SOLDADO estilo Metal Slug X:** marco de acero remachado, retratos de cómic (el elegido a color, el resto en sepia), placas con el nombre y cuenta atrás.
 - **Sprites (v0.5):** el protagonista (traje, banda presidencial tricolor, mochila y rifle; cara inventada), los soldados (selva y desierto) y La Presidenta Mecha ya son sprites PNG en `assets/sprites/`. Los generan los programas de `tools/sprites/` y se pueden retocar en Aseprite. El protagonista tiene piernas y torso separados, como en Metal Slug. Siguen dibujados por código: torretas, tanques, mini jefes, jefes de las misiones 1 y 2 y objetos.
+- **Arte con PixelLab (IA):** ya están hechos con PixelLab los 4 retratos de ELIGE TU SOLDADO (primer plano caricaturesco, fondo oscuro) y el rascacielos en llamas animado del menú. Los originales están en `tools/sprites/pixellab/`; `portraits.py` y `tower.py` montan las hojas. ☐ Siguiente: sprites de juego de los soldados.
 - Música y efectos generados por código (estilo 8 bits): tema de menú, uno por misión y uno de jefe. ☐ Sustituir por música compuesta si alguien se anima.
 
 ## Alcance del primer prototipo
