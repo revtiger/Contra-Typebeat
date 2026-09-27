@@ -3,6 +3,7 @@ sombreado de cómic, expresión exagerada. Genera la versión a color (elegido) 
 
 Soldados (ficticios): presi, tenienta, chato, bigotes.
 Uso:  python tools/sprites/portraits.py  ->  assets/sprites/portraits.png (fila 0 color, fila 1 sepia)
+Si existe tools/sprites/pixellab/portrait_<id>.png (hecho con PixelLab), se usa en vez del dibujado.
 """
 import os
 import sys
@@ -13,6 +14,7 @@ from px import Pen, canvas, outline, preview  # noqa: E402
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "sprites")
 PREV = os.path.join(os.path.dirname(__file__), "preview")
+AI = os.path.join(os.path.dirname(__file__), "pixellab")  # retratos generados con PixelLab
 W, H = 72, 96
 INK = (20, 14, 16)
 
@@ -183,6 +185,11 @@ def hair(p, h):
 
 
 def portrait(name):
+    # si hay un retrato hecho con PixelLab (72x96), se usa ese en lugar del dibujado por código
+    ai = os.path.join(AI, "portrait_%s.png" % name)
+    if os.path.exists(ai):
+        from PIL import Image
+        return Image.open(ai).convert("RGBA").resize((W, H), Image.NEAREST)
     h = HEROES[name]
     img = canvas(W, H)
     p = Pen(img)
