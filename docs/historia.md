@@ -42,7 +42,21 @@ Eduardo propone 3 niveles, uno por país, con 3 fases cada uno (1.1, 1.2, 1.3…
 
 La ruta actual del juego ya va de sur a norte y acaba en la ONU de Nueva York (idea de Eduardo): Triple Frontera (Argentina–Brasil) → Bolivia → frontera México–EE.UU. → EE.UU.
 
+## Nivel 1 (México): propuesta visual de Eduardo
+
+Eduardo preparó una referencia del nivel 1 (PR #2, 27-09-2026): 3 fases sobre capturas reales de la v0.6, con bocetos de jefes hechos con PixelLab. Aquí se recoge la idea con jefes inventados. Sus bocetos no se copian porque son caricaturas buscadas de políticos reales (AMLO, Salinas de Gortari, Sheinbaum).
+
+| Fase | Escenario | Jefe (inventado) | Idea |
+|---|---|---|---|
+| 1.1 | Selva del sureste | Minijefe: **El Orador** | Político de atril que no para de dar discursos. Dispara desde detrás del atril y lanza folletos de propaganda. Aspecto: señor bajito y rechoncho de traje claro, gafas enormes y micrófono de oro. |
+| 1.2 | Desierto del norte | Minijefe: **El Privatizador** | Magnate que se lo quiere vender todo. Lanza bolsas de dinero que explotan y compra refuerzos enemigos. Aspecto: gigantón con sombrero de copa, monóculo y maletín con cohetes. |
+| 1.3 | Capital | Jefa final: **La Presidenta** → **Presidenta Mecha** | A mitad del combate grita "¡TRANSFIGURACIÓN!" y se mete en la Presidenta Mecha, que ya existe (jefe por piezas de la misión 3). Es un personaje inventado. |
+
+Hay que vencer al minijefe para pasar de fase. El héroe protagonista se mantiene. Los carteles de propaganda inventados ("¡TODO VA DE MARAVILLA!", "LA PRESIDENTA TE CUIDA") encajan con los de la misión 3.
+
 ## Preguntas abiertas
+
+- ☐ **Caricaturas de políticos reales:** la propuesta de Eduardo las pide. Gwyn fijó la regla de "personajes siempre ficticios" (PR #4). Hay que acordarlo entre los dos; mientras tanto, esta versión usa personajes inventados.
 
 - ☐ ¿Los nombres y aspectos de los arquetipos le valen a Eduardo? Se pueden cambiar mientras sigan siendo inventados.
 - ☐ ¿Cómo encajan las misiones actuales (Jungla, Bolivia, Frontera Norte) en los 3 países? ¿Pasan a ser fases?
