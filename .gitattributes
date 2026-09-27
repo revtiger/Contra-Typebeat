@@ -1,0 +1,7 @@
+# Godot usa LF; así Windows no mete cambios fantasma de fin de línea
+* text=auto eol=lf
+*.png binary
+*.wav binary
+*.ogg binary
+*.aseprite binary
+*.docx binary
