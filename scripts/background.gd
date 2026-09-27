@@ -1,4 +1,5 @@
 extends Node2D
+const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Capas de fondo con parallax. main debe tener cam_left.
 ## Jungla: sky, mountains, jungle, water. Desierto: sky, mesas, dunes, chasm.
 ## Ciudad: sky, colonial (edificios con cúpulas y bandera), ruins (ruinas y carteles de propaganda inventados), sewer.
@@ -196,7 +197,8 @@ func _draw_ruins(rng: RandomNumberGenerator) -> void:
 	rng.seed = 47
 	var col := Color(0.2, 0.1, 0.1)
 	var x := -60.0
-	var font := ThemeDB.fallback_font
+	var font := PixelFont.font("white")
+	var fsize := PixelFont.size("white")
 	var slogans := ["¡TODO VA DE MARAVILLA!", "LA PRESIDENTA TE CUIDA", "OBEDECER ES AVANZAR", "PROHIBIDO PREOCUPARSE"]
 	var n := 0
 	while x < WIDTH:
@@ -213,7 +215,7 @@ func _draw_ruins(rng: RandomNumberGenerator) -> void:
 					draw_rect(Rect2(wx, wy, 5, 6), Color(0.08, 0.04, 0.05) if rng.randf() < 0.8 else Color(1, 0.55, 0.15, 0.7))
 		if rng.randf() < 0.3:
 			# cartel de propaganda en un edificio
-			var bw := 92.0
+			var bw := 112.0
 			var bx := x + (w - bw) * 0.5
 			var by := top + 16
 			draw_rect(Rect2(bx, by, bw, 40), Color(0.85, 0.8, 0.7))
@@ -230,8 +232,8 @@ func _draw_ruins(rng: RandomNumberGenerator) -> void:
 				if cut - d > 0 and text[cut - d] == " ":
 					cut -= d
 					break
-			draw_string(font, Vector2(bx + 29, by + 17), text.substr(0, cut), HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(1, 0.95, 0.85))
-			draw_string(font, Vector2(bx + 29, by + 29), text.substr(cut + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(1, 0.95, 0.85))
+			draw_string(font, Vector2(bx + 29, by + 17), text.substr(0, cut), HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, Color(1, 0.95, 0.85))
+			draw_string(font, Vector2(bx + 29, by + 29), text.substr(cut + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, Color(1, 0.95, 0.85))
 			n += 1
 		if rng.randf() < 0.25:
 			# coche quemado

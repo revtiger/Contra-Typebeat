@@ -5,17 +5,15 @@ const City = preload("res://scripts/city.gd")
 const Explosion = preload("res://scripts/explosion.gd")
 const Levels = preload("res://scripts/levels.gd")
 
-const CONTROLS := "Moverse ...................... Flechas o WASD
-Apuntar arriba ............. Arriba
-Disparar abajo (en el aire) .. Abajo
-Saltar ....................... Z, Espacio o K
-Disparar / cuchillo ........ X o J
-Granada .................... C o L
-Agacharse .................. Abajo
-Bajar de un puente ........ Abajo + Saltar
-Pausa ....................... Esc
+const PixelFont = preload("res://scripts/pixel_font.gd")
 
-Mando: cruceta o stick, A saltar, X disparar, B/Y granada, Start pausa"
+## Controles: acción (texto blanco) y teclas (dorado), alineados en columnas con la fuente monoespaciada.
+const CONTROLS := [
+	["Moverse", "Flechas / WASD"], ["Apuntar arriba", "Arriba"], ["Disparar abajo (aire)", "Abajo"],
+	["Saltar", "Z / Espacio / K"], ["Disparar / cuchillo", "X / J"], ["Granada", "C / L"],
+	["Agacharse", "Abajo"], ["Bajar de un puente", "Abajo + Saltar"], ["Pausa", "Esc"],
+]
+const PAD_TEXT := "Mando: cruceta o stick - A saltar - X disparar - B/Y granada - Start pausa"
 
 var city := City.new()
 var page := "main"
@@ -25,9 +23,12 @@ var t := 0.0
 var boom_t := 1.0
 var title := Label.new()
 var title2 := Label.new()
-var list := Label.new()
-var info := Label.new()
+var item_labels: Array[Label] = []
+var info_left := Label.new()
+var info_right := Label.new()
+var pad := Label.new()
 var footer := Label.new()
+var ui := CanvasLayer.new()
 
 
 func _ready() -> void:
@@ -41,34 +42,39 @@ func _ready() -> void:
 	shade.z_index = 5
 	add_child(shade)
 
-	var ui := CanvasLayer.new()
 	add_child(ui)
-	for l in [title, title2, list, info, footer]:
+	for l in [title, title2, info_left, info_right, pad, footer]:
 		l.size = Vector2(480, 270)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.add_theme_color_override("font_outline_color", Color.BLACK)
-		l.add_theme_constant_override("outline_size", 6)
 		ui.add_child(l)
 	title.text = "CONTRA"
-	title.add_theme_font_size_override("font_size", 44)
-	title.add_theme_color_override("font_color", Color(1, 0.25, 0.15))
-	title.position.y = 14
+	PixelFont.apply(title, "title", 3)
+	title.position.y = 12
 	title2.text = "TYPEBEAT"
-	title2.add_theme_font_size_override("font_size", 22)
-	title2.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
-	title2.position.y = 64
-	list.add_theme_font_size_override("font_size", 14)
-	list.position.y = 112
-	list.add_theme_constant_override("line_spacing", 2)
-	info.add_theme_font_size_override("font_size", 9)
-	info.position.y = 60
-	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	info.position.x = 90
-	footer.add_theme_font_size_override("font_size", 8)
+	PixelFont.apply(title2, "metal", 1)
+	title2.position.y = 66
+	# controles en dos columnas
+	var left := []
+	var right := []
+	for c in CONTROLS:
+		left.append(c[0] + " " + ".".repeat(22 - c[0].length()))
+		right.append(c[1])
+	info_left.text = "\n".join(left)
+	info_right.text = "\n".join(right)
+	for l in [info_left, info_right]:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		l.position.y = 40
+	PixelFont.apply(info_left, "white")
+	PixelFont.apply(info_right, "small")
+	info_left.position.x = 80
+	info_right.position.x = 80 + 24 * 6
+	pad.text = PAD_TEXT
+	PixelFont.apply(pad, "label")
+	pad.position.y = 172
+	footer.text = "RÉCORD %06d          Gwyn & Eduardo - 2026 - v0.5" % Game.record
+	PixelFont.apply(footer, "label")
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	footer.position.y = -4
-	footer.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.5" % Game.record
 	_open("main")
 	Game.play_music("menu")
 
@@ -90,16 +96,29 @@ func _open(p: String) -> void:
 
 
 func _refresh() -> void:
-	var lines := []
-	for i in items.size():
-		var blink := i == sel and int(t * 4.0) % 2 == 0
-		lines.append(("▶ %s ◀" if blink else ("  %s  " if i != sel else "▷ %s ◁")) % items[i])
-	list.text = "\n".join(lines)
-	info.visible = page == "controls"
-	info.text = CONTROLS
-	list.position.y = 226 if page == "controls" else 112
-	title.visible = page != "controls"
-	title2.visible = page != "controls"
+	# una etiqueta por opción: la elegida en dorado con flechas que parpadean, el resto en blanco
+	while item_labels.size() < items.size():
+		var l := Label.new()
+		l.size = Vector2(480, 14)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		ui.add_child(l)
+		item_labels.append(l)
+	var top := 214.0 if page == "controls" else 112.0
+	for i in item_labels.size():
+		var l := item_labels[i]
+		l.visible = i < items.size()
+		if not l.visible:
+			continue
+		var chosen := i == sel
+		var arrows := int(t * 4.0) % 2 == 0
+		l.text = ("> %s <" if chosen and arrows else ("  %s  " if not chosen else "- %s -")) % items[i]
+		PixelFont.apply(l, "small" if chosen else "white")
+		l.position.y = top + i * 14
+	var controls := page == "controls"
+	for l in [info_left, info_right, pad]:
+		l.visible = controls
+	title.visible = not controls
+	title2.visible = not controls
 
 
 func _process(delta: float) -> void:

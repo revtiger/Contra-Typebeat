@@ -8,7 +8,7 @@ extends Node2D
 
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
 const ACCENTS := {"Á": "A", "À": "A", "Ä": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U", "Ü": "U",
-	"Ñ": "N", "¡": "|", "¿": "^", "♥": "<", "∞": "~"}
+	"¡": "|", "¿": "^", "♥": "<", "∞": "~"}
 
 var level
 var font: Texture2D

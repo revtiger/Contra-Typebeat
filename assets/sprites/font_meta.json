@@ -1,5 +1,5 @@
 {
- "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!|^?.,:-='/+%*#~< ",
+ "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!Ñ&|^?.,:-='/+%*#~< ",
  "styles": {
   "small": {
    "y": 0,
@@ -7,20 +7,26 @@
    "h": 10,
    "advance": 6
   },
-  "label": {
+  "white": {
    "y": 10,
    "w": 7,
    "h": 10,
    "advance": 6
   },
-  "title": {
+  "label": {
    "y": 20,
+   "w": 7,
+   "h": 10,
+   "advance": 6
+  },
+  "title": {
+   "y": 30,
    "w": 12,
    "h": 17,
    "advance": 12
   },
   "metal": {
-   "y": 37,
+   "y": 47,
    "w": 17,
    "h": 24,
    "advance": 17

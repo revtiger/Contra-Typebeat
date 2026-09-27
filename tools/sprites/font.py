@@ -1,7 +1,8 @@
 """Genera la fuente pixelada del HUD al estilo Metal Slug (letras con degradado y contorno negro).
 
 Estilos (una fila por estilo en assets/sprites/font.png):
-  small  - dorado (amarillo -> naranja), para puntuación, ARMS/BOMB y textos pequeños
+  small  - dorado (amarillo -> naranja), para valores, puntuación y énfasis
+  white  - blanco, para el texto normal (historia, controles, instrucciones)
   label  - blanco -> azul claro, para las etiquetas (ARMS, BOMB, 1UP)
   title  - grande, amarillo -> rojo, para "MISION 1 START!", "MISION COMPLETE!"
   metal  - números grandes cromados, para TIME
@@ -58,6 +59,8 @@ G = {
     "8": [".XXX.", "X...X", "X...X", ".XXX.", "X...X", "X...X", ".XXX."],
     "9": [".XXX.", "X...X", "X...X", ".XXXX", "....X", "....X", ".XXX."],
     "!": ["..X..", "..X..", "..X..", "..X..", "..X..", ".....", "..X.."],
+    "Ñ": [".XXX.", ".....", "X...X", "XX..X", "X.X.X", "X..XX", "X...X"],
+    "&": [".XX..", "X..X.", "X.X..", ".X...", "X.X.X", "X..X.", ".XX.X"],
     "|": ["..X..", ".....", "..X..", "..X..", "..X..", "..X..", "..X.."],  # ¡
     "^": ["..X..", ".....", "..X..", ".X...", "X....", "X...X", ".XXX."],  # ¿
     "?": [".XXX.", "X...X", "....X", "...X.", "..X..", ".....", "..X.."],
@@ -80,6 +83,7 @@ CHARS = "".join(G.keys())
 
 STYLES = {
     "small": {"scale": 1, "colors": [(255, 250, 180), (255, 224, 90), (255, 184, 40), (246, 132, 24), (220, 84, 16)]},
+    "white": {"scale": 1, "colors": [(255, 255, 255), (250, 248, 240), (232, 228, 216), (210, 204, 190), (186, 178, 164)]},
     "label": {"scale": 1, "colors": [(255, 255, 255), (220, 240, 255), (170, 210, 255), (120, 170, 240), (90, 130, 220)]},
     "title": {"scale": 2, "colors": [(255, 250, 160), (255, 220, 60), (255, 168, 30), (244, 100, 20), (210, 40, 20)]},
     "metal": {"scale": 3, "colors": [(255, 255, 255), (220, 224, 232), (150, 156, 170), (90, 96, 112), (190, 196, 210)]},

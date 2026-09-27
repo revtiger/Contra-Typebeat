@@ -5,6 +5,7 @@ extends Node2D
 const City = preload("res://scripts/city.gd")
 const Portrait = preload("res://scripts/portrait.gd")
 const Explosion = preload("res://scripts/explosion.gd")
+const PixelFont = preload("res://scripts/pixel_font.gd")
 
 const T_CREDITS := 2.4
 const T_BLAST := 3.6
@@ -86,10 +87,7 @@ func _ready() -> void:
 		n.size = Vector2(90, 12)
 		n.position = Vector2(36 + i * 108 - 15, 90)
 		n.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		n.add_theme_font_size_override("font_size", 9)
-		n.add_theme_color_override("font_color", Color(0.95, 0.85, 0.5))
-		n.add_theme_color_override("font_outline_color", Color.BLACK)
-		n.add_theme_constant_override("outline_size", 4)
+		PixelFont.apply(n, "small")
 		n.visible = false
 		ui.add_child(n)
 		names.append(n)
@@ -97,29 +95,25 @@ func _ready() -> void:
 		l.size = Vector2(480, 270)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		l.add_theme_color_override("font_outline_color", Color.BLACK)
-		l.add_theme_constant_override("outline_size", 6)
 		ui.add_child(l)
 	credits.text = "GWYN & EDUARDO\n\npresentan"
-	credits.add_theme_font_size_override("font_size", 16)
-	story.add_theme_font_size_override("font_size", 10)
+	PixelFont.apply(credits, "small", 2)
+	PixelFont.apply(story, "white")
 	story.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	story.position.y = 110
 	story.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	story.position.x = 14
 	logo.text = "CONTRA"
-	logo.add_theme_font_size_override("font_size", 46)
-	logo.add_theme_color_override("font_color", Color(1, 0.25, 0.15))
+	PixelFont.apply(logo, "title", 3)
 	logo.position = Vector2(-60, 62)
 	logo2.text = "TYPEBEAT"
-	logo2.add_theme_font_size_override("font_size", 24)
-	logo2.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	PixelFont.apply(logo2, "metal", 1)
 	logo2.position = Vector2(-60, 104)
 	logo.visible = false
 	logo2.visible = false
 	skip.text = "cualquier botón para saltar"
-	skip.add_theme_font_size_override("font_size", 8)
-	skip.add_theme_color_override("font_color", Color(1, 1, 1, 0.5))
+	PixelFont.apply(skip, "label")
+	skip.modulate.a = 0.7
 	skip.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	skip.position.y = -2
 	Game.play_music("menu")

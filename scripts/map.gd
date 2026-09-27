@@ -3,6 +3,7 @@ extends Node2D
 ## Game.level indica la misión a la que se va. Si esa misión aún no existe, muestra "PRÓXIMAMENTE".
 
 const Levels = preload("res://scripts/levels.gd")
+const PixelFont = preload("res://scripts/pixel_font.gd")
 
 ## Paradas de la campaña en orden (lon, lat). La parada i corresponde a la misión i.
 const STOPS := [
@@ -64,16 +65,13 @@ func _ready() -> void:
 	for l in [title, info, hint]:
 		l.position = Vector2(262, 0)
 		l.size = Vector2(210, 270)
-		l.add_theme_color_override("font_outline_color", Color.BLACK)
-		l.add_theme_constant_override("outline_size", 4)
 		ui.add_child(l)
 	title.position.y = 40
-	title.add_theme_font_size_override("font_size", 16)
-	title.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	PixelFont.apply(title, "title")
 	info.position.y = 64
-	info.add_theme_font_size_override("font_size", 10)
+	PixelFont.apply(info, "white")
 	hint.position.y = 230
-	hint.add_theme_font_size_override("font_size", 9)
+	PixelFont.apply(hint, "small")
 	var stop: Dictionary = STOPS[mini(to_i, STOPS.size() - 1)]
 	if coming_soon:
 		title.text = "PRÓXIMA PARADA"
@@ -156,12 +154,12 @@ func _draw() -> void:
 		else:
 			draw_circle(sp, 3, Color(0.5, 0.5, 0.5))
 		var label: String = STOPS[i]["name"]
-		var lw := ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+		var lw := PixelFont.font("white").get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, PixelFont.size("white")).x
 		var lp := sp + Vector2(8, 3)
 		match STOPS[i].get("label", "right"):
 			"left": lp = sp + Vector2(-8 - lw, 3)
 			"below": lp = sp + Vector2(-lw / 2.0, 16)
-		draw_string(ThemeDB.fallback_font, lp, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 8,
+		draw_string(PixelFont.font("white" if i <= dest else "label"), lp + Vector2(0, 3), label, HORIZONTAL_ALIGNMENT_LEFT, -1, PixelFont.size("white"),
 			Color.WHITE if i <= dest else Color(0.7, 0.7, 0.7))
 
 
