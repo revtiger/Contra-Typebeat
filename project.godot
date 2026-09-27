@@ -3,7 +3,7 @@ config_version=5
 
 [application]
 
-config/name="Contra Typebeat"
+config/name="ONU"
 run/main_scene="res://scenes/intro.tscn"
 config/features=PackedStringArray("4.7")
 

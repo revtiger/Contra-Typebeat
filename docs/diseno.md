@@ -1,4 +1,4 @@
-# Documento de diseño: Contra-Typebeat
+# Documento de diseño: ONU
 
 Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
@@ -8,7 +8,7 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 ## Resumen
 
-Contra-Typebeat es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
+**ONU** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
 
 **Historia:** ☐ por definir. El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
@@ -104,7 +104,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 ## Estilo visual y sonido
 
 - Pixel art a 480x270, fondos con parallax (cielo al atardecer, montañas, palmeras).
-- **Intro estilo Metal Slug 2:** presentación tipo NEO GEO ("G·E, MAX 480x270 PIXEL POWER"), las letras de CONTRA TYPEBEAT caen de una en una en piedra cincelada con golpe y polvo, y un fogonazo las pasa a oro sobre cielo azul con "SUPER SOLDADO-001", "PULSA START" y el copyright de G·E STUDIOS.
+- **Intro estilo Metal Slug 2:** presentación tipo NEO GEO ("G·E, MAX 480x270 PIXEL POWER"), las letras gigantes de ONU caen de una en una en piedra cincelada con golpe y polvo, y un fogonazo las pasa a oro sobre cielo azul con "SUPER SOLDADO-001", "PULSA START" y el copyright de G·E STUDIOS.
 - **Letras de logo cinceladas** (`tools/sprites/logo.py`): cursiva, bisel y relieve 3D, en piedra, oro y acero. Se usan en la intro, el menú y los títulos de pantalla.
 - **ELIGE TU SOLDADO estilo Metal Slug X:** marco de acero remachado, retratos de cómic (el elegido a color, el resto en sepia), placas con el nombre y cuenta atrás.
 - **Sprites (v0.5):** el protagonista (traje, banda presidencial tricolor, mochila y rifle; cara inventada), los soldados (selva y desierto) y La Presidenta Mecha ya son sprites PNG en `assets/sprites/`. Los generan los programas de `tools/sprites/` y se pueden retocar en Aseprite. El protagonista tiene piernas y torso separados, como en Metal Slug. Siguen dibujados por código: torretas, tanques, mini jefes, jefes de las misiones 1 y 2 y objetos.

@@ -52,10 +52,10 @@ func _ready() -> void:
 		l.size = Vector2(480, 270)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ui.add_child(l)
-	title.text = "CONTRA"
-	title.position = Vector2(240, 6)
-	title2.text = "TYPEBEAT"
-	title2.position = Vector2(240, 54)
+	title.text = "ONU"
+	title.position = Vector2(240, 4)
+	title.scale = Vector2(2, 2)
+	title2.text = ""
 	# controles en dos columnas
 	var left := []
 	var right := []

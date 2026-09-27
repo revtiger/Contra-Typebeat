@@ -41,7 +41,7 @@ func _process(delta: float) -> void:
 	if reveal_at >= 0.0:
 		while _landed < text.length() and t >= reveal_at + _landed * interval + DROP:
 			if text[_landed] != " ":
-				letter_landed.emit(_landed, global_position + Vector2(_letter_x(_landed) + 12, 30))
+				letter_landed.emit(_landed, global_position + Vector2(_letter_x(_landed) + 12, 30) * scale)
 			_landed += 1
 	queue_redraw()
 

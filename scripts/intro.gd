@@ -1,7 +1,7 @@
 extends Node2D
 ## Intro al estilo de Metal Slug 2 (sin caras ni nombres de personajes):
 ## 1. Pantalla de presentación tipo NEO GEO (parodia: "MAX 480x270 PIXEL POWER")
-## 2. Fondo negro: las letras de CONTRA y TYPEBEAT caen de una en una, en piedra, con golpe y polvo
+## 2. Fondo negro: las letras de ONU caen de una en una, gigantes y en piedra, con golpe y polvo
 ## 3. Fogonazo blanco y todo pasa a color: letras doradas sobre cielo azul, "SUPER SOLDADO-001",
 ##    "PULSA START" y el copyright. Después va al menú. Cualquier botón la salta.
 
@@ -12,7 +12,7 @@ const LogoText = preload("res://scripts/logo_text.gd")
 const T_SPLASH_END := 2.6
 const T_WORD1 := 3.2
 const T_WORD2 := 4.9
-const T_FLASH := 6.7
+const T_FLASH := 5.2
 const T_END := 13.0
 
 var t := 0.0
@@ -45,22 +45,24 @@ func _ready() -> void:
 	for w in [word1, word2, gold1, gold2]:
 		w.position.x = 240
 		add_child(w)
-	word1.text = "CONTRA"
+	word1.text = "ONU"
 	word1.style = "big_stone"
-	word1.position.y = 60
+	word1.position.y = 38
+	word1.scale = Vector2(2, 2)
 	word1.reveal_at = T_WORD1
-	word1.interval = 0.24
-	word2.text = "TYPEBEAT"
+	word1.interval = 0.42
+	word2.text = ""
 	word2.style = "big_stone"
 	word2.position.y = 112
 	word2.reveal_at = T_WORD2
 	word2.interval = 0.16
 	for w in [word1, word2]:
 		w.letter_landed.connect(_on_letter)
-	gold1.text = "CONTRA"
+	gold1.text = "ONU"
 	gold1.style = "big_gold"
-	gold1.position.y = 60
-	gold2.text = "TYPEBEAT"
+	gold1.position.y = 38
+	gold1.scale = Vector2(2, 2)
+	gold2.text = ""
 	gold2.style = "big_gold"
 	gold2.position.y = 112
 	gold1.visible = false
@@ -117,11 +119,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_letter(_i: int, pos: Vector2) -> void:
-	shake = 3.0
+	shake = 5.0
 	Game.sfx("cannon", -6.0, randf_range(0.8, 1.0))
 	var e := Explosion.new()
 	e.position = pos + Vector2(0, 10)
-	e.r = 8.0
+	e.r = 14.0
 	add_child(e)
 
 
