@@ -303,15 +303,15 @@ func _setup_sprites() -> void:
 	var feet := SpriteUtil.v(meta["feet"])
 	var L: Dictionary = meta["legs"]
 	var T: Dictionary = meta["torso"]
-	legs = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_legs.png", fw, fh, {
+	legs = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_legs.png" % Game.hero, fw, fh, {
 		"idle": [L["idle"], 1, 1, true], "run": [L["run"], 8, 14, true], "jump": [L["jump"], 2, 1, false],
 		"crouch": [L["crouch"], 1, 1, true], "crawl": [L["crawl"], 4, 8, true]}), feet)
 	var tanims := {}
 	for n in T:
 		tanims[n] = [T[n], 3 if n.ends_with("knife") else 2, 1, false]
-	torso = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_torso.png", fw, fh, tanims), feet)
+	torso = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_torso.png" % Game.hero, fw, fh, tanims), feet)
 	var df: Array = meta["death_frame"]
-	death_spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_death.png", df[0], df[1],
+	death_spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_death.png" % Game.hero, df[0], df[1],
 		{"die": [0, 4, 8, false]}), SpriteUtil.v(meta["death_feet"]))
 	death_spr.visible = false
 	for n in [legs, torso, death_spr]:

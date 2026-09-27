@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2ml5x3xa7abd"
-path="res://.godot/imported/player_death.png-52d7edd1cb4e5745e00da74251debc16.ctex"
+uid="uid://b0pmkublx3sbx"
+path="res://.godot/imported/player_tenienta_legs.png-dc1d78f32154283ce13f42ba270850bb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_death.png"
-dest_files=["res://.godot/imported/player_death.png-52d7edd1cb4e5745e00da74251debc16.ctex"]
+source_file="res://assets/sprites/player_tenienta_legs.png"
+dest_files=["res://.godot/imported/player_tenienta_legs.png-dc1d78f32154283ce13f42ba270850bb.ctex"]
 
 [params]
 

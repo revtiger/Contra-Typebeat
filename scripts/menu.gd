@@ -6,6 +6,7 @@ const Explosion = preload("res://scripts/explosion.gd")
 const Levels = preload("res://scripts/levels.gd")
 
 const PixelFont = preload("res://scripts/pixel_font.gd")
+const LogoText = preload("res://scripts/logo_text.gd")
 
 ## Controles: acción (texto blanco) y teclas (dorado), alineados en columnas con la fuente monoespaciada.
 const CONTROLS := [
@@ -21,8 +22,8 @@ var items: Array = []
 var sel := 0
 var t := 0.0
 var boom_t := 1.0
-var title := Label.new()
-var title2 := Label.new()
+var title := LogoText.new()
+var title2 := LogoText.new()
 var item_labels: Array[Label] = []
 var info_left := Label.new()
 var info_right := Label.new()
@@ -43,16 +44,18 @@ func _ready() -> void:
 	add_child(shade)
 
 	add_child(ui)
-	for l in [title, title2, info_left, info_right, pad, footer]:
+	for lt in [title, title2]:
+		lt.style = "big_gold"
+		lt.z_index = 6
+		add_child(lt)
+	for l in [info_left, info_right, pad, footer]:
 		l.size = Vector2(480, 270)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ui.add_child(l)
 	title.text = "CONTRA"
-	PixelFont.apply(title, "title", 3)
-	title.position.y = 12
+	title.position = Vector2(240, 6)
 	title2.text = "TYPEBEAT"
-	PixelFont.apply(title2, "metal", 1)
-	title2.position.y = 66
+	title2.position = Vector2(240, 54)
 	# controles en dos columnas
 	var left := []
 	var right := []
@@ -71,7 +74,7 @@ func _ready() -> void:
 	pad.text = PAD_TEXT
 	PixelFont.apply(pad, "label")
 	pad.position.y = 172
-	footer.text = "RÉCORD %06d          Gwyn & Eduardo - 2026 - v0.5" % Game.record
+	footer.text = "RÉCORD %06d          G·E STUDIOS - 2026 - v0.6" % Game.record
 	PixelFont.apply(footer, "label")
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	footer.position.y = -4
@@ -111,7 +114,7 @@ func _refresh() -> void:
 			continue
 		var chosen := i == sel
 		var arrows := int(t * 4.0) % 2 == 0
-		l.text = ("> %s <" if chosen and arrows else ("  %s  " if not chosen else "- %s -")) % items[i]
+		l.text = ("> %s" if chosen and arrows else ("%s" if not chosen else "  %s")) % items[i]
 		PixelFont.apply(l, "small" if chosen else "white")
 		l.position.y = top + i * 14
 	var controls := page == "controls"

@@ -1,4 +1,10 @@
 {
+ "heroes": [
+  "presi",
+  "tenienta",
+  "chato",
+  "bigotes"
+ ],
  "frame": [
   48,
   48

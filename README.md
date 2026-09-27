@@ -34,8 +34,8 @@ Las armas que no se recogen parpadean y desaparecen a los 9 segundos.
 ## Estructura
 - `scripts/game.gd`: autoload con vidas, puntos, récord, controles, sonido y pausa
 - `scripts/levels.gd`: datos de las misiones (suelo, plataformas, enemigos)
-- `scripts/intro.gd`, `menu.gd`, `map.gd`, `level.gd`: las escenas (intro, menú, mapa de campaña, misión)
-- `scripts/city.gd`, `portrait.gd`: ciudad en llamas y caras pixeladas de la intro
+- `scripts/intro.gd`, `menu.gd`, `select.gd`, `map.gd`, `level.gd`: las escenas (intro, menú, ELIGE TU SOLDADO, mapa, misión)
+- `scripts/logo_text.gd`: letras cinceladas del logo; `scripts/city.gd`: ciudad en llamas del menú
 - `scripts/player.gd`: jugador
 - `scripts/soldier.gd`, `turret.gd`, `tank.gd`, `miniboss.gd`, `boss.gd`, `heli.gd`: enemigos, mini jefes y jefes
 - `scripts/barrel.gd`, `mine.gd`, `jet.gd`, `bomb.gd`: peligros del desierto

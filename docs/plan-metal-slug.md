@@ -64,7 +64,7 @@ Hoy todo se dibuja con `_draw()` y se construye por código. Sirvió para el pro
 
 ## 6. Decisiones abiertas
 
-- ✅ Decidido: ficticios. **Personajes basados en políticos reales.** Recomendación: personajes **ficticios** que parodien el cargo o el estilo (banda presidencial, discursos, carteles de propaganda inventados), sin la cara, el nombre ni los lemas reales de personas concretas. Motivos: las tiendas (Steam, itch.io, consolas) y las redes suelen rechazar juegos en los que se dispara a un político real y reconocible; hay riesgo legal por uso de imagen; y el chiste funciona igual con una parodia. El villano ficticio ya existe: el General Zarko y su gente.
+- ✅ Decidido: ficticios. **Personajes basados en políticos reales.** Recomendación: personajes **ficticios** que parodien el cargo o el estilo (banda presidencial, discursos, carteles de propaganda inventados), sin la cara, el nombre ni los lemas reales de personas concretas. Motivos: las tiendas (Steam, itch.io, consolas) y las redes suelen rechazar juegos en los que se dispara a un político real y reconocible; hay riesgo legal por uso de imagen; y el chiste funciona igual con una parodia. Los villanos concretos están por definir (Zarko y El Socio se descartaron).
 - ☐ ¿Mantenemos el nombre "Contra-Typebeat" ahora que el estilo es Metal Slug?
 - ✅ Decidido: IA + ajustes a mano. ¿Quién dibuja? ¿Uno de los dos, un artista externo o IA + limpieza en Aseprite?
 - ✅ Decidido: 100 % Metal Slug. ¿Controles sin disparo diagonal o mantenemos las diagonales?

@@ -37,6 +37,20 @@ HERO = {
     "tie": (186, 28, 38),
     "pack": [(64, 66, 40), (92, 94, 58), (124, 126, 80)],
 }
+## Soldados jugables (ficticios). "presi" usa el traje con banda; el resto, uniforme de campaña.
+HEROES = {
+    "presi": dict(HERO, outfit="suit", hair=HAIR, style="slick"),
+    "tenienta": {"outfit": "uniform", "cloth": [(52, 60, 32), (82, 94, 52), (116, 130, 76)],
+                 "pants": [(44, 50, 28), (68, 78, 44), (94, 106, 62)], "pack": [(64, 58, 40), (92, 84, 58), (124, 114, 80)],
+                 "hair": [(92, 32, 16), (160, 64, 30)], "style": "ponytail"},
+    "chato": {"outfit": "uniform", "cloth": [(128, 100, 58), (168, 136, 84), (204, 176, 120)],
+              "pants": [(70, 76, 90), (98, 106, 124), (130, 140, 160)], "pack": [(70, 66, 44), (98, 94, 62), (130, 126, 84)],
+              "hair": [(30, 22, 18), (62, 48, 38)], "style": "cap"},
+    "bigotes": {"outfit": "uniform", "cloth": [(44, 48, 38), (70, 78, 58), (104, 112, 86)],
+                "pants": [(40, 44, 34), (62, 70, 52), (90, 98, 74)], "pack": [(58, 60, 40), (84, 88, 58), (114, 118, 80)],
+                "hair": [(120, 116, 110), (170, 166, 158)], "style": "helmet"},
+}
+
 SOLDIERS = {
     "jungle": {"cloth": [(48, 56, 32), (76, 88, 50), (106, 120, 70)],
                "pants": [(42, 48, 28), (66, 76, 44), (92, 104, 62)],
@@ -138,6 +152,31 @@ def hand(pen, pt):
 
 
 # ---------- torsos ----------
+def make_body(cfg):
+    """Devuelve la función que dibuja mochila, torso y cabeza del soldado `cfg`."""
+    if cfg["outfit"] == "suit":
+        return hero_body
+
+    def body(pen, dy=0):
+        cl, pk = cfg["cloth"], cfg["pack"]
+        y = lambda v: v + dy  # noqa: E731
+        pen.rect(13, y(19), 7, 12, pk[1])
+        pen.rect(13, y(19), 7, 3, pk[2])
+        pen.rect(12, y(22), 1, 8, pk[0])
+        pen.poly([(18, y(19)), (30, y(19)), (30, y(32)), (19, y(32))], cl[1])
+        pen.rect(18, y(19), 3, 13, cl[0])
+        pen.rect(29, y(20), 1, 12, cl[2])
+        pen.rect(24, y(19), 4, 3, SKIN[0])
+        pen.rect(19, y(29), 11, 2, (70, 50, 30))
+        pen.rect(26, y(23), 3, 3, cl[0])
+        pen.line((24, y(21)), (27, y(26)), (200, 200, 206), 1)
+        pen.rect(26, y(26), 2, 2, (210, 210, 216))
+        pen.line((20, y(19)), (21, y(26)), pk[0], 1)
+        pen.rect(23, y(16), 4, 4, SKIN[0])
+        head(pen, dy, hair=cfg["hair"], style=cfg["style"])
+    return body
+
+
 def hero_body(pen, dy=0):
     """Mochila, chaqueta, camisa, corbata, banda tricolor, cuello y cabeza del protagonista."""
     cl, sh, pk = HERO["cloth"], HERO["shirt"], HERO["pack"]
@@ -170,18 +209,31 @@ def hero_body(pen, dy=0):
     head(pen, dy)
 
 
-def head(pen, dy=0, helmet=None):
+def head(pen, dy=0, helmet=None, hair=HAIR, style="slick"):
     y = lambda v: v + dy  # noqa: E731
+    if style == "ponytail":
+        pen.rect(14, y(8), 7, 3, hair[0])
+        pen.rect(13, y(10), 4, 7, hair[0])
+    elif style == "cap":
+        pen.rect(14, y(6), 6, 2, (30, 70, 140))
     pen.rect(20, y(6), 10, 11, SKIN[1])
     pen.rect(20, y(15), 10, 2, SKIN[0])
     pen.rect(29, y(8), 1, 7, SKIN[2])
     pen.px(30, y(11), SKIN[1])
     pen.px(30, y(12), SKIN[0])
-    if helmet is None:
-        pen.rect(20, y(5), 10, 3, HAIR[0])
-        pen.rect(20, y(5), 3, 9, HAIR[0])
-        pen.rect(22, y(5), 7, 1, HAIR[1])
-        pen.rect(23, y(8), 1, 4, HAIR[0])
+    if style == "helmet" and helmet is None:
+        helmet = [(50, 58, 40), (70, 80, 56), (110, 122, 88)]
+    if helmet is None and style == "cap":
+        pen.rect(19, y(3), 12, 4, (40, 90, 170))
+        pen.rect(21, y(3), 8, 1, (90, 140, 220))
+        pen.rect(20, y(7), 2, 6, hair[0])
+    elif helmet is None:
+        pen.rect(20, y(5), 10, 3, hair[0])
+        pen.rect(20, y(5), 3, 9, hair[0])
+        pen.rect(22, y(5), 7, 1, hair[1])
+        pen.rect(23, y(8), 1, 4, hair[0])
+        if style == "ponytail":
+            pen.rect(20, y(7), 11, 1, (196, 30, 34))
     else:
         pen.rect(19, y(4), 12, 5, helmet[1])
         pen.rect(19, y(8), 13, 1, helmet[0])
@@ -192,6 +244,11 @@ def head(pen, dy=0, helmet=None):
     pen.rect(26, y(10), 2, 1, (240, 240, 240))
     pen.px(27, y(10), (10, 10, 10))
     pen.rect(26, y(14), 3, 1, (120, 40, 40))
+    if style == "helmet":
+        # bigote canoso
+        pen.rect(24, y(13), 7, 1, hair[1])
+        pen.rect(24, y(14), 2, 1, hair[0])
+        pen.rect(29, y(14), 2, 1, hair[0])
 
 
 def arm(pen, shoulder, elbow, hnd, cloth):
@@ -257,8 +314,10 @@ def knife_torso(body_fn, cloth, stage, dy=0):
 
 
 # ---------- generación ----------
-def hero():
-    pants = HERO["pants"]
+def hero(hero_id="presi"):
+    cfg = HEROES[hero_id]
+    body_fn = make_body(cfg)
+    pants = cfg["pants"]
     legs_rows, bobs = [], {}
     idle, _ = legs_frame(((6, 6), (-6, 8)), pants)
     run = []
@@ -273,31 +332,31 @@ def hero():
     legs_rows = [[idle], run, jump, crouch, crawl]
     legs_anims = {"idle": 0, "run": 1, "jump": 2, "crouch": 3, "crawl": 4}
 
-    cloth = HERO["cloth"]
+    cloth = cfg["cloth"]
     rows, muzzle = [], {}
     names = []
     for name, aim, dy in (("fwd", "fwd", 0), ("up", "up", 0), ("down", "down", 0), ("crouch_fwd", "fwd", 8)):
         frames = []
         for rc in (0, 1):
-            f, m = aim_torso(hero_body, cloth, aim, rc, dy)
+            f, m = aim_torso(body_fn, cloth, aim, rc, dy)
             frames.append(f)
             if rc == 0:
                 muzzle[name] = [m[0] - 24, m[1] - FEET_Y]
         rows.append(frames)
         names.append(name)
-    rows.append([throw_torso(hero_body, cloth, s) for s in (0, 1)])
+    rows.append([throw_torso(body_fn, cloth, s) for s in (0, 1)])
     names.append("throw")
-    rows.append([throw_torso(hero_body, cloth, s, 8) for s in (0, 1)])
+    rows.append([throw_torso(body_fn, cloth, s, 8) for s in (0, 1)])
     names.append("crouch_throw")
-    rows.append([knife_torso(hero_body, cloth, s) for s in range(3)])
+    rows.append([knife_torso(body_fn, cloth, s) for s in range(3)])
     names.append("knife")
-    rows.append([knife_torso(hero_body, cloth, s, 8) for s in range(3)])
+    rows.append([knife_torso(body_fn, cloth, s, 8) for s in range(3)])
     names.append("crouch_knife")
 
     # muerte: cuerpo entero que cae de espaldas (hoja de 64x48, pies en (46, 46))
     full = canvas(FW, FH)
     full.alpha_composite(idle)
-    full.alpha_composite(aim_torso(hero_body, cloth, "fwd")[0])
+    full.alpha_composite(aim_torso(body_fn, cloth, "fwd")[0])
     death = []
     for ang, lift in ((12, 0), (40, 2), (72, 4), (90, 6)):
         fr = canvas(64, 48)
@@ -307,10 +366,10 @@ def hero():
         shifted.paste(fr, (0, -lift), fr)
         death.append(shifted)
 
-    save_sheet("player_legs", legs_rows)
-    save_sheet("player_torso", rows)
-    save_sheet("player_death", [death], 64)
-    meta = {"frame": [FW, FH], "feet": [24, FEET_Y], "legs": legs_anims, "torso": {n: i for i, n in enumerate(names)},
+    save_sheet("player_%s_legs" % hero_id, legs_rows)
+    save_sheet("player_%s_torso" % hero_id, rows)
+    save_sheet("player_%s_death" % hero_id, [death], 64)
+    meta = {"heroes": list(HEROES), "frame": [FW, FH], "feet": [24, FEET_Y], "legs": legs_anims, "torso": {n: i for i, n in enumerate(names)},
             "bob": bobs, "muzzle": muzzle, "death_frame": [64, 48], "death_feet": [46, 46]}
     with open(os.path.join(OUT, "player_meta.json"), "w") as f:
         json.dump(meta, f, indent=1)
@@ -388,7 +447,8 @@ def save_sheet(name, rows, fw=FW):
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     os.makedirs(PREV, exist_ok=True)
-    hero()
+    for hid in HEROES:
+        hero(hid)
     rows = {}
     for th in SOLDIERS:
         rows = soldier(th)

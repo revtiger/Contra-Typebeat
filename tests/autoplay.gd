@@ -65,6 +65,19 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	var lvl = get_tree().current_scene
+	if lvl != null and lvl.is_in_group("select"):
+		# ELIGE TU SOLDADO: captura y elegir (en modo campaña prueba cada vez un soldado distinto)
+		if frame % 150 == 60:
+			_shot("seleccion")
+		if frame % 150 == 70 and "campaign" in OS.get_cmdline_user_args():
+			Input.action_press("right")
+		elif frame % 150 == 72:
+			Input.action_release("right")
+		elif frame % 150 == 110:
+			Input.action_press("restart")
+		elif frame % 150 == 115:
+			Input.action_release("restart")
+		return
 	if lvl != null and lvl.is_in_group("map"):
 		# mapa: captura y pulsar para continuar
 		if frame % 150 == 100:

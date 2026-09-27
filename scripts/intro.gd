@@ -1,122 +1,114 @@
 extends Node2D
-## Intro estilo póster de "Duro de matar": ciudad de noche, el rascacielos estalla, entran las caras
-## del reparto con traje, una frase y el logo cae con una explosión. Cualquier botón la salta.
+## Intro al estilo de Metal Slug 2 (sin caras ni nombres de personajes):
+## 1. Pantalla de presentación tipo NEO GEO (parodia: "MAX 480x270 PIXEL POWER")
+## 2. Fondo negro: las letras de CONTRA y TYPEBEAT caen de una en una, en piedra, con golpe y polvo
+## 3. Fogonazo blanco y todo pasa a color: letras doradas sobre cielo azul, "SUPER SOLDADO-001",
+##    "PULSA START" y el copyright. Después va al menú. Cualquier botón la salta.
 
-const City = preload("res://scripts/city.gd")
-const Portrait = preload("res://scripts/portrait.gd")
 const Explosion = preload("res://scripts/explosion.gd")
 const PixelFont = preload("res://scripts/pixel_font.gd")
+const LogoText = preload("res://scripts/logo_text.gd")
 
-const T_CREDITS := 2.4
-const T_BLAST := 3.6
-const T_FACES := 4.6
-const FACE_GAP := 0.6
-const T_STORY := 7.4
-const T_LOGO := 10.4
-const T_END := 13.5
-const TAGLINE := "AÑO 2087. EL GENERAL ZARKO TOMÓ EL CONTINENTE.\nSOLO DOS SOLDADOS PUEDEN DETENERLO."
-
-## Reparto: nombre y aspecto de cada cara. Para cambiarlos, edita aquí.
-const CAST := [
-	{"name": "GWYN", "hair": Color(0.35, 0.22, 0.12), "style": "short", "stubble": true,
-		"suit": Color(0.14, 0.14, 0.18), "tie": Color(0.75, 0.1, 0.1)},
-	{"name": "EDUARDO", "hair": Color(0.08, 0.07, 0.07), "style": "slick", "sunglasses": true,
-		"skin": Color(0.8, 0.58, 0.42), "suit": Color(0.1, 0.12, 0.25), "tie": Color(0.05, 0.05, 0.05)},
-	{"name": "GRAL. ZARKO", "hair": Color(0.55, 0.55, 0.55), "style": "bald", "beard": true, "scar": true,
-		"skin": Color(0.88, 0.7, 0.58), "suit": Color(0.05, 0.05, 0.06), "tie": Color(0.55, 0.05, 0.05)},
-	{"name": "EL SOCIO", "hair": Color(0.9, 0.78, 0.4), "style": "long",
-		"suit": Color(0.35, 0.36, 0.38), "tie": Color(0.1, 0.45, 0.2)},
-]
+const T_SPLASH_END := 2.6
+const T_WORD1 := 3.2
+const T_WORD2 := 4.9
+const T_FLASH := 6.7
+const T_END := 13.0
 
 var t := 0.0
-var city := City.new()
-var dim := ColorRect.new()
-var faces: Array = []
-var names: Array = []
-var credits := Label.new()
-var story := Label.new()
-var logo := Label.new()
-var logo2 := Label.new()
-var skip := Label.new()
-var shown_chars := 0
-var blasted := false
-var logo_hit := false
-var next_face := 0
 var shake := 0.0
 var flash := 0.0
-var boom_t := 0.0
+var colored := false
+var bg := Node2D.new()
+var word1 := LogoText.new()
+var word2 := LogoText.new()
+var gold1 := LogoText.new()
+var gold2 := LogoText.new()
 var flash_rect := ColorRect.new()
+var splash := Node2D.new()
+var ui := CanvasLayer.new()
+var splash_title := Label.new()
+var splash_sub := Label.new()
+var subtitle := Label.new()
+var press := Label.new()
+var copyright := Label.new()
+var credit := Label.new()
 
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color.BLACK)
-	add_child(city)
-	dim.color = Color.BLACK
-	dim.size = Vector2(480, 270)
-	add_child(dim)
+	# fondo a color (aparece con el fogonazo): cielo azul degradado y la ciudad en llamas abajo
+	bg.visible = false
+	bg.draw.connect(_draw_sky)
+	add_child(bg)
 
-	for i in CAST.size():
-		var c: Dictionary = CAST[i]
-		var p := Portrait.new()
-		p.hair = c["hair"]
-		p.hair_style = c["style"]
-		p.suit = c["suit"]
-		p.tie = c["tie"]
-		p.skin = c.get("skin", p.skin)
-		p.beard = c.get("beard", false)
-		p.stubble = c.get("stubble", false)
-		p.sunglasses = c.get("sunglasses", false)
-		p.scar = c.get("scar", false)
-		p.position = Vector2(36 + i * 108, 14)
-		p.visible = false
-		p.z_index = 20
-		add_child(p)
-		faces.append(p)
+	for w in [word1, word2, gold1, gold2]:
+		w.position.x = 240
+		add_child(w)
+	word1.text = "CONTRA"
+	word1.style = "big_stone"
+	word1.position.y = 60
+	word1.reveal_at = T_WORD1
+	word1.interval = 0.24
+	word2.text = "TYPEBEAT"
+	word2.style = "big_stone"
+	word2.position.y = 112
+	word2.reveal_at = T_WORD2
+	word2.interval = 0.16
+	for w in [word1, word2]:
+		w.letter_landed.connect(_on_letter)
+	gold1.text = "CONTRA"
+	gold1.style = "big_gold"
+	gold1.position.y = 60
+	gold2.text = "TYPEBEAT"
+	gold2.style = "big_gold"
+	gold2.position.y = 112
+	gold1.visible = false
+	gold2.visible = false
 
 	flash_rect.size = Vector2(500, 290)
 	flash_rect.position = Vector2(-10, -10)
-	flash_rect.color = Color(1, 0.95, 0.85, 0)
+	flash_rect.color = Color(1, 1, 1, 0)
 	flash_rect.z_index = 30
 	add_child(flash_rect)
 
-	var ui := CanvasLayer.new()
+	# pantalla de presentación (fondo claro, logo negro, como la de NEO GEO)
+	splash.draw.connect(_draw_splash)
+	splash.z_index = 20
+	add_child(splash)
+
 	add_child(ui)
-	for i in CAST.size():
-		var n := Label.new()
-		n.text = CAST[i]["name"]
-		n.size = Vector2(90, 12)
-		n.position = Vector2(36 + i * 108 - 15, 90)
-		n.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		PixelFont.apply(n, "small")
-		n.visible = false
-		ui.add_child(n)
-		names.append(n)
-	for l in [credits, story, logo, logo2, skip]:
-		l.size = Vector2(480, 270)
+	for l in [splash_title, splash_sub, subtitle, press, copyright, credit]:
+		l.size = Vector2(480, 20)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		ui.add_child(l)
-	credits.text = "GWYN & EDUARDO\n\npresentan"
-	PixelFont.apply(credits, "small", 2)
-	PixelFont.apply(story, "white")
-	story.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	story.position.y = 110
-	story.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	story.position.x = 14
-	logo.text = "CONTRA"
-	PixelFont.apply(logo, "title", 3)
-	logo.position = Vector2(-60, 62)
-	logo2.text = "TYPEBEAT"
-	PixelFont.apply(logo2, "metal", 1)
-	logo2.position = Vector2(-60, 104)
-	logo.visible = false
-	logo2.visible = false
-	skip.text = "cualquier botón para saltar"
-	PixelFont.apply(skip, "label")
-	skip.modulate.a = 0.7
-	skip.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	skip.position.y = -2
-	Game.play_music("menu")
+	splash_title.text = "G·E"
+	PixelFont.apply(splash_title, "title", 4)
+	splash_title.size.y = 80
+	splash_title.position.y = 70
+	splash_title.modulate = Color(0.08, 0.08, 0.12)
+	splash_sub.text = "MAX 480x270 PIXEL POWER\nPRO-SOLDIER SPEC"
+	PixelFont.apply(splash_sub, "white")
+	splash_sub.size.y = 40
+	splash_sub.position.y = 150
+	splash_sub.modulate = Color(0.1, 0.1, 0.15)
+	subtitle.text = "SUPER SOLDADO-001"
+	PixelFont.apply(subtitle, "small")
+	subtitle.position.y = 172
+	press.text = "PULSA START"
+	PixelFont.apply(press, "white")
+	press.position.y = 204
+	copyright.text = "(C) 2026 G·E STUDIOS"
+	PixelFont.apply(copyright, "label")
+	copyright.position.y = 226
+	credit.text = "CREDITO 0"
+	PixelFont.apply(credit, "white")
+	credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	credit.size.x = 470
+	credit.position.y = 252
+	for l in [subtitle, press, copyright, credit]:
+		l.visible = false
+	Game.stop_music()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -124,78 +116,74 @@ func _unhandled_input(event: InputEvent) -> void:
 		Game.to_menu()
 
 
-func _boom(pos: Vector2, r: float, sound := true) -> void:
+func _on_letter(_i: int, pos: Vector2) -> void:
+	shake = 3.0
+	Game.sfx("cannon", -6.0, randf_range(0.8, 1.0))
 	var e := Explosion.new()
-	e.position = pos
-	e.r = r
+	e.position = pos + Vector2(0, 10)
+	e.r = 8.0
 	add_child(e)
-	if sound:
-		Game.sfx("boom" if r >= 18.0 else "small_boom", -6.0 if r >= 18.0 else -12.0, randf_range(0.7, 1.0))
 
 
 func _process(delta: float) -> void:
 	t += delta
-	flash = maxf(flash - delta * 3.0, 0.0)
-	shake = maxf(shake - delta * 10.0, 0.0)
-	position = Vector2(randf_range(-1, 1), randf_range(-1, 1)).round() * shake
-	credits.modulate.a = clampf(minf(t / 0.6, (T_CREDITS - t) / 0.6), 0.0, 1.0)
-
-	# la ciudad aparece
-	if t > T_CREDITS:
-		dim.color.a = 1.0 - clampf((t - T_CREDITS) / 1.0, 0.0, 0.85)
-
-	# el rascacielos estalla
-	if t > T_BLAST and not blasted:
-		blasted = true
-		city.burning = true
-		flash = 0.8
-		shake = 5.0
-		Game.sfx("boom", 2.0, 0.75)
-		var top := city.tower_top()
-		for i in 7:
-			_boom(top + Vector2(randf_range(-40, 40), randf_range(-10, 45)), randf_range(14, 30), i == 0)
-	if blasted:
-		boom_t -= delta
-		if boom_t <= 0.0:
-			boom_t = randf_range(0.5, 1.3)
-			_boom(city.tower_top() + Vector2(randf_range(-34, 34), randf_range(0, 50)), randf_range(8, 16), false)
-
-	# entran las caras
-	if next_face < faces.size() and t > T_FACES + next_face * FACE_GAP:
-		faces[next_face].visible = true
-		names[next_face].visible = true
-		faces[next_face].scale = Vector2.ONE * 1.3
-		Game.sfx("cannon", -4.0, 0.9 + next_face * 0.08)
-		shake = 2.0
-		next_face += 1
-	for f in faces:
-		if f.visible:
-			f.scale = f.scale.lerp(Vector2.ONE, 12.0 * delta)
-
-	# frase
-	if t > T_STORY:
-		var n := mini(int((t - T_STORY) * 30.0), TAGLINE.length())
-		if n > shown_chars:
-			shown_chars = n
-			if TAGLINE[n - 1] != " " and TAGLINE[n - 1] != "\n":
-				Game.sfx("type", -12.0)
-		story.text = TAGLINE.substr(0, shown_chars)
-
-	# logo
-	if t >= T_LOGO:
-		if not logo_hit:
-			logo_hit = true
-			logo.visible = true
-			logo2.visible = true
-			flash = 1.0
-			shake = 6.0
-			Game.sfx("boom", 0.0, 0.8)
-			for i in 4:
-				_boom(Vector2(180 + randf_range(-110, 110), 205 + randf_range(-20, 20)), randf_range(14, 26), false)
-		var k := clampf((t - T_LOGO) / 0.25, 0.0, 1.0)
-		logo.pivot_offset = Vector2(240, 135)
-		logo.scale = Vector2.ONE * lerpf(2.5, 1.0, k)
-		logo2.modulate.a = clampf((t - T_LOGO - 0.4) / 0.4, 0.0, 1.0)
-	flash_rect.color.a = flash * 0.8
+	shake = maxf(shake - delta * 12.0, 0.0)
+	flash = maxf(flash - delta * 2.5, 0.0)
+	var sh := Vector2(randf_range(-1, 1), randf_range(-1, 1)).round() * shake
+	for w in [word1, word2, gold1, gold2]:
+		w.position.x = 240 + sh.x
+	# presentación: aparece y se funde
+	var a := clampf(minf(t / 0.4, (T_SPLASH_END - t) / 0.4), 0.0, 1.0)
+	splash.visible = t < T_SPLASH_END
+	splash.modulate.a = a
+	splash_title.visible = splash.visible
+	splash_sub.visible = splash.visible
+	splash_title.modulate.a = a
+	splash_sub.modulate.a = a
+	# fogonazo: todo pasa a color
+	if t >= T_FLASH and not colored:
+		colored = true
+		flash = 1.0
+		Game.sfx("boom", 0.0, 0.7)
+		Game.play_music("menu")
+		bg.visible = true
+		word1.visible = false
+		word2.visible = false
+		gold1.visible = true
+		gold2.visible = true
+		for l in [subtitle, copyright, credit]:
+			l.visible = true
+	if colored:
+		press.visible = int(t * 2.0) % 2 == 0
+		bg.queue_redraw()
+	flash_rect.color.a = flash
 	if t > T_END:
 		Game.to_menu()
+
+
+func _draw_splash() -> void:
+	splash.draw_rect(Rect2(0, 0, 480, 270), Color(0.95, 0.95, 0.93))
+	splash.draw_rect(Rect2(150, 186, 180, 3), Color(0.2, 0.3, 0.8))
+
+
+func _draw_sky() -> void:
+	var top := Color(0.1, 0.2, 0.55)
+	var bottom := Color(0.45, 0.65, 0.95)
+	bg.draw_polygon(
+		PackedVector2Array([Vector2(0, 0), Vector2(480, 0), Vector2(480, 270), Vector2(0, 270)]),
+		PackedColorArray([top, top, bottom, bottom]))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 9
+	for i in 6:
+		var cx := fmod(rng.randf() * 600.0 + t * rng.randf_range(4, 10), 600.0) - 60.0
+		var cy := rng.randf_range(20, 150)
+		for j in 4:
+			bg.draw_circle(Vector2(cx + j * 14, cy + (j % 2) * 3), 10 + (j % 2) * 4, Color(1, 1, 1, 0.35))
+	# horizonte con ruinas en silueta
+	rng.seed = 12
+	var x := -10.0
+	while x < 490.0:
+		var w := rng.randf_range(20, 50)
+		var h := rng.randf_range(20, 60)
+		bg.draw_rect(Rect2(x, 270 - h, w, h), Color(0.12, 0.18, 0.38))
+		x += w + rng.randf_range(0, 8)

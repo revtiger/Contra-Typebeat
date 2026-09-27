@@ -15,7 +15,7 @@ extends RefCounted
 const LIST := [
 	{
 		"name": "MISIÓN 1: TRIPLE FRONTERA",
-		"boss_name": "EL MURO DE ZARKO",
+		"boss_name": "LA FORTALEZA ROJA",
 		"theme": "jungle",
 		"music": "level",
 		"end": 4300,

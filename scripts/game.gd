@@ -14,6 +14,8 @@ const SOUNDS := ["shot", "laser", "fire", "jump", "hit", "boom", "small_boom", "
 var score := 0
 var lives := START_LIVES
 var level := 0
+## Soldado elegido en ELIGE TU SOLDADO (sprites player_<hero>_*.png)
+var hero := "presi"
 var record := 0
 var autoplay := false
 
@@ -108,11 +110,16 @@ func accept_pressed() -> bool:
 
 # ---------- flujo de partida ----------
 
-## Empieza una partida nueva en la misión lv, pasando antes por el mapa.
+## Empieza una partida nueva en la misión lv: primero ELIGE TU SOLDADO y después el mapa.
 func start_game(lv := 0) -> void:
 	score = 0
 	lives = START_LIVES
 	level = lv
+	_go("res://scenes/select.tscn")
+
+
+func choose_hero(id: String) -> void:
+	hero = id
 	_go("res://scenes/map.tscn")
 
 

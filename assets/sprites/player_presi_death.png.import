@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://pmu3wer7kmog"
-path="res://.godot/imported/player_legs.png-094127ef78edca48ebb407a55ce57f1e.ctex"
+uid="uid://oi6rs0f8858b"
+path="res://.godot/imported/player_presi_death.png-e4a9e2e5b5ec9cdbd290bf8abbf21bd7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_legs.png"
-dest_files=["res://.godot/imported/player_legs.png-094127ef78edca48ebb407a55ce57f1e.ctex"]
+source_file="res://assets/sprites/player_presi_death.png"
+dest_files=["res://.godot/imported/player_presi_death.png-e4a9e2e5b5ec9cdbd290bf8abbf21bd7.ctex"]
 
 [params]
 

@@ -1,6 +1,6 @@
 # Documento de diseño: Contra-Typebeat
 
-Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.5)
+Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
@@ -10,7 +10,9 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.5)
 
 Contra-Typebeat es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
 
-**Historia (intro):** año 2087. El General Zarko tomó el continente. Solo dos soldados pueden detenerlo.
+**Historia:** ☐ por definir. El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+
+**Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
 **Ruta de la campaña:** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. → EE.UU.: reunión secreta de la ONU en Nueva York (propuesta de Eduardo, próximamente).
 
@@ -41,7 +43,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 **TIME:** empieza en 60 y baja 1 cada 4 segundos. En los últimos 10 parpadea en rojo y pita; a 0 el jugador muere. Se reinicia al reaparecer, al aparecer un mini jefe y al llegar al jefe final.
 
-**Flujo de pantallas:** intro estilo póster de *Duro de matar* (se salta con cualquier botón) → menú (Jugar, Elegir misión, Controles, Ver intro, Salir) → **mapa** con la ruta → misión (mini jefe + jefe final) → "Misión cumplida" → **mapa** con el siguiente destino → … Si la siguiente misión aún no existe, el mapa la marca como "PRÓXIMAMENTE" y vuelve al menú. Esc pausa la partida.
+**Flujo de pantallas:** intro estilo Metal Slug 2 (se salta con cualquier botón) → menú (Jugar, Elegir misión, Controles, Ver intro, Salir) → **ELIGE TU SOLDADO** (estilo Metal Slug X, cuenta atrás de 30) → **mapa** con la ruta → misión (mini jefe + jefe final) → "Misión cumplida" → **mapa** con el siguiente destino → … Si la siguiente misión aún no existe, el mapa la marca como "PRÓXIMAMENTE" y vuelve al menú. Esc pausa la partida.
 
 ## Controles
 
@@ -94,7 +96,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 
-1. **Argentina–Brasil: Triple Frontera** ✅ (selva): fosos de agua, puentes, un escalón elevado, mini jefe Comandante Kruger y el Muro de Zarko al final.
+1. **Argentina–Brasil: Triple Frontera** ✅ (selva): fosos de agua, puentes, un escalón elevado, mini jefe Comandante Kruger y La Fortaleza Roja al final.
 2. **Bolivia: Quebradas de Tupiza** ✅ (árido): mesetas rojas, dunas y cactus; cañones sin fondo, barriles, minas, 2 tanques, 2 bombardeos, mini jefe Camión lanzacohetes y el Helicóptero Cóndor al final.
 3. **Frontera México–EE.UU.** ✅ (ciudad al atardecer): calles en ruinas, edificios coloniales con cúpulas, carteles de propaganda inventados, 2 tanques, 2 bombardeos, mini jefe Comandante Kruger y La Presidenta Mecha al final. ☐ Falta el tramo de la escuela del que se habló.
 4. **EE.UU.: reunión secreta de la ONU** ☐ (próximamente).
@@ -102,7 +104,9 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 ## Estilo visual y sonido
 
 - Pixel art a 480x270, fondos con parallax (cielo al atardecer, montañas, palmeras).
-- Intro y menú estilo póster de *Duro de matar*: ciudad de noche, un rascacielos que estalla y arde, y las caras pixeladas del reparto con traje (Gwyn, Eduardo, Gral. Zarko y El Socio; se editan en `CAST` de `scripts/intro.gd`).
+- **Intro estilo Metal Slug 2:** presentación tipo NEO GEO ("G·E, MAX 480x270 PIXEL POWER"), las letras de CONTRA TYPEBEAT caen de una en una en piedra cincelada con golpe y polvo, y un fogonazo las pasa a oro sobre cielo azul con "SUPER SOLDADO-001", "PULSA START" y el copyright de G·E STUDIOS.
+- **Letras de logo cinceladas** (`tools/sprites/logo.py`): cursiva, bisel y relieve 3D, en piedra, oro y acero. Se usan en la intro, el menú y los títulos de pantalla.
+- **ELIGE TU SOLDADO estilo Metal Slug X:** marco de acero remachado, retratos de cómic (el elegido a color, el resto en sepia), placas con el nombre y cuenta atrás.
 - **Sprites (v0.5):** el protagonista (traje, banda presidencial tricolor, mochila y rifle; cara inventada), los soldados (selva y desierto) y La Presidenta Mecha ya son sprites PNG en `assets/sprites/`. Los generan los programas de `tools/sprites/` y se pueden retocar en Aseprite. El protagonista tiene piernas y torso separados, como en Metal Slug. Siguen dibujados por código: torretas, tanques, mini jefes, jefes de las misiones 1 y 2 y objetos.
 - Música y efectos generados por código (estilo 8 bits): tema de menú, uno por misión y uno de jefe. ☐ Sustituir por música compuesta si alguien se anima.
 
@@ -118,6 +122,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 | Intro, menú, pausa, sonido y música ✅ (v0.2) | |
 | Nivel 2 Desierto con jefe ✅ (v0.2) | |
 | Intro estilo póster, mapa de campaña, mini jefes y armas que desaparecen ✅ (v0.3) | |
+| Intro estilo Metal Slug 2, ELIGE TU SOLDADO con 4 soldados, logo cincelado, fuente única ✅ (v0.6) | |
 
 ## Preguntas abiertas
 
