@@ -23,13 +23,16 @@ Lee también `CLAUDE.md` (reglas de trabajo) y `docs/diseno.md` (diseño vivo) y
 - **Fuente:** una sola fuente pixelada para todo el texto del juego (`assets/sprites/font.png`), con estilos por jerarquía: `title` (títulos, degradado amarillo-rojo), `small` (valores y énfasis, dorado), `white` (texto normal), `label` (etiquetas y ayudas, azul claro), `metal` (TIME). Todo en mayúsculas.
 - **Historia:** por definir. **Descartados:** el General Zarko, El Socio y el estilo de retratos de póster de *Duro de matar*. **Gwyn y Eduardo no son personajes** (solo aparecen como G·E STUDIOS en créditos). Referencias de estilo que le gustan a Gwyn: la intro de Metal Slug 2 (logo que cae letra a letra) y el SOLDIER SELECT de Metal Slug X. Ruta: Argentina–Brasil (Triple Frontera) → Bolivia (Tupiza) → frontera México–EE.UU. → EE.UU.: reunión secreta de la ONU en Nueva York (idea de Eduardo, pendiente).
 
-## Estado (v0.5, 27-09-2026)
+## Estado (v0.6, 27-09-2026)
 
 - 3 misiones jugables, cada una con mini jefe y jefe: Jungla (Comandante Kruger / La Fortaleza Roja), Bolivia (Camión lanzacohetes / Helicóptero Cóndor), Frontera Norte (Comandante Kruger / La Presidenta Mecha, jefe por piezas).
+- Nombre: **ONU: Outbreak**. Logo: ONU gigante + OUTBREAK debajo, en letras cinceladas (`logo_text.gd`, estilos big_stone/big_gold).
 - Intro estilo Metal Slug 2 (G·E STUDIOS, logo cincelado que cae letra a letra, fogonazo a oro), menú con logo dorado, ELIGE TU SOLDADO estilo Metal Slug X con 4 soldados ficticios (El Presi, La Tenienta, El Chato, Don Bigotes; `Game.hero`), mapa de campaña, pausa, récord, música y efectos 8 bits generados por código.
 - HUD Metal Slug: 1UP=vidas, recuadro ARMS/BOMB, icono del arma, TIME (60, baja cada 4 s, a 0 mueres), récord.
 - Sprites PNG: protagonista (traje + banda tricolor + mochila; piernas y torso separados), soldados (selva/desierto), mecha. Aún con formas por código: torretas, tanques, mini jefes, jefes 1-2, objetos.
-- PRs encadenados: #1 (v0.3) → #3 (v0.4) → #4 (v0.5). Fusionar en ese orden. PR #2 es la propuesta de historia de Eduardo con políticos reales (pendiente de responder con la alternativa ficticia).
+- **La Presidenta Mecha es ENEMIGA** (jefe final de la misión 3), una parodia del cargo, no de una persona. **La Tenienta no está basada en nadie.** Idea aprobada: al final todos los villanos "reciben su merecido" de forma chistosa (con personajes ficticios).
+- **Arte siguiente paso: PixelLab** (MCP oficial para Claude Code: personajes, animaciones, tiles, con imágenes de referencia). Gwyn tiene que crear la cuenta y añadirlo con `claude mcp add pixellab https://api.pixellab.ai/mcp -t http -H "Authorization: Bearer <clave>"`; Claude nunca crea la cuenta ni maneja la clave. Cuando esté, rehacer primero los 4 soldados (quieto, correr, disparar, agacharse, morir) con referencias de Metal Slug.
+- PRs encadenados: #1 (v0.3) → #3 (v0.4) → #4 (v0.5-v0.6). Fusionar en ese orden. PR #2 es la propuesta de historia de Eduardo con políticos reales (pendiente de responder con la alternativa ficticia).
 
 ## Mapa del código
 
