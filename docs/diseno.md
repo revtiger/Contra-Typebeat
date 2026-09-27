@@ -37,6 +37,10 @@ Avanzar → aparecen enemigos → apuntar y disparar → esquivar balas saltando
 
 Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de invulnerabilidad. Sin vidas: Game Over, y con Enter se reintenta la misión al instante.
 
+**HUD estilo Metal Slug:** arriba a la izquierda la puntuación, `1UP=` con las vidas y el recuadro metálico **ARMS** (munición, ∞ con la pistola) / **BOMB** (granadas), más el icono con la letra del arma especial; arriba al centro **TIME** con números cromados; arriba a la derecha el récord. Carteles con letra grande de degradado amarillo a rojo.
+
+**TIME:** empieza en 60 y baja 1 cada 4 segundos. En los últimos 10 parpadea en rojo y pita; a 0 el jugador muere. Se reinicia al reaparecer, al aparecer un mini jefe y al llegar al jefe final.
+
 **Flujo de pantallas:** intro estilo póster de *Duro de matar* (se salta con cualquier botón) → menú (Jugar, Elegir misión, Controles, Ver intro, Salir) → **mapa** con la ruta → misión (mini jefe + jefe final) → "Misión cumplida" → **mapa** con el siguiente destino → … Si la siguiente misión aún no existe, el mapa la marca como "PRÓXIMAMENTE" y vuelve al menú. Esc pausa la partida.
 
 ## Controles

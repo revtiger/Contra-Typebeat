@@ -15,6 +15,7 @@ var only_intro := false
 var frame := 0
 var level_frame := 0
 var last_scene = null
+var slow_since := -1
 
 
 func _ready() -> void:
@@ -35,6 +36,18 @@ func _ready() -> void:
 
 func _shot(tag: String) -> void:
 	get_viewport().get_texture().get_image().save_png("%s/%s_%04d.png" % [out_dir, tag, frame])
+
+
+func _process(_delta: float) -> void:
+	# vigilante: el hitstop nunca debe dejar el juego lento más de medio segundo real
+	if Engine.time_scale < 1.0:
+		if slow_since < 0:
+			slow_since = Time.get_ticks_msec()
+		elif Time.get_ticks_msec() - slow_since > 500:
+			push_error("ERROR: el juego lleva más de 0,5 s en cámara lenta (time_scale=%.2f)" % Engine.time_scale)
+			slow_since = Time.get_ticks_msec() + 100000
+	else:
+		slow_since = -1
 
 
 func _physics_process(_delta: float) -> void:
