@@ -13,17 +13,19 @@ godot --path .
 
 | Acción | Teclado | Mando |
 |---|---|---|
-| Moverse | Flechas / WASD | Cruceta |
-| Apuntar arriba / diagonal | Arriba (+ lado) | Cruceta |
-| Tumbarse | Abajo | Cruceta abajo |
+| Moverse | Flechas / WASD | Cruceta o stick |
+| Apuntar arriba | Arriba | Cruceta |
+| Disparar abajo (en el aire) | Abajo | Cruceta |
+| Agacharse | Abajo | Cruceta abajo |
 | Saltar | Z / Espacio / K | A |
 | Bajar de un puente | Abajo + Saltar | Abajo + A |
-| Disparar (mantener) | X / J | X / B |
+| Disparar (mantener) / cuchillo de cerca | X / J | X |
+| Granada | C / L | B / Y |
 | Pausa | Esc / P | Start |
 | Reintentar tras Game Over | Enter / R | Start |
 | Salir al menú (en pausa) | Q | Select |
 
-Armas: dispara a la cápsula voladora para soltar **M** (metralleta), **S** (spread), **L** (láser) o **F** (fuego).
+Armas (munición limitada, al acabarse vuelve la pistola): dispara a la cápsula voladora para soltar **H** (ametralladora), **R** (cohetes), **F** (llamas), **L** (láser), **S** (escopeta) o **B** (+10 bombas).
 
 Campaña: 1 Argentina–Brasil (Triple Frontera), 2 Bolivia (Quebradas de Tupiza), 3 México–EE.UU. (próximamente). Cada misión tiene mini jefe y jefe final, y entre misiones hay un mapa con la ruta.
 

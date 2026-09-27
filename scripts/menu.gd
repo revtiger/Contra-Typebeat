@@ -5,7 +5,17 @@ const City = preload("res://scripts/city.gd")
 const Explosion = preload("res://scripts/explosion.gd")
 const Levels = preload("res://scripts/levels.gd")
 
-const CONTROLS := "Moverse / apuntar ....... Flechas o WASD\nSaltar ....................... Z, Espacio o K\nDisparar (mantener) ...... X o J\nTumbarse .................. Abajo\nBajar de un puente ........ Abajo + Saltar\nPausa ....................... Esc\n\nMando: cruceta o stick, A saltar, X disparar, Start pausa"
+const CONTROLS := "Moverse ...................... Flechas o WASD
+Apuntar arriba ............. Arriba
+Disparar abajo (en el aire) .. Abajo
+Saltar ....................... Z, Espacio o K
+Disparar / cuchillo ........ X o J
+Granada .................... C o L
+Agacharse .................. Abajo
+Bajar de un puente ........ Abajo + Saltar
+Pausa ....................... Esc
+
+Mando: cruceta o stick, A saltar, X disparar, B/Y granada, Start pausa"
 
 var city := City.new()
 var page := "main"
@@ -51,14 +61,14 @@ func _ready() -> void:
 	list.position.y = 112
 	list.add_theme_constant_override("line_spacing", 2)
 	info.add_theme_font_size_override("font_size", 9)
-	info.position.y = 104
+	info.position.y = 60
 	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	info.position.x = 100
+	info.position.x = 90
 	footer.add_theme_font_size_override("font_size", 8)
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	footer.position.y = -4
 	footer.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
-	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.3" % Game.record
+	footer.text = "RÉCORD %06d          Gwyn & Eduardo · 2026 · v0.4" % Game.record
 	_open("main")
 	Game.play_music("menu")
 

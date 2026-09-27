@@ -40,6 +40,8 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Sin `class_name` por ahora: los scripts se cargan con `preload`.
 - Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes (se atraviesan desde abajo), 16 objetos (barriles, minas).
 - Autoload `Game` (`scripts/game.gd`): vidas, puntos, récord, misión actual, controles, sonido (`Game.sfx("boom")`) y pausa.
+- Autoload `Juice` (`scripts/juice.gd`): `Juice.hitstop(segundos)` y `Juice.shake(cantidad)` para la sensación de impacto.
+- Estilo Metal Slug: el plan y las fases están en `docs/plan-metal-slug.md`. Personajes siempre ficticios (nada de caras, nombres ni lemas de políticos reales).
 - Escenas: `intro.tscn` → `menu.tscn` → `map.tscn` → `level.tscn` → `map.tscn` … Las misiones son datos en `scripts/levels.gd`; para crear una basta con añadir un bloque ahí y su parada en `STOPS` de `scripts/map.gd` (la parada i es la misión i).
 - Mini jefes (`scripts/miniboss.gd`) bloquean la cámara con `level.lock_camera()` y la liberan al morir.
 - Explosiones que hacen daño: `level.blast(pos, radio, daña_jugador)`; solo visuales: `level.explode(pos, radio)`.

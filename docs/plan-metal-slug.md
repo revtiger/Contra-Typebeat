@@ -55,7 +55,7 @@ Hoy todo se dibuja con `_draw()` y se construye por código. Sirvió para el pro
 
 | Fase | Contenido | Resultado |
 |---|---|---|
-| **v0.4 Base Metal Slug** | Controles estilo MS (adelante/arriba/abajo en el aire, sin salto en bola), granadas con límite, cuchillo automático de cerca, armas con munición (H, R, F, L, S), autoload `Juice`, soldados que se asustan y huyen | Se juega como Metal Slug, aunque aún con formas simples |
+| **v0.4 Base Metal Slug** ✅ | Controles estilo MS (adelante/arriba/abajo en el aire, sin salto en bola), granadas con límite, cuchillo automático de cerca, armas con munición (H, R, F, L, S), autoload `Juice`, soldados que se asustan y huyen | Se juega como Metal Slug, aunque aún con formas simples |
 | **v0.5 Corte vertical de arte** | Arquitectura de escenas y componentes; jugador y soldado con sprites reales de Aseprite; un tramo corto de nivel con decorado destructible | Un minuto de juego que ya "parece" el juego final |
 | **v0.6 Prisioneros y vehículo** | Prisioneros que dan armas o puntos; tanque tipo "Slug" que se monta y se abandona | Los dos rasgos más reconocibles de la saga |
 | **v0.7 Jefe por piezas** | Primer jefe mecha gigante con brazos y armas independientes, fases y partes que se rompen (tipo referencia 1) | Jefe "de póster" |
@@ -64,7 +64,7 @@ Hoy todo se dibuja con `_draw()` y se construye por código. Sirvió para el pro
 
 ## 6. Decisiones abiertas
 
-- ☐ **Personajes basados en políticos reales.** Recomendación: personajes **ficticios** que parodien el cargo o el estilo (banda presidencial, discursos, carteles de propaganda inventados), sin la cara, el nombre ni los lemas reales de personas concretas. Motivos: las tiendas (Steam, itch.io, consolas) y las redes suelen rechazar juegos en los que se dispara a un político real y reconocible; hay riesgo legal por uso de imagen; y el chiste funciona igual con una parodia. El villano ficticio ya existe: el General Zarko y su gente.
+- ✅ Decidido: ficticios. **Personajes basados en políticos reales.** Recomendación: personajes **ficticios** que parodien el cargo o el estilo (banda presidencial, discursos, carteles de propaganda inventados), sin la cara, el nombre ni los lemas reales de personas concretas. Motivos: las tiendas (Steam, itch.io, consolas) y las redes suelen rechazar juegos en los que se dispara a un político real y reconocible; hay riesgo legal por uso de imagen; y el chiste funciona igual con una parodia. El villano ficticio ya existe: el General Zarko y su gente.
 - ☐ ¿Mantenemos el nombre "Contra-Typebeat" ahora que el estilo es Metal Slug?
-- ☐ ¿Quién dibuja? ¿Uno de los dos, un artista externo o IA + limpieza en Aseprite?
-- ☐ ¿Controles 100 % Metal Slug (sin disparo diagonal) o mantenemos las diagonales?
+- ✅ Decidido: IA + ajustes a mano. ¿Quién dibuja? ¿Uno de los dos, un artista externo o IA + limpieza en Aseprite?
+- ✅ Decidido: 100 % Metal Slug. ¿Controles sin disparo diagonal o mantenemos las diagonales?

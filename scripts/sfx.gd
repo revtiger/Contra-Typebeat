@@ -92,6 +92,7 @@ static func make(sound: String) -> AudioStreamWAV:
 		"whistle": return _wav(_tone(0.9, 1500, 450, "sine", 0.25))
 		"jet": return _wav(_boom(1.6, 0.5, 0.06, 40))
 		"type": return _wav(_tone(0.02, 900, 900, "square", 0.12))
+		"knife": return _wav(_tone(0.1, 3200, 700, "saw", 0.3, 0.6))
 	return _wav(_tone(0.1, 440, 440, "square", 0.2))
 
 
