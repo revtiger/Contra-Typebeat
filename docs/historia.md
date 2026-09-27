@@ -48,7 +48,25 @@ Cada país tiene semijefes y un jefe final: 3 jefes finales en total, uno por ni
 
 Tiene sentido acabar en EUA, porque la sede de la ONU está en Nueva York. ☐ Confirmar el orden de México y Argentina.
 
+## Nivel 1 (México): propuesta visual
+
+Nivel 1 de prueba para la mejora gráfica. Si convence, se sigue igual con los demás niveles.
+
+![Referencia visual del nivel 1](propuestas/nivel1/referencia.png)
+
+| Fase | Escenario | Jefe | Idea |
+|---|---|---|---|
+| 1.1 | Selva del sureste | Minijefe: "el predicador de la mañanera" | Caricatura que recuerda a AMLO: pelo cano, cejas marcadas, atril y dedo levantado |
+| 1.2 | Desierto del norte | Minijefe: "el privatizador" | Caricatura que recuerda a Salinas de Gortari: calvo, orejas grandes, bigote, bolsa de dinero |
+| 1.3 | Capital | Jefa final: La Presidenta → Presidenta Mecha | Caricatura que recuerda a Sheinbaum. A mitad del combate se transfigura en una máquina parecida a ella, del tamaño del jefe mecha actual |
+
+Hay que vencer al minijefe para pasar de fase. El héroe protagonista se mantiene.
+
+**Sobre la imagen:** los fondos, el héroe y el HUD son capturas reales del juego (v0.6). Los jefes son bocetos estáticos generados con PixelLab ([`propuestas/nivel1/`](propuestas/nivel1/)) y pegados encima. Todavía no hay nada en el código. Para el juego harían falta animaciones de cada jefe (moverse, atacar, recibir daño). Además, el mecha tendría que llevar armas y la banda tricolor bien hecha.
+
 ## Preguntas abiertas
+
+- ☐ **Caricaturas de políticos reales vs. regla de "personajes siempre ficticios"** (PR #4/#5). Hay que decidirlo juntos antes de pasar estos bocetos al juego. Las caricaturas buscan parecido, no ser idénticas.
 
 - ☐ **¿Sustituye esta historia a la del General Zarko (intro v0.2) o se combinan?**
 - ☐ ¿Cómo encajan las misiones actuales (Jungla, Desierto Rojo) en los países? ¿Se reaprovechan como fases?
