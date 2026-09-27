@@ -10,7 +10,7 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 **ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
 
-**Historia:** ☐ por definir. El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+**Historia:** ☐ por definir. Propuesta de Eduardo adaptada con personajes inventados en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
 **Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
