@@ -53,9 +53,11 @@ func _ready() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ui.add_child(l)
 	title.text = "ONU"
-	title.position = Vector2(240, 4)
+	title.position = Vector2(240, 0)
 	title.scale = Vector2(2, 2)
-	title2.text = ""
+	title2.text = "OUTBREAK"
+	title2.style = "small_gold"
+	title2.position = Vector2(240, 94)
 	# controles en dos columnas
 	var left := []
 	var right := []
@@ -106,7 +108,7 @@ func _refresh() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ui.add_child(l)
 		item_labels.append(l)
-	var top := 214.0 if page == "controls" else 112.0
+	var top := 214.0 if page == "controls" else 128.0
 	for i in item_labels.size():
 		var l := item_labels[i]
 		l.visible = i < items.size()

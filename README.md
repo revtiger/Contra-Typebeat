@@ -1,10 +1,10 @@
-# ONU
+# ONU: Outbreak
 
 > El juego se llamó Contra-Typebeat hasta la v0.6; el repositorio conserva ese nombre.
 Juego de acción / shooter 2D al estilo Contra, hecho con Godot 4.7.
 
 ## Descargar y jugar
-En [Releases → ultima-version](https://github.com/revtiger/Contra-Typebeat/releases/tag/ultima-version) está el .exe de Windows de la última versión de `main`: descomprime el .zip y ejecuta `ONU.exe`.
+En [Releases → ultima-version](https://github.com/revtiger/Contra-Typebeat/releases/tag/ultima-version) está el .exe de Windows de la última versión de `main`: descomprime el .zip y ejecuta `ONU-Outbreak.exe`.
 
 ## Abrirlo con Godot
 Abre la carpeta con Godot 4.7.2 (Importar → `project.godot`) y pulsa F5, o desde la terminal:

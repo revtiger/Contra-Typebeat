@@ -1,4 +1,4 @@
-# ONU (antes Contra-Typebeat): reglas del proyecto
+# ONU: Outbreak (antes Contra-Typebeat): reglas del proyecto
 
 Juego 2D de acción estilo Contra en **Godot 4.7.2** (GDScript). Equipo de dos personas, cada una con su Claude Code:
 

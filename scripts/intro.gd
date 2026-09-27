@@ -1,7 +1,7 @@
 extends Node2D
 ## Intro al estilo de Metal Slug 2 (sin caras ni nombres de personajes):
 ## 1. Pantalla de presentación tipo NEO GEO (parodia: "MAX 480x270 PIXEL POWER")
-## 2. Fondo negro: las letras de ONU caen de una en una, gigantes y en piedra, con golpe y polvo
+## 2. Fondo negro: las letras de ONU caen de una en una, gigantes y en piedra, y después OUTBREAK
 ## 3. Fogonazo blanco y todo pasa a color: letras doradas sobre cielo azul, "SUPER SOLDADO-001",
 ##    "PULSA START" y el copyright. Después va al menú. Cualquier botón la salta.
 
@@ -12,7 +12,8 @@ const LogoText = preload("res://scripts/logo_text.gd")
 const T_SPLASH_END := 2.6
 const T_WORD1 := 3.2
 const T_WORD2 := 4.9
-const T_FLASH := 5.2
+const T_WORD2_AT := 4.6
+const T_FLASH := 6.4
 const T_END := 13.0
 
 var t := 0.0
@@ -47,24 +48,24 @@ func _ready() -> void:
 		add_child(w)
 	word1.text = "ONU"
 	word1.style = "big_stone"
-	word1.position.y = 38
+	word1.position.y = 16
 	word1.scale = Vector2(2, 2)
 	word1.reveal_at = T_WORD1
 	word1.interval = 0.42
-	word2.text = ""
+	word2.text = "OUTBREAK"
+	word2.position.y = 124
+	word2.reveal_at = T_WORD2_AT
+	word2.interval = 0.12
 	word2.style = "big_stone"
-	word2.position.y = 112
-	word2.reveal_at = T_WORD2
-	word2.interval = 0.16
 	for w in [word1, word2]:
 		w.letter_landed.connect(_on_letter)
 	gold1.text = "ONU"
 	gold1.style = "big_gold"
-	gold1.position.y = 38
+	gold1.position.y = 16
 	gold1.scale = Vector2(2, 2)
-	gold2.text = ""
+	gold2.text = "OUTBREAK"
+	gold2.position.y = 124
 	gold2.style = "big_gold"
-	gold2.position.y = 112
 	gold1.visible = false
 	gold2.visible = false
 
@@ -96,10 +97,10 @@ func _ready() -> void:
 	splash_sub.modulate = Color(0.1, 0.1, 0.15)
 	subtitle.text = "SUPER SOLDADO-001"
 	PixelFont.apply(subtitle, "small")
-	subtitle.position.y = 172
+	subtitle.position.y = 182
 	press.text = "PULSA START"
 	PixelFont.apply(press, "white")
-	press.position.y = 204
+	press.position.y = 206
 	copyright.text = "(C) 2026 G·E STUDIOS"
 	PixelFont.apply(copyright, "label")
 	copyright.position.y = 226
