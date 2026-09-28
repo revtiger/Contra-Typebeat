@@ -2,7 +2,7 @@
 
 Idea original: Eduardo (PR #2, 26-09-2026) · Integración: Gwyn · Estado: **propuesta, pendiente de acordar entre los dos**
 
-> Parodia política estilo Contra / Metal Slug / Broforce con **caricaturas de políticos reales**. El 28-09-2026 Gwyn cambió la regla anterior de "personajes siempre ficticios": ahora se permiten los políticos reales de la propuesta de Eduardo. Cuando se acuerde el resto, se integra en [`diseno.md`](diseno.md). Lo marcado con ☐ está por decidir.
+> Parodia política estilo Contra / Metal Slug / Broforce con **caricaturas de políticos reales**. El 28-09-2026 Gwyn cambió la regla anterior de "personajes siempre ficticios": ahora se permiten los políticos reales de la propuesta de Eduardo. **Tono:** burla tipo Metal Slug, sin gore (derrotas cómicas, sin sangre). Cuando se acuerde el resto, se integra en [`diseno.md`](diseno.md). Lo marcado con ☐ está por decidir.
 
 ## Premisa
 

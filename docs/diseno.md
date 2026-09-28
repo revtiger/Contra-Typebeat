@@ -127,7 +127,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 ## Preguntas abiertas
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
-- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Lista en [`historia.md`](historia.md).
+- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Tono de burla tipo Metal Slug, **sin gore**: derrotas cómicas, sin sangre. Lista en [`historia.md`](historia.md).
 - ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
 - ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?
