@@ -10,7 +10,7 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 **ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
 
-**Historia:** ☐ por definir. Propuesta de Eduardo adaptada con personajes inventados en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+**Historia:** ☐ por definir. Propuesta de Eduardo, con caricaturas de políticos reales, en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
 **Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
@@ -127,7 +127,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 ## Preguntas abiertas
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
-- ✅ Personajes: **ficticios**. Se puede parodiar el cargo (banda presidencial, propaganda inventada), pero sin la cara, el nombre ni los lemas reales de personas concretas.
+- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Lista en [`historia.md`](historia.md).
 - ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
 - ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?
