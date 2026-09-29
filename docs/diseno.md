@@ -10,11 +10,11 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 **ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
 
-**Historia:** ☐ por definir. Propuesta de Eduardo, con caricaturas de políticos reales, en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+**Historia:** ✅ aceptada (29-09-2026) la propuesta de Eduardo *ONU: Trying to save the world*: la Orden Mundial, 4 países (Argentina, México, EUA, Alemania) + nivel secreto en la ONU, con caricaturas de políticos reales. Detalle en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
 **Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
-**Ruta de la campaña:** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. → EE.UU.: reunión secreta de la ONU en Nueva York (propuesta de Eduardo, próximamente).
+**Ruta de la campaña (actual en el código):** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. **Nueva ruta aceptada:** Argentina → México → EUA → Alemania → nivel secreto en la ONU (ver [`historia.md`](historia.md)); se irá pasando al juego nivel por nivel.
 
 | Aspecto | Definición |
 |---|---|
