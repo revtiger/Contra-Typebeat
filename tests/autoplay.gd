@@ -2,8 +2,8 @@ extends Node
 ## Prueba automática: juega sola y guarda capturas. La añade Game cuando se arranca con "autoplay".
 ##
 ## Uso:
-##   godot --path . -- autoplay out=<carpeta> [level=0|1] [boss] [scene=intro]
-## - level: misión a jugar (0 = jungla, 1 = desierto)
+##   godot --path . -- autoplay out=<carpeta> [level=0..14] [boss] [scene=intro] [campaign]
+## - level: fase a jugar (índice en levels.gd: 0 = fase 1.1, 3 = 2.1, ... 14 = 5.3)
 ## - boss: empieza justo antes del jefe
 ## - scene=intro: no juega; solo captura la intro y el menú
 ## El jugador es invencible (salvo al caer a un foso) y la partida termina al completar la misión.
@@ -16,6 +16,8 @@ var frame := 0
 var level_frame := 0
 var last_scene = null
 var slow_since := -1
+## every=N: captura cada N fotogramas (por defecto 120; bajo, p. ej. 6, para revisar animaciones)
+var shot_every := 120
 
 
 func _ready() -> void:
@@ -25,6 +27,8 @@ func _ready() -> void:
 			out_dir = a.substr(4)
 		elif a.begins_with("level="):
 			level_idx = int(a.substr(6))
+		elif a.begins_with("every="):
+			shot_every = maxi(int(a.substr(6)), 1)
 		elif a == "boss":
 			boss = true
 		elif a == "scene=intro":
@@ -140,9 +144,13 @@ func _physics_process(_delta: float) -> void:
 					Input.action_release("jump")
 			else:
 				Input.action_release("down")
+	elif at_boss and not get_tree().get_nodes_in_group("door").is_empty():
+		# nivel secreto: caminar hasta la puerta
+		Input.action_release("up")
+		Input.action_press("right")
 	elif at_boss:
 		Input.action_release("up")
-		# muro: quedarse quieto disparando a la derecha
+		# jefe de suelo (muro o político): quedarse quieto disparando a la derecha
 		Input.action_release("right")
 		Input.action_release("left")
 	else:
@@ -161,8 +169,12 @@ func _physics_process(_delta: float) -> void:
 			Input.action_press("up")
 		else:
 			Input.action_release("up")
-	if level_frame % 120 == 0:
+	if level_frame % shot_every == 0:
 		_shot("nivel%d" % Game.level)
+		if shot_every < 120 and is_instance_valid(lvl.boss):
+			# posición del jefe en pantalla, para recortar las capturas alrededor de él
+			print("captura %d jefe_pantalla=%.0f,%.0f" % [frame, lvl.boss.global_position.x - lvl.cam_left, lvl.boss.global_position.y])
+	if level_frame % 120 == 0:
 		var boss_info := ""
 		if is_instance_valid(lvl.boss) and lvl.cam_left >= lvl.boss_arena - 1.0:
 			boss_info = "  jefe=%s vida=%s pos=%s" % [lvl.boss.get("state"), str(lvl.boss.hp), lvl.boss.position.round()]

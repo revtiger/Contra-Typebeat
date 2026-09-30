@@ -89,7 +89,7 @@ func _open(p: String) -> void:
 	sel = 0
 	match p:
 		"main":
-			items = ["JUGAR", "ELEGIR MISIÓN", "CONTROLES", "VER INTRO", "SALIR"]
+			items = ["JUGAR", "ELEGIR FASE", "CONTROLES", "VER INTRO", "SALIR"]
 		"levels":
 			items = []
 			for l in Levels.LIST:
@@ -109,16 +109,19 @@ func _refresh() -> void:
 		ui.add_child(l)
 		item_labels.append(l)
 	var top := 214.0 if page == "controls" else 128.0
+	# con muchas opciones (las 15 fases) solo se ven ROWS a la vez y la lista se desplaza con la elegida
+	const ROWS := 9
+	var first := clampi(sel - ROWS / 2, 0, maxi(items.size() - ROWS, 0))
 	for i in item_labels.size():
 		var l := item_labels[i]
-		l.visible = i < items.size()
+		l.visible = i < items.size() and i >= first and i < first + ROWS
 		if not l.visible:
 			continue
 		var chosen := i == sel
 		var arrows := int(t * 4.0) % 2 == 0
 		l.text = ("> %s" if chosen and arrows else ("%s" if not chosen else "  %s")) % items[i]
 		PixelFont.apply(l, "small" if chosen else "white")
-		l.position.y = top + i * 14
+		l.position.y = top + (i - first) * 14
 	var controls := page == "controls"
 	for l in [info_left, info_right, pad]:
 		l.visible = controls
@@ -156,7 +159,7 @@ func _choose(item: String) -> void:
 		"main":
 			match item:
 				"JUGAR": Game.start_game(0)
-				"ELEGIR MISIÓN": _open("levels")
+				"ELEGIR FASE": _open("levels")
 				"CONTROLES": _open("controls")
 				"VER INTRO": Game.go_intro()
 				"SALIR": get_tree().quit()

@@ -41,8 +41,9 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes (se atraviesan desde abajo), 16 objetos (barriles, minas).
 - Autoload `Game` (`scripts/game.gd`): vidas, puntos, récord, misión actual, controles, sonido (`Game.sfx("boom")`) y pausa.
 - Autoload `Juice` (`scripts/juice.gd`): `Juice.hitstop(segundos)` y `Juice.shake(cantidad)` para la sensación de impacto.
-- Estilo Metal Slug: el plan y las fases están en `docs/plan-metal-slug.md`. Personajes siempre ficticios (nada de caras, nombres ni lemas de políticos reales).
-- Escenas: `intro.tscn` → `menu.tscn` → `select.tscn` (ELIGE TU SOLDADO) → `map.tscn` → `level.tscn` → `map.tscn` … Las misiones son datos en `scripts/levels.gd`; para crear una basta con añadir un bloque ahí y su parada en `STOPS` de `scripts/map.gd` (la parada i es la misión i).
+- Estilo Metal Slug: el plan y las fases están en `docs/plan-metal-slug.md`. Se permiten caricaturas de políticos reales (parodia política, idea de Eduardo); ver `docs/historia.md`.
+- Escenas: `intro.tscn` → `menu.tscn` → `select.tscn` (ELIGE TU SOLDADO) → `map.tscn` → `level.tscn` → `map.tscn` … Las 15 fases se generan en `scripts/levels.gd` a partir de `ZONES` (país, lugar, plantilla de terreno y jefe de cada fase) y `TEMPLATES`; el mapa tiene una parada por zona en `STOPS` de `scripts/map.gd`.
+- Jefes políticos: `scripts/politician.gd` (datos y ataques en `POLS`). Sprites en `assets/sprites/pol_<id>.png`, generados por `python tools/sprites/politicians.py` desde los PNG de PixelLab en `tools/sprites/pixellab/politicos/`.
 - Mini jefes (`scripts/miniboss.gd`) bloquean la cámara con `level.lock_camera()` y la liberan al morir.
 - Explosiones que hacen daño: `level.blast(pos, radio, daña_jugador)`; solo visuales: `level.explode(pos, radio)`.
 - Resolución interna 480x270, escalada a la ventana.
@@ -57,7 +58,7 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 
 ```
 godot --path . -- autoplay out=<carpeta_capturas> level=0
-godot --path . -- autoplay out=<carpeta_capturas> level=1 boss
+godot --path . -- autoplay out=<carpeta_capturas> level=1 boss   # level = fase 0..14 (0 = 1.1, 14 = 5.3)
 godot --path . -- autoplay out=<carpeta_capturas> scene=intro
 godot --path . -- autoplay out=<carpeta_capturas> level=0 campaign
 ```
