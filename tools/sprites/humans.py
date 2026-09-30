@@ -43,14 +43,6 @@ HEROES = {
     "tenienta": {"outfit": "uniform", "cloth": [(52, 60, 32), (82, 94, 52), (116, 130, 76)],
                  "pants": [(44, 50, 28), (68, 78, 44), (94, 106, 62)], "pack": [(64, 58, 40), (92, 84, 58), (124, 114, 80)],
                  "hair": [(92, 32, 16), (160, 64, 30)], "style": "ponytail"},
-    # diseños de Eduardo (ChatGPT, tools/sprites/chatgpt/). Sprites provisionales con sus colores
-    # hasta tener los definitivos: chaleco verde oliva y pantalón caqui / camisa de flores y pantalón gris
-    "comando": {"outfit": "uniform", "cloth": [(58, 62, 30), (88, 94, 46), (120, 126, 66)],
-                "pants": [(120, 98, 62), (162, 136, 90), (196, 172, 122)], "pack": [(64, 66, 34), (92, 96, 50), (124, 128, 70)],
-                "hair": [(20, 14, 12), (46, 34, 28)], "style": "slick"},
-    "hawaiano": {"outfit": "uniform", "cloth": [(26, 22, 44), (120, 26, 34), (176, 52, 52)],
-                 "pants": [(44, 44, 50), (68, 68, 76), (96, 96, 106)], "pack": [(60, 60, 62), (88, 88, 92), (118, 118, 124)],
-                 "hair": [(62, 36, 20), (104, 64, 36)], "style": "slick"},
 }
 
 SOLDIERS = {

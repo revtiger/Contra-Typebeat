@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vn3ebye3lq0q"
-path="res://.godot/imported/player_hawaiano_legs.png-3f7a7704b5efe662010f5b9cfe608b68.ctex"
+uid="uid://fwaf6hk6lbif"
+path="res://.godot/imported/player_eder_body.png-cd6fafa2be6f59926444a142ffefaf3c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_hawaiano_legs.png"
-dest_files=["res://.godot/imported/player_hawaiano_legs.png-3f7a7704b5efe662010f5b9cfe608b68.ctex"]
+source_file="res://assets/sprites/player_eder_body.png"
+dest_files=["res://.godot/imported/player_eder_body.png-cd6fafa2be6f59926444a142ffefaf3c.ctex"]
 
 [params]
 

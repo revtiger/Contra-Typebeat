@@ -61,6 +61,11 @@ var legs: AnimatedSprite2D
 var torso: AnimatedSprite2D
 var death_spr: AnimatedSprite2D
 var fx := Node2D.new()
+## Modo cuerpo entero (Eduardo, Eder): una sola hoja player_<id>_body.png en vez de piernas + torso
+var body: AnimatedSprite2D
+var body_meta: Dictionary
+var shot_n := 0
+var shoot_pose_t := 0.0
 
 
 func _ready() -> void:
@@ -172,6 +177,8 @@ func _standing_on_bridge() -> bool:
 
 
 func _muzzle() -> Vector2:
+	if body:
+		return _body_muzzle()
 	var key := "fwd"
 	if aim == Vector2.UP:
 		key = "up"
@@ -215,6 +222,8 @@ func _bullet(v: Vector2, kind: String, damage: int, pierce := false, life := 1.6
 func _fire() -> void:
 	shoot_cd = WEAPONS[weapon]["rate"]
 	flash_t = 0.05
+	shot_n += 1
+	shoot_pose_t = 0.25
 	match weapon:
 		"P":
 			_bullet(aim * 320.0, "normal", 1)
@@ -297,6 +306,10 @@ func add_bombs(n: int) -> void:
 # ---------- sprites (assets/sprites/player_*.png, generados por tools/sprites/humans.py) ----------
 
 func _setup_sprites() -> void:
+	var body_path := "res://assets/sprites/player_%s_body.png" % Game.hero
+	if ResourceLoader.exists(body_path):
+		_setup_body(body_path)
+		return
 	meta = SpriteUtil.meta(META_PATH)
 	var fw: int = meta["frame"][0]
 	var fh: int = meta["frame"][1]
@@ -320,10 +333,13 @@ func _setup_sprites() -> void:
 	fx.draw.connect(_draw_fx)
 
 
-func _process(_delta: float) -> void:
-	if legs == null:
+func _process(delta: float) -> void:
+	if legs == null and body == null:
 		return
 	modulate.a = 0.35 if invuln > 0.0 and not Game.autoplay and int(anim_t * 20) % 2 == 0 else 1.0
+	if body:
+		_process_body(delta)
+		return
 	for n in [legs, torso, death_spr]:
 		n.scale.x = facing
 	if dead:
@@ -374,9 +390,74 @@ func _play(spr: AnimatedSprite2D, anim: String) -> void:
 		spr.play(anim)
 
 
-## Fogonazo del disparo, por encima de los sprites.
+## Fogonazo del disparo, por encima de los sprites (en cuerpo entero, solo si la pose no lo trae dibujado).
 func _draw_fx() -> void:
+	if body and body.animation in ["shoot", "prone"]:
+		return
 	if flash_t > 0.0 and not dead:
 		var m := _muzzle()
 		fx.draw_circle(m, 4, Color(1, 0.95, 0.5))
 		fx.draw_circle(m, 2, Color.WHITE)
+
+
+# ---------- modo cuerpo entero (hojas player_<id>_body.png de tools/sprites/heroes_sheets.py) ----------
+
+func _setup_body(path: String) -> void:
+	body_meta = SpriteUtil.meta(path.replace(".png", "_meta.json"))
+	var anims := {}
+	for n in body_meta["anims"]:
+		var a: Dictionary = body_meta["anims"][n]
+		anims[n] = [a["row"], a["frames"], a["fps"], a["loop"]]
+	var fr: Array = body_meta["frame"]
+	body = SpriteUtil.sprite(SpriteUtil.frames(path, fr[0], fr[1], anims), SpriteUtil.v(body_meta["feet"]))
+	add_child(body)
+	add_child(fx)
+	fx.draw.connect(_draw_fx)
+
+
+func _body_muzzle() -> Vector2:
+	var m: Dictionary = body_meta["muzzle"]
+	var p := SpriteUtil.v(m["fwd"])
+	if aim == Vector2.UP:
+		p = Vector2(4, -50)  # ☐ sin pose de apuntar arriba todavía
+	elif aim == Vector2.DOWN:
+		p = Vector2(2, -2)
+	elif crouching:
+		p = SpriteUtil.v(m["prone"] if absf(velocity.x) > 1.0 else m["crouch_fwd"])
+	return Vector2(p.x * facing, p.y)
+
+
+## Elige la pose: muerte, victoria, cuchillo, granada, cuerpo a tierra, agachado, salto, correr, disparar o quieto.
+func _process_body(delta: float) -> void:
+	shoot_pose_t -= delta
+	body.scale.x = facing
+	var lvl = get_tree().get_first_node_in_group("level")
+	var on_floor := is_on_floor()
+	var moving := absf(velocity.x) > 1.0
+	if dead:
+		_play(body, "die")
+	elif lvl and lvl.state == "clear" and on_floor:
+		_play(body, "win")
+	elif knife_t > 0.0:
+		body.animation = "knife"
+		body.frame = clampi(int((1.0 - knife_t / 0.18) * 4.0), 0, 3)
+	elif throw_t > 0.0:
+		body.animation = "throw"
+		body.frame = clampi(int((1.0 - throw_t / 0.2) * 4.0), 0, 3)
+	elif crouching and moving:
+		body.animation = "prone"
+		body.frame = 1 if flash_t > 0.0 else 0
+	elif crouching:
+		body.animation = "crouch"
+	elif not on_floor:
+		body.animation = "jump"
+		body.frame = 0 if velocity.y < 0.0 else 1
+	elif moving:
+		_play(body, "run")
+	elif shoot_pose_t > 0.0:
+		# disparando quieto: fogonazo pequeño y grande alternos, y la pose de retroceso entre tiros
+		body.animation = "shoot"
+		body.frame = (1 + shot_n % 2) if flash_t > 0.0 else 3
+	else:
+		_play(body, "idle")
+	fx.queue_redraw()

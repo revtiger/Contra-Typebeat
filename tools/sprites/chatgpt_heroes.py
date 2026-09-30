@@ -15,8 +15,8 @@ W, H = 72, 96
 BG = (6, 3, 2, 255)
 # recorte de la cabeza y los hombros en el diseño original (x, y, ancho); el alto sale de la proporción 72x96
 CROPS = {
-	"comando": (538, 84, 324),
-	"hawaiano": (528, 70, 324),
+	"eduardo": (538, 84, 324),
+	"eder": (528, 70, 324),
 }
 
 
