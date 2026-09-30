@@ -15,6 +15,7 @@ const Miniboss = preload("res://scripts/miniboss.gd")
 const Mecha = preload("res://scripts/mecha.gd")
 const Politician = preload("res://scripts/politician.gd")
 const Door = preload("res://scripts/door.gd")
+const Massa = preload("res://scripts/massa.gd")
 const Hud = preload("res://scripts/hud.gd")
 const Bomb = preload("res://scripts/bomb.gd")
 const Pickup = preload("res://scripts/pickup.gd")
@@ -203,7 +204,9 @@ func _spawn_entities() -> void:
 				pos = Vector2(cam_left + SCREEN_W + 40, 26)
 			"boss":
 				var kind: String = e[3]
-				if kind.begins_with("pol:"):
+				if kind == "pol:massa":
+					n = Massa.new()  # primer jefe con animaciones completas
+				elif kind.begins_with("pol:"):
 					n = Politician.new()
 					n.id = kind.substr(4)
 				else:

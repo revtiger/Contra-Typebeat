@@ -29,7 +29,7 @@ Cada país tiene 3 fases: dos con minijefe y la tercera con el jefe final del pa
 ✅ Las 15 fases y los 14 jefes ya se pueden jugar, con sprites de PixelLab. Lugares de cada fase y detalle en [`diseno.md`](diseno.md#niveles).
 - ✅ Transfiguración de Sheinbaum en La Presidenta Mecha (2.3).
 - ✅ Puertas del nivel secreto (5.1 y 5.2), líder enmascarado y ritual del pentagrama con los jefes finales (Milei, Sheinbaum, Trump, Merz y el líder) que se fusionan en **La Orden Fusionada** (5.3).
-- ☐ Las habilidades de cada jefe son **provisionales** (combinaciones de ataques genéricos); hay que definirlas una a una.
+- ☐ Las habilidades de cada jefe son **provisionales** (combinaciones de ataques genéricos); hay que definirlas una a una. ✅ Hecho el primero: **Massa** (1.1), con animaciones, micrófono de "promesas", fajos de billetes, militantes y La Maquinita.
 - ☐ Los escenarios reutilizan 5 plantillas (selva, desierto, ciudad, nieve, base) con la bandera y los carteles de cada país; falta hacer fondos únicos por fase.
 - ☐ Aún no están el político aliado, el ayudante religioso ni las skins.
 
