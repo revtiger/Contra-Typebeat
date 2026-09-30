@@ -8,7 +8,6 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Paradas de la campaña en orden (lon, lat). La parada i corresponde a la misión i.
 const STOPS := [
 	{"name": "ARGENTINA - BRASIL", "sub": "Triple Frontera · Selva de Iguazú", "lon": -54.6, "lat": -25.6, "label": "below"},
-	{"name": "BOLIVIA", "sub": "Quebradas de Tupiza", "lon": -65.7, "lat": -21.4, "label": "left"},
 	{"name": "MÉXICO - EE.UU.", "sub": "Frontera norte", "lon": -106.4, "lat": 31.7, "label": "right"},
 	{"name": "EE.UU. - ONU", "sub": "Nueva York · reunión secreta", "lon": -74.0, "lat": 40.7, "label": "left"},
 ]
@@ -36,7 +35,6 @@ const SOUTH := [
 const BORDERS := [
 	[[-58, -34.5], [-58.4, -30], [-57, -27.5], [-54.6, -25.6], [-54.3, -24], [-58, -20], [-60, -16],
 		[-65, -10], [-69.5, -11]],
-	[[-62.5, -22], [-67.5, -22.8], [-68.5, -20], [-69.5, -17.5], [-68.8, -12.5]],
 	[[-117.2, 32.6], [-114.8, 32.5], [-111, 31.3], [-108.2, 31.3], [-106.5, 31.8], [-104.5, 29.6],
 		[-103, 29], [-101.4, 29.8], [-99.5, 27.5], [-97.2, 25.8]],
 ]

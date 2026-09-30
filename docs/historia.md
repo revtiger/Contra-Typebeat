@@ -61,5 +61,5 @@ Eduardo preparó una referencia de México (27-09-2026), cuando aún era el nive
 - ☐ Diseño de personajes y quiénes son los dos héroes.
 - ☐ Habilidades de combate de cada jefe.
 - ☐ ¿"Trying to save the world" sustituye a "Outbreak" en el nombre del juego (logo e intro)?
-- ☐ Cómo se reaprovechan las misiones actuales (Jungla, Bolivia, Frontera Norte) y sus jefes (Comandante Kruger, Fortaleza Roja, Helicóptero Cóndor) en la nueva estructura.
+- ☐ Cómo se reaprovechan las misiones actuales (Jungla, Frontera Norte) y sus jefes (Comandante Kruger, Fortaleza Roja, Presidenta Mecha). Bolivia ya se quitó; su tema desierto, el camión lanzacohetes y el helicóptero siguen en el código para reaprovecharlos en la nueva estructura.
 - ✅ El final chistoso ya aprobado: todos los villanos "reciben su merecido".

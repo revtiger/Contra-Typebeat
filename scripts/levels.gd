@@ -8,8 +8,8 @@ extends RefCounted
 ##   grenadier: soldado que se para a lanzar granadas
 ##   capsule: extra = lo que suelta: arma (H, R, F, L, S) o B (+10 bombas)
 ##   jet: bombardeo aéreo que apunta a donde está el jugador
-##   miniboss: extra = "comandante" o "camion". Bloquea la cámara hasta que muere
-##   boss: extra = "wall" (muro), "heli" (helicóptero) o "mecha" (Presidenta Mecha). El nombre que se anuncia va en "boss_name"
+##   miniboss: extra = "comandante" o "camion" (sin usar desde que se quitó Bolivia). Bloquea la cámara hasta que muere
+##   boss: extra = "wall" (muro), "heli" (helicóptero, sin usar) o "mecha" (Presidenta Mecha). El nombre que se anuncia va en "boss_name"
 ## Referencia de alturas: el salto sube ~70 px; los tramos de suelo pueden subir hasta ~35 px.
 
 const LIST := [
@@ -39,41 +39,7 @@ const LIST := [
 		],
 	},
 	{
-		"name": "MISIÓN 2: BOLIVIA",
-		"boss_name": "HELICÓPTERO CÓNDOR",
-		"theme": "desert",
-		"music": "desert",
-		"end": 4700,
-		"ground": [
-			[0, 700, 230], [748, 1300, 230], [1300, 1650, 198], [1650, 2100, 230], [2148, 2700, 230],
-			[2700, 3050, 205], [3098, 3700, 230], [3748, 4700, 230],
-		],
-		"platforms": [
-			[250, 100, 175], [520, 90, 175], [900, 120, 175], [1060, 90, 125], [1400, 100, 145],
-			[1800, 110, 175], [1960, 90, 125], [2300, 120, 175], [2480, 100, 130], [2850, 120, 150],
-			[3250, 110, 175], [3420, 100, 125], [3900, 120, 175],
-		],
-		"entities": [
-			# tramo 1: aprender barriles y minas
-			["sniper", 280, 175], ["barrel", 420, 230], ["barrel", 434, 230], ["mine", 610, 230],
-			["capsule", 700, 60, "L"], ["sniper", 940, 175], ["barrel", 1000, 230], ["mine", 1150, 230],
-			["sniper", 1090, 125], ["jet", 1250, 0], ["capsule", 1350, 60, "R"], ["grenadier", 1200, 230],
-			# tramo 2: meseta y primer tanque
-			["turret", 1580, 198], ["barrel", 1480, 198], ["barrel", 1494, 198], ["sniper", 1430, 145],
-			["tank", 1900, 230], ["sniper", 1990, 125], ["mine", 1760, 230],
-			# tramo 3: campamento y mini jefe
-			["capsule", 2150, 60, "F"], ["barrel", 2240, 230], ["barrel", 2254, 230], ["barrel", 2268, 230],
-			["sniper", 2510, 130], ["miniboss", 2640, 230, "camion"], ["mine", 2800, 230], ["turret", 2950, 205],
-			["sniper", 2880, 150], ["capsule", 2900, 60, "B"], ["grenadier", 3000, 205],
-			# tramo 4: tanque, barriles en cadena y último bombardeo
-			["tank", 3350, 230], ["barrel", 3180, 230], ["barrel", 3194, 230], ["capsule", 3300, 60, "S"],
-			["sniper", 3450, 125], ["mine", 3520, 230], ["mine", 3580, 230], ["jet", 3650, 0],
-			["barrel", 3820, 230], ["sniper", 3930, 175],
-			["boss", 4300, 60, "heli"],
-		],
-	},
-	{
-		"name": "MISIÓN 3: FRONTERA NORTE",
+		"name": "MISIÓN 2: FRONTERA NORTE",
 		"boss_name": "LA PRESIDENTA MECHA",
 		"theme": "city",
 		"music": "city",

@@ -14,7 +14,7 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 **Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
-**Ruta de la campaña (actual en el código):** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. **Nueva ruta aceptada:** Argentina → México → EUA → Alemania → nivel secreto en la ONU (ver [`historia.md`](historia.md)); se irá pasando al juego nivel por nivel.
+**Ruta de la campaña (actual en el código):** Argentina–Brasil (Triple Frontera) → frontera México–EE.UU. (Bolivia se quitó el 30-09-2026 porque no está en la historia nueva). **Nueva ruta aceptada:** Argentina → México → EUA → Alemania → nivel secreto en la ONU (ver [`historia.md`](historia.md)); se irá pasando al juego nivel por nivel.
 
 | Aspecto | Definición |
 |---|---|
@@ -97,7 +97,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 
 1. **Argentina–Brasil: Triple Frontera** ✅ (selva): fosos de agua, puentes, un escalón elevado, mini jefe Comandante Kruger y La Fortaleza Roja al final.
-2. **Bolivia: Quebradas de Tupiza** ✅ (árido): mesetas rojas, dunas y cactus; cañones sin fondo, barriles, minas, 2 tanques, 2 bombardeos, mini jefe Camión lanzacohetes y el Helicóptero Cóndor al final.
+2. ~~**Bolivia: Quebradas de Tupiza**~~ ❌ quitada el 30-09-2026 (no está en la historia nueva; el tema desierto, el camión y el helicóptero siguen en el código para reaprovecharlos) (árido): mesetas rojas, dunas y cactus; cañones sin fondo, barriles, minas, 2 tanques, 2 bombardeos, mini jefe Camión lanzacohetes y el Helicóptero Cóndor al final.
 3. **Frontera México–EE.UU.** ✅ (ciudad al atardecer): calles en ruinas, edificios coloniales con cúpulas, carteles de propaganda inventados, 2 tanques, 2 bombardeos, mini jefe Comandante Kruger y La Presidenta Mecha al final. ☐ Falta el tramo de la escuela del que se habló.
 4. **EE.UU.: reunión secreta de la ONU** ☐ (próximamente).
 
