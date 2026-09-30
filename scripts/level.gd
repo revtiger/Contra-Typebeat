@@ -13,6 +13,8 @@ const Mine = preload("res://scripts/mine.gd")
 const Jet = preload("res://scripts/jet.gd")
 const Miniboss = preload("res://scripts/miniboss.gd")
 const Mecha = preload("res://scripts/mecha.gd")
+const Politician = preload("res://scripts/politician.gd")
+const Door = preload("res://scripts/door.gd")
 const Hud = preload("res://scripts/hud.gd")
 const Bomb = preload("res://scripts/bomb.gd")
 const Pickup = preload("res://scripts/pickup.gd")
@@ -27,6 +29,7 @@ const TIME_TICK := 4.0  # como en Metal Slug: TIME baja 1 cada 4 s
 
 var data: Dictionary
 var theme := "jungle"
+var country := "mx"
 var ground: Array
 var level_end := 0.0
 var boss_arena := 0.0
@@ -52,6 +55,7 @@ func _ready() -> void:
 	add_to_group("main")
 	data = Levels.LIST[Game.level]
 	theme = data["theme"]
+	country = data.get("country", "mx")
 	ground = data["ground"]
 	level_end = data["end"]
 	boss_arena = level_end - SCREEN_W
@@ -65,6 +69,7 @@ func _ready() -> void:
 	var sky := Background.new()
 	sky.kind = "sky"
 	sky.theme = theme
+	sky.country = country
 	sky.main = self
 	sky_layer.add_child(sky)
 	add_child(sky_layer)
@@ -73,12 +78,17 @@ func _ready() -> void:
 		layers = [["mesas", 0.85, -9], ["dunes", 0.55, -8], ["chasm", 0.0, -5]]
 	elif theme == "city":
 		layers = [["colonial", 0.85, -9], ["ruins", 0.55, -8], ["sewer", 0.0, -5]]
+	elif theme == "snow":
+		layers = [["alps", 0.85, -9], ["pines", 0.55, -8], ["ice", 0.0, -5], ["snowfall", 1.0, 3]]
+	elif theme == "base":
+		layers = [["vault", 0.85, -9], ["machines", 0.55, -8], ["abyss", 0.0, -5]]
 	for k in layers:
 		var bg := Background.new()
 		bg.kind = k[0]
 		bg.factor = k[1]
 		bg.z_index = k[2]
 		bg.theme = theme
+		bg.country = country
 		bg.main = self
 		add_child(bg)
 
@@ -147,7 +157,8 @@ func _physics_process(delta: float) -> void:
 	if boss and cam_left >= boss_arena - 1.0 and state == "play" and not boss_announced:
 		boss_announced = true
 		Game.play_music("boss")
-		show_banner("¡JEFE FINAL!\n" + data["boss_name"], 2.0)
+		var title := "¡JEFE FINAL!" if data.get("boss_role", "final") == "final" else "¡MINI JEFE!"
+		show_banner(title + "\n" + data["boss_name"], 2.0)
 		reset_time()
 
 	_tick_time(delta)
@@ -191,11 +202,19 @@ func _spawn_entities() -> void:
 				n = Jet.new()
 				pos = Vector2(cam_left + SCREEN_W + 40, 26)
 			"boss":
-				match e[3]:
-					"wall": n = Boss.new()
-					"heli": n = Heli.new()
-					_: n = Mecha.new()
+				var kind: String = e[3]
+				if kind.begins_with("pol:"):
+					n = Politician.new()
+					n.id = kind.substr(4)
+				else:
+					match kind:
+						"wall": n = Boss.new()
+						"heli": n = Heli.new()
+						_: n = Mecha.new()
 				boss = n
+			"door":
+				n = Door.new()
+				n.number = e[3]
 			"capsule":
 				n = Pickup.new()
 				n.weapon = e[3]
@@ -327,4 +346,11 @@ func stage_clear() -> void:
 	Game.save_record()
 	Game.stop_music()
 	Game.sfx("pickup")
-	hud.banner_text = "¡MISIÓN CUMPLIDA!\nPuntos: %d   Récord: %d\n\nPulsa para ver el mapa" % [Game.score, Game.record]
+	var title := "¡FASE %s SUPERADA!" % data.get("phase", "")
+	if data.get("boss_role", "") == "door":
+		title = "¡PUERTA %s ABIERTA!" % data["phase"].substr(2)
+	elif not Game.has_next_level():
+		title = "¡APOCALIPSIS DETENIDO!"
+	elif data.get("boss_role", "") == "final":
+		title = "¡%s %s!" % [data["zone"], data["freed"]]
+	hud.banner_text = "%s\nPuntos: %d   Récord: %d\n\nPulsa para ver el mapa" % [title, Game.score, Game.record]

@@ -11,6 +11,12 @@ func _draw() -> void:
 	if theme == "city":
 		_draw_city()
 		return
+	if theme == "base":
+		_draw_base()
+		return
+	if theme == "snow":
+		_draw_snow()
+		return
 	if one_way:
 		if desert:
 			draw_rect(Rect2(Vector2.ZERO, size), Color(0.55, 0.42, 0.34))
@@ -77,3 +83,46 @@ func _draw_city() -> void:
 		draw_colored_polygon(PackedVector2Array([Vector2(rx, 0), Vector2(rx + 3, -4), Vector2(rx + 7, -2), Vector2(rx + 9, 0)]), Color(0.3, 0.27, 0.26))
 	draw_rect(Rect2(0, 0, 2, size.y), Color(0.22, 0.2, 0.2))
 	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.22, 0.2, 0.2))
+
+
+## Nieve (Alemania): roca oscura con una capa de nieve; los puentes son tablones nevados.
+func _draw_snow() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(global_position.x) + 3
+	if one_way:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.45, 0.32, 0.22))
+		for x in range(0, int(size.x), 8):
+			draw_line(Vector2(x, 0), Vector2(x, size.y), Color(0.3, 0.2, 0.14))
+		draw_rect(Rect2(0, -2, size.x, 3), Color(0.95, 0.97, 1.0))
+		return
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.3, 0.3, 0.36))
+	for i in int(size.x * size.y / 400.0):
+		draw_rect(Rect2(Vector2(rng.randf() * size.x, 10 + rng.randf() * (size.y - 10)), Vector2(4, 3)), Color(0.24, 0.24, 0.3))
+	draw_rect(Rect2(0, 0, size.x, 7), Color(0.95, 0.97, 1.0))
+	for x in range(0, int(size.x), 7):
+		draw_rect(Rect2(x, 7, 4, 2 + rng.randi() % 3), Color(0.95, 0.97, 1.0))
+	draw_rect(Rect2(0, 0, size.x, 1), Color(1, 1, 1))
+	draw_rect(Rect2(0, 0, 2, size.y), Color(0.2, 0.2, 0.25))
+	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.2, 0.2, 0.25))
+
+
+## Base secreta (ONU): suelo de placas de acero con franjas de peligro; los puentes son rejillas.
+func _draw_base() -> void:
+	if one_way:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.25, 0.28, 0.34))
+		for x in range(2, int(size.x) - 2, 4):
+			draw_line(Vector2(x, 1), Vector2(x, size.y - 1), Color(0.12, 0.13, 0.16), 1)
+		draw_rect(Rect2(0, 0, size.x, 1), Color(0.5, 0.55, 0.62))
+		return
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.2, 0.22, 0.27))
+	for x in range(0, int(size.x), 32):
+		draw_rect(Rect2(x, 0, 31, 8), Color(0.34, 0.37, 0.43))
+		draw_rect(Rect2(x, 0, 31, 1), Color(0.5, 0.54, 0.6))
+		draw_circle(Vector2(x + 3, 4), 1, Color(0.2, 0.22, 0.27))
+		draw_circle(Vector2(x + 28, 4), 1, Color(0.2, 0.22, 0.27))
+	for x in range(0, int(size.x), 12):
+		draw_colored_polygon(PackedVector2Array([Vector2(x, 8), Vector2(x + 6, 8), Vector2(x + 2, 13), Vector2(x - 4, 13)]), Color(0.9, 0.7, 0.1))
+	for y in range(24, int(size.y), 24):
+		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.15, 0.16, 0.2), 1)
+	draw_rect(Rect2(0, 0, 2, size.y), Color(0.12, 0.13, 0.16))
+	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.12, 0.13, 0.16))

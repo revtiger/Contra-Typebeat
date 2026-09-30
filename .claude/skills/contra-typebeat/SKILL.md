@@ -23,9 +23,10 @@ Lee también `CLAUDE.md` (reglas de trabajo) y `docs/diseno.md` (diseño vivo) y
 - **Fuente:** una sola fuente pixelada para todo el texto del juego (`assets/sprites/font.png`), con estilos por jerarquía: `title` (títulos, degradado amarillo-rojo), `small` (valores y énfasis, dorado), `white` (texto normal), `label` (etiquetas y ayudas, azul claro), `metal` (TIME). Todo en mayúsculas.
 - **Historia (aceptada 29-09-2026):** *ONU: Trying to save the world* de Eduardo, en `docs/historia.md`. La Orden Mundial; niveles Argentina (Massa, C. Kirchner, Milei) → México (AMLO, Salinas, Sheinbaum) → EUA (Biden, Obama, Trump) → Alemania (Merkel, Scholz, Merz) → nivel secreto en la ONU (líder enmascarado; los jefes se fusionan en un pentagrama en el jefe final sci-fi). Político aliado tras cada jefe (mejoras y munición), ayudante religioso (poción de inmunidad), 2 héroes genéricos con skins que el jugador puede subir. Se hace nivel por nivel. **Descartados:** el General Zarko, El Socio y el estilo de retratos de póster de *Duro de matar*. **Gwyn y Eduardo no son personajes** (solo aparecen como G·E STUDIOS en créditos). Referencias de estilo que le gustan a Gwyn: la intro de Metal Slug 2 (logo que cae letra a letra) y el SOLDIER SELECT de Metal Slug X. Ruta actual en el código: Argentina–Brasil (Triple Frontera) → Bolivia (Tupiza) → frontera México–EE.UU.; se sustituirá por la nueva.
 
-## Estado (v0.6, 27-09-2026)
+## Estado (v0.7, 29-09-2026, rama `eduardo/orden-mundial`)
 
-- 3 misiones jugables, cada una con mini jefe y jefe: Jungla (Comandante Kruger / La Fortaleza Roja), Bolivia (Camión lanzacohetes / Helicóptero Cóndor), Frontera Norte (Comandante Kruger / La Presidenta Mecha, jefe por piezas).
+- **Campaña de la Orden Mundial en el código:** 15 fases (Argentina, México, EUA, Alemania, nivel secreto ONU; 3 fases cada uno) generadas en `scripts/levels.gd` a partir de `ZONES` y 5 plantillas de terreno (`jungle`, `desert`, `city`, `snow`, `base`). Cada fase termina en un jefe político (`scripts/politician.gd`, datos en `POLS`; sprites `assets/sprites/pol_<id>.png` montados por `tools/sprites/politicians.py` desde `tools/sprites/pixellab/politicos/`). 2.3: Sheinbaum se transfigura en La Presidenta Mecha. 5.1 y 5.2 terminan en una puerta (`door.gd`); 5.3: líder de la Orden y ritual del pentagrama (`ritual.gd`) que crea La Orden Fusionada. Habilidades de los jefes **provisionales**. Mapa mundial (`map.gd`) con una parada por zona.
+- Antes (v0.6): 3 misiones con Kruger, Fortaleza Roja, Camión, Helicóptero Cóndor; esos jefes siguen en el código sin usarse.
 - Nombre: **ONU: Outbreak**. Logo: ONU gigante + OUTBREAK debajo, en letras cinceladas (`logo_text.gd`, estilos big_stone/big_gold).
 - Intro estilo Metal Slug 2 (G·E STUDIOS, logo cincelado que cae letra a letra, fogonazo a oro), menú con logo dorado, ELIGE TU SOLDADO estilo Metal Slug X con 4 soldados ficticios (El Presi, La Tenienta, El Chato, Don Bigotes; `Game.hero`), mapa de campaña, pausa, récord, música y efectos 8 bits generados por código.
 - HUD Metal Slug: 1UP=vidas, recuadro ARMS/BOMB, icono del arma, TIME (60, baja cada 4 s, a 0 mueres), récord.
@@ -38,9 +39,9 @@ Lee también `CLAUDE.md` (reglas de trabajo) y `docs/diseno.md` (diseño vivo) y
 
 - `scripts/game.gd` (autoload `Game`): vidas, puntos, récord, misión, controles, sonido `Game.sfx()`, música, pausa, flujo de escenas.
 - `scripts/juice.gd` (autoload `Juice`): `hitstop()` (se deshace con el reloj real cada fotograma) y `shake()`.
-- Escenas: `intro` → `menu` → `select` (ELIGE TU SOLDADO) → `map` → `level` → `map`… Misiones como datos en `scripts/levels.gd`; paradas del mapa en `STOPS` de `scripts/map.gd` (parada i = misión i).
+- Escenas: `intro` → `menu` → `select` (ELIGE TU SOLDADO) → `map` → `level` → `map`… Fases como datos en `scripts/levels.gd` (`Levels.LIST`, 15 entradas generadas); paradas del mapa en `STOPS` de `scripts/map.gd` (una por zona: parada = fase / 3).
 - `scripts/level.gd`: construye la misión, cámara, TIME, `blast()`/`explode()`, `throw_grenade()`, `lock_camera()` para mini jefes.
-- Jugador `player.gd`; enemigos `soldier.gd`, `turret.gd`, `tank.gd`, `miniboss.gd`; jefes `boss.gd` (muro), `heli.gd`, `mecha.gd` + `boss_part.gd` (piezas con vida propia).
+- Jugador `player.gd`; enemigos `soldier.gd`, `turret.gd`, `tank.gd`, `miniboss.gd`; jefes `politician.gd` (políticos, no tiene variable `state` para que la prueba lo trate como jefe de suelo), `ritual.gd`, `door.gd`, `boss.gd` (muro), `heli.gd`, `mecha.gd` + `boss_part.gd` (piezas con vida propia).
 - HUD `scripts/hud.gd`; fuente para Labels `scripts/pixel_font.gd`; letras de logo `scripts/logo_text.gd`; hojas de sprites `scripts/sprite_util.gd`.
 - Generadores (`tools/sprites/`): `humans.py` (4 soldados jugables `player_<id>_*` y enemigos), `mecha.py`, `font.py`, `logo.py`, `portraits.py` (retratos color/sepia).
 - Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes, 16 objetos.
