@@ -266,16 +266,12 @@ func _draw_ruins(rng: RandomNumberGenerator) -> void:
 			draw_rect(Rect2(bx + 11, by + 17, 10, 3), Color(0.9, 0.1, 0.1))
 			# el lema en dos líneas, cortado por el espacio más cercano a la mitad
 			var text: String = slogans[n % slogans.size()]
-			var cut := text.length() / 2
-			if text.find(" ") < 0:
-				cut = text.length()  # una sola palabra: una sola línea
-			for d in text.length():
-				if cut + d < text.length() and text[cut + d] == " ":
-					cut += d
-					break
-				if cut - d > 0 and text[cut - d] == " ":
-					cut -= d
-					break
+			var cut := text.length()  # una sola palabra: una sola línea
+			var best := 999
+			for i in text.length():
+				if text[i] == " " and absi(i - text.length() / 2) < best:
+					best = absi(i - text.length() / 2)
+					cut = i
 			draw_string(font, Vector2(bx + 29, by + 17), text.substr(0, cut), HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, Color(1, 0.95, 0.85))
 			draw_string(font, Vector2(bx + 29, by + 29), text.substr(cut + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, Color(1, 0.95, 0.85))
 			n += 1
