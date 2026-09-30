@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2a0vw11qfrbi"
-path="res://.godot/imported/player_bigotes_death.png-b5df6a1bf2e5d42b1b9890f8ea385df1.ctex"
+uid="uid://vn3ebye3lq0q"
+path="res://.godot/imported/player_hawaiano_legs.png-3f7a7704b5efe662010f5b9cfe608b68.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_bigotes_death.png"
-dest_files=["res://.godot/imported/player_bigotes_death.png-b5df6a1bf2e5d42b1b9890f8ea385df1.ctex"]
+source_file="res://assets/sprites/player_hawaiano_legs.png"
+dest_files=["res://.godot/imported/player_hawaiano_legs.png-3f7a7704b5efe662010f5b9cfe608b68.ctex"]
 
 [params]
 

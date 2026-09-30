@@ -12,7 +12,7 @@ Autores: Gwyn y Eduardo · Última revisión: 29-09-2026 (v0.7: campaña de la O
 
 **Historia:** ✅ aceptada (29-09-2026) la propuesta de Eduardo *ONU: Trying to save the world*: la Orden Mundial, 4 países (Argentina, México, EUA, Alemania) + nivel secreto en la ONU, con caricaturas de políticos reales. Detalle en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
-**Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
+**Soldados jugables:** El Presi (traje y banda presidencial tricolor) y La Tenienta (coleta y pañuelo rojo), ficticios, más dos diseños de Eduardo hechos con ChatGPT (30-09-2026, `tools/sprites/chatgpt/`): **El Comando** (pelo negro, camiseta negra y chaleco verde oliva, pantalón caqui) y **El Hawaiano** (pelo castaño corto, camisa de flores, pantalón gris). ☐ Nombres provisionales; sus sprites de juego son provisionales (generados con sus colores) hasta tener los definitivos. El Chato y Don Bigotes se quitaron. Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
 **Ruta de la campaña (v0.7, en el código):** Argentina → México → EUA → Alemania → nivel secreto en la ONU, 15 fases (ver "Niveles" y [`historia.md`](historia.md)). La ruta anterior (Triple Frontera → Bolivia → Frontera Norte) se sustituyó; sus jefes (Fortaleza Roja, Helicóptero Cóndor, Comandante Kruger, Camión) siguen en el código pero ya no aparecen.
 

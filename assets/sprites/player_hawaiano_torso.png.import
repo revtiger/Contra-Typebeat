@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://172q0ges1xc7"
-path="res://.godot/imported/player_bigotes_torso.png-a0ee64cd4d4636ae76ca29793a4923d1.ctex"
+uid="uid://ikhtp06fq5pn"
+path="res://.godot/imported/player_hawaiano_torso.png-4bd0c6dfe0dab15c5ca98d3eaafab1ff.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_bigotes_torso.png"
-dest_files=["res://.godot/imported/player_bigotes_torso.png-a0ee64cd4d4636ae76ca29793a4923d1.ctex"]
+source_file="res://assets/sprites/player_hawaiano_torso.png"
+dest_files=["res://.godot/imported/player_hawaiano_torso.png-4bd0c6dfe0dab15c5ca98d3eaafab1ff.ctex"]
 
 [params]
 

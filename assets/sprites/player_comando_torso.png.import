@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dw8xqs76i60et"
-path="res://.godot/imported/player_bigotes_legs.png-9169b54dc8707b722b6562ab1930de0f.ctex"
+uid="uid://dsi5c0rbgood8"
+path="res://.godot/imported/player_comando_torso.png-bafd339a579bf9a277e0888993bfefcf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_bigotes_legs.png"
-dest_files=["res://.godot/imported/player_bigotes_legs.png-9169b54dc8707b722b6562ab1930de0f.ctex"]
+source_file="res://assets/sprites/player_comando_torso.png"
+dest_files=["res://.godot/imported/player_comando_torso.png-bafd339a579bf9a277e0888993bfefcf.ctex"]
 
 [params]
 

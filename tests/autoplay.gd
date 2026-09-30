@@ -27,6 +27,8 @@ func _ready() -> void:
 			out_dir = a.substr(4)
 		elif a.begins_with("level="):
 			level_idx = int(a.substr(6))
+		elif a.begins_with("hero="):
+			Game.hero = a.substr(5)  # soldado preseleccionado en ELIGE TU SOLDADO
 		elif a.begins_with("every="):
 			shot_every = maxi(int(a.substr(6)), 1)
 		elif a == "boss":

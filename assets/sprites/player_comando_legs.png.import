@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cbracsv42e3uc"
-path="res://.godot/imported/player_chato_death.png-faf717ae6bb53ff84c0c8bf8306246ad.ctex"
+uid="uid://dk62xc1yn405g"
+path="res://.godot/imported/player_comando_legs.png-41c124a5d5ae0d34397da54be883116c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_chato_death.png"
-dest_files=["res://.godot/imported/player_chato_death.png-faf717ae6bb53ff84c0c8bf8306246ad.ctex"]
+source_file="res://assets/sprites/player_comando_legs.png"
+dest_files=["res://.godot/imported/player_comando_legs.png-41c124a5d5ae0d34397da54be883116c.ctex"]
 
 [params]
 

@@ -7,7 +7,8 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 const LogoText = preload("res://scripts/logo_text.gd")
 
 ## id del soldado (sprites player_<id>_*.png) y nombre en la placa
-const SOLDIERS := [["presi", "EL PRESI"], ["tenienta", "LA TENIENTA"], ["chato", "EL CHATO"], ["bigotes", "DON BIGOTES"]]
+## Los dos últimos son diseños de Eduardo (nombres provisionales)
+const SOLDIERS := [["presi", "EL PRESI"], ["tenienta", "LA TENIENTA"], ["comando", "EL COMANDO"], ["hawaiano", "EL HAWAIANO"]]
 const WIN := Vector2(84, 104)
 const STEP := 92.0
 const X0 := 60.0

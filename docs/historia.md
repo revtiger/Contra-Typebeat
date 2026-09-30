@@ -47,7 +47,7 @@ Cada país tiene 3 fases: dos con minijefe y la tercera con el jefe final del pa
 - Idea de **monetización**: cobrar por añadir diseños (p. ej. 1 dólar).
 
 Pendiente de esta parte:
-- ☐ ¿Qué pasa con los 4 soldados actuales de ELIGE TU SOLDADO (El Presi, La Tenienta, El Chato, Don Bigotes)? ¿Se quedan como skins de serie?
+- ☐ ¿Qué pasa con los 4 soldados actuales de ELIGE TU SOLDADO (El Presi, La Tenienta, El Comando, El Hawaiano)? ¿Se quedan como skins de serie?
 - ☐ Cómo revisar las skins que suba la gente (desnudos, símbolos de odio, personajes con copyright).
 - ☐ Qué permite cada tienda (itch.io, Steam) sobre contenido subido por usuarios, pagos y personas reales.
 
