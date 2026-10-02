@@ -68,7 +68,10 @@ func take_damage(_n: int) -> void:
 
 func _on_body(b: Node) -> void:
 	if b.is_in_group("player") and not b.dead:
-		b.set_weapon(weapon)
+		if weapon == "B":
+			b.add_bombs(10)
+		else:
+			b.set_weapon(weapon)
 		main.add_score(1000)
 		queue_free()
 

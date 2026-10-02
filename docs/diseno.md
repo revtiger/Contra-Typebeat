@@ -1,6 +1,8 @@
 # Documento de diseño: Contra-Typebeat
 
-Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.3)
+Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.4)
+
+> **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
 > Sustituye al borrador de Word ("Colibrí Veloz"), que era un ejemplo de plantilla. Se mantiene su estructura. Lo marcado con ☐ está por decidir.
 
@@ -41,12 +43,14 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 | Acción | Teclado | Mando |
 |---|---|---|
-| Moverse | Flechas / WASD | Cruceta |
-| Apuntar arriba / diagonales | Arriba (+ lado), Abajo + lado | Cruceta |
-| Tumbarse | Abajo | Cruceta abajo |
-| Saltar (en bola) | Z / Espacio / K | A |
+| Moverse | Flechas / WASD | Cruceta o stick |
+| Apuntar arriba | Arriba | Cruceta arriba |
+| Disparar hacia abajo (solo en el aire) | Abajo | Cruceta abajo |
+| Agacharse (se puede avanzar agachado) | Abajo | Cruceta abajo |
+| Saltar | Z / Espacio / K | A |
 | Bajar de un puente | Abajo + Saltar | Abajo + A |
-| Disparar (mantener) | X / J | X / B |
+| Disparar (mantener) / cuchillo automático de cerca | X / J | X |
+| Granada | C / L | B / Y |
 | Pausa | Esc / P | Start |
 | Reintentar tras Game Over | Enter / R | Start |
 | Salir al menú (en pausa o Game Over) | Q | Select |
@@ -55,7 +59,8 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 | Elemento | Tipo | Qué hace | Estado |
 |---|---|---|---|
-| Soldado corredor | Enemigo | Corre en línea recta, salta escalones, muere de 1 tiro | ✅ |
+| Soldado corredor | Enemigo | Corre en línea recta, salta escalones, muere de 1 tiro. Algunos se asustan al verte (brazos arriba) y huyen | ✅ |
+| Granadero | Enemigo | Se planta y lanza granadas en arco con marca de aviso | ✅ |
 | Francotirador | Enemigo | Quieto, apunta en 8 direcciones, 2 tiros | ✅ |
 | Torreta | Enemigo | Gira hacia el jugador (12 direcciones), 8 tiros | ✅ |
 | Muro-fortaleza | Jefe (misión 1) | 2 cañones con ráfaga triple, suelta soldados, 70 de vida | ✅ |
@@ -66,12 +71,19 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Helicóptero | Jefe (misión 2) | Ráfagas apuntadas, bombas con aviso y abanico de balas a media vida. 110 de vida | ✅ |
 | Comandante Kruger | Mini jefe (misión 1) | Ametralladora a la altura del pecho (se esquiva tumbándose), granadas con aviso, salto con triple disparo. 45 de vida | ✅ |
 | Camión lanzacohetes | Mini jefe (misión 2) | Cohetes que caen del cielo con marca en el suelo (5 a media vida) y artillero que apunta. 60 de vida | ✅ |
-| Cápsula voladora | Objeto | Cruza la pantalla; al dispararle suelta un arma. Si no se recoge, el arma parpadea y desaparece a los 9 s | ✅ |
-| Normal | Arma | Disparo simple | ✅ |
-| M: metralleta | Arma | Cadencia doble | ✅ |
-| S: spread | Arma | 5 balas en abanico | ✅ |
-| L: láser | Arma | Rayo rápido que atraviesa enemigos, daño 3 | ✅ |
-| F: fuego | Arma | Bola que avanza en espiral, daño 2 | ✅ |
+| Cápsula voladora | Objeto | Cruza la pantalla; al dispararle suelta un arma o una caja de bombas (B, +10). Si no se recoge, parpadea y desaparece a los 9 s | ✅ |
+| Pistola | Arma | Munición infinita; es el arma a la que se vuelve | ✅ |
+| H: ametralladora pesada | Arma | 200 balas, cadencia muy alta con algo de dispersión | ✅ |
+| R: cohetes | Arma | 30 cohetes que buscan al enemigo más cercano y explotan | ✅ |
+| F: llamas | Arma | 30 llamaradas cortas que crecen y atraviesan | ✅ |
+| L: láser | Arma | 200 disparos que atraviesan enemigos | ✅ |
+| S: escopeta | Arma | 30 disparos en abanico de corto alcance, mucho daño | ✅ |
+| Granada | Arma | 10 por vida; rebota una vez y explota; no daña al jugador | ✅ |
+| Cuchillo | Arma | Automático al disparar con un soldado pegado delante | ✅ |
+
+Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la pistola. Recoger la misma arma suma munición. Al morir se pierde el arma y las bombas vuelven a 10.
+
+**Sensación de impacto (autoload `Juice`):** el juego se congela un instante (*hitstop*) al matar, con las explosiones de granada y al morir; la cámara tiembla con los disparos pesados y las explosiones; los soldados salen despedidos girando al morir.
 
 ## Niveles
 
@@ -104,7 +116,9 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 ## Preguntas abiertas
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
-- ☐ ¿Quiénes son las caras del póster y cómo se llaman los villanos?
+- ✅ Personajes: **ficticios**. Se puede parodiar el cargo (banda presidencial, propaganda inventada), pero sin la cara, el nombre ni los lemas reales de personas concretas.
+- ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
+- ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?
 - ☐ ¿Solo PC o también exportar a navegador?
 - ☐ ¿Cuántos niveles para la primera versión completa?

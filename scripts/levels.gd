@@ -5,7 +5,8 @@ extends RefCounted
 ## platforms: [x, ancho, y]. Puentes/salientes que se atraviesan desde abajo.
 ## entities:  [tipo, x, y, extra]. Aparecen cuando la cámara se acerca a su x.
 ##   sniper, turret, barrel, mine, tank: y = suelo donde apoyan
-##   capsule: extra = arma que suelta (M, S, L, F)
+##   grenadier: soldado que se para a lanzar granadas
+##   capsule: extra = lo que suelta: arma (H, R, F, L, S) o B (+10 bombas)
 ##   jet: bombardeo aéreo que apunta a donde está el jugador
 ##   miniboss: extra = "comandante" o "camion". Bloquea la cámara hasta que muere
 ##   boss: extra = "wall" (muro) o "heli" (helicóptero). El nombre que se anuncia va en "boss_name"
@@ -28,10 +29,11 @@ const LIST := [
 			[3600, 120, 175],
 		],
 		"entities": [
-			["sniper", 340, 175], ["turret", 700, 230], ["capsule", 900, 60, "M"], ["sniper", 1130, 175],
+			["sniper", 340, 175], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 175],
 			["turret", 1250, 230], ["sniper", 1280, 125], ["turret", 1720, 200], ["sniper", 1600, 150],
 			["turret", 2290, 125], ["sniper", 2120, 175], ["capsule", 2600, 60, "S"],
-			["miniboss", 2420, 230, "comandante"],
+			["capsule", 1700, 60, "B"], ["grenadier", 1150, 230], ["grenadier", 2050, 230],
+			["miniboss", 2420, 230, "comandante"], ["capsule", 3200, 60, "R"], ["grenadier", 3300, 230],
 			["sniper", 2820, 175], ["turret", 3000, 230], ["turret", 2950, 125], ["sniper", 3500, 230],
 			["sniper", 3640, 175], ["boss", 4190, 230, "wall"],
 		],
@@ -55,14 +57,14 @@ const LIST := [
 			# tramo 1: aprender barriles y minas
 			["sniper", 280, 175], ["barrel", 420, 230], ["barrel", 434, 230], ["mine", 610, 230],
 			["capsule", 700, 60, "L"], ["sniper", 940, 175], ["barrel", 1000, 230], ["mine", 1150, 230],
-			["sniper", 1090, 125], ["jet", 1250, 0],
+			["sniper", 1090, 125], ["jet", 1250, 0], ["capsule", 1350, 60, "R"], ["grenadier", 1200, 230],
 			# tramo 2: meseta y primer tanque
 			["turret", 1580, 198], ["barrel", 1480, 198], ["barrel", 1494, 198], ["sniper", 1430, 145],
 			["tank", 1900, 230], ["sniper", 1990, 125], ["mine", 1760, 230],
 			# tramo 3: campamento y mini jefe
 			["capsule", 2150, 60, "F"], ["barrel", 2240, 230], ["barrel", 2254, 230], ["barrel", 2268, 230],
 			["sniper", 2510, 130], ["miniboss", 2640, 230, "camion"], ["mine", 2800, 230], ["turret", 2950, 205],
-			["sniper", 2880, 150],
+			["sniper", 2880, 150], ["capsule", 2900, 60, "B"], ["grenadier", 3000, 205],
 			# tramo 4: tanque, barriles en cadena y último bombardeo
 			["tank", 3350, 230], ["barrel", 3180, 230], ["barrel", 3194, 230], ["capsule", 3300, 60, "S"],
 			["sniper", 3450, 125], ["mine", 3520, 230], ["mine", 3580, 230], ["jet", 3650, 0],

@@ -6,9 +6,9 @@ const Sfx = preload("res://scripts/sfx.gd")
 
 const START_LIVES := 3
 const RECORD_PATH := "user://record.cfg"
-const WEAPON_NAMES := {"N": "Normal", "M": "Metralleta", "S": "Spread", "L": "Láser", "F": "Fuego"}
+const WEAPON_NAMES := {"P": "Pistola", "H": "Ametralladora H", "R": "Cohetes R", "F": "Llamas F", "L": "Láser L", "S": "Escopeta S"}
 const SOUNDS := ["shot", "laser", "fire", "jump", "hit", "boom", "small_boom", "death", "pickup",
-	"move", "select", "beep", "whistle", "cannon", "jet", "type"]
+	"move", "select", "beep", "whistle", "cannon", "jet", "type", "knife"]
 
 var score := 0
 var lives := START_LIVES
@@ -62,12 +62,13 @@ func _setup_input() -> void:
 		"left": [KEY_LEFT, KEY_A], "right": [KEY_RIGHT, KEY_D],
 		"up": [KEY_UP, KEY_W], "down": [KEY_DOWN, KEY_S],
 		"jump": [KEY_Z, KEY_SPACE, KEY_K], "shoot": [KEY_X, KEY_J],
+		"grenade": [KEY_C, KEY_L],
 		"restart": [KEY_ENTER, KEY_R], "pause": [KEY_ESCAPE, KEY_P], "quit_menu": [KEY_Q],
 	}
 	var pad := {
 		"left": [JOY_BUTTON_DPAD_LEFT], "right": [JOY_BUTTON_DPAD_RIGHT],
 		"up": [JOY_BUTTON_DPAD_UP], "down": [JOY_BUTTON_DPAD_DOWN],
-		"jump": [JOY_BUTTON_A], "shoot": [JOY_BUTTON_X, JOY_BUTTON_B],
+		"jump": [JOY_BUTTON_A], "shoot": [JOY_BUTTON_X], "grenade": [JOY_BUTTON_B, JOY_BUTTON_Y],
 		"restart": [JOY_BUTTON_START], "pause": [JOY_BUTTON_START], "quit_menu": [JOY_BUTTON_BACK],
 	}
 	for action in keys:
@@ -136,6 +137,7 @@ func to_menu() -> void:
 
 
 func _go(path: String) -> void:
+	Juice.reset()
 	get_tree().paused = false
 	_pause_layer.visible = false
 	get_tree().change_scene_to_file.call_deferred(path)

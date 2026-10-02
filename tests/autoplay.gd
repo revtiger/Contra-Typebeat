@@ -98,22 +98,37 @@ func _physics_process(_delta: float) -> void:
 				mb = n
 		Input.action_release("left")
 		Input.action_release("right")
+		Input.action_release("up")
 		if mb:
 			var mdx: float = mb.position.x - p.position.x
 			if absf(mdx) > 60.0 or signf(mdx) != float(p.facing):
 				Input.action_press("right" if mdx > 0 else "left")
+			# si está en una plataforma por encima del mini jefe, bajar
+			if p.position.y < mb.position.y - 20.0 and p.is_on_floor():
+				Input.action_press("down")
+				if level_frame % 20 == 0:
+					Input.action_press("jump")
+				elif level_frame % 20 == 3:
+					Input.action_release("jump")
+			else:
+				Input.action_release("down")
 	elif at_boss:
+		Input.action_release("up")
 		# muro: quedarse quieto disparando a la derecha
 		Input.action_release("right")
 		Input.action_release("left")
 	else:
 		Input.action_press("right")
 	Input.action_press("shoot")
+	if level_frame % 150 == 75:
+		Input.action_press("grenade")
+	elif level_frame % 150 == 77:
+		Input.action_release("grenade")
 	if level_frame % 50 == 0:
 		Input.action_press("jump")
 	elif level_frame % 50 == 25:
 		Input.action_release("jump")
-	if not heli:
+	if not heli and lvl.lock_left == INF:
 		if level_frame % 200 > 150:
 			Input.action_press("up")
 		else:

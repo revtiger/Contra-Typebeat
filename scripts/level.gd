@@ -12,6 +12,7 @@ const Barrel = preload("res://scripts/barrel.gd")
 const Mine = preload("res://scripts/mine.gd")
 const Jet = preload("res://scripts/jet.gd")
 const Miniboss = preload("res://scripts/miniboss.gd")
+const Bomb = preload("res://scripts/bomb.gd")
 const Pickup = preload("res://scripts/pickup.gd")
 const Terrain = preload("res://scripts/terrain.gd")
 const Background = preload("res://scripts/background.gd")
@@ -52,6 +53,7 @@ func _ready() -> void:
 	entities = data["entities"].duplicate()
 	entities.sort_custom(func(a, b): return a[1] < b[1])
 	RenderingServer.set_default_clear_color(Color.BLACK)
+	Juice.reset()
 
 	var sky_layer := CanvasLayer.new()
 	sky_layer.layer = -10
@@ -139,6 +141,8 @@ func _physics_process(delta: float) -> void:
 			var from_left := randf() < 0.2
 			var s := Soldier.new()
 			s.dir = 1 if from_left else -1
+			if not from_left and randf() < 0.15:
+				s.mode = "grenadier"
 			s.position = Vector2(cam_left - 10 if from_left else cam_left + SCREEN_W + 10, 90)
 			add_child(s)
 	if boss and cam_left >= boss_arena - 1.0 and state == "play" and not boss_announced:
@@ -159,8 +163,10 @@ func _physics_process(delta: float) -> void:
 	elif state == "clear" and banner_t <= 0.0 and Game.accept_pressed():
 		Game.next_level()
 
-	hud.text = "VIDAS %s   PUNTOS %06d   RÉCORD %06d\nARMA %s" % [
-		"♥".repeat(maxi(Game.lives, 0)), Game.score, Game.record, Game.WEAPON_NAMES[player.weapon]]
+	var ammo_text := "∞" if player.ammo < 0 else str(player.ammo)
+	hud.text = "VIDAS %s   PUNTOS %06d   RÉCORD %06d\nARMA %s %s   BOMBAS %d" % [
+		"♥".repeat(maxi(Game.lives, 0)), Game.score, Game.record,
+		Game.WEAPON_NAMES[player.weapon], ammo_text, player.bombs]
 
 
 func _spawn_entities() -> void:
@@ -170,9 +176,9 @@ func _spawn_entities() -> void:
 		var n
 		var pos := Vector2(e[1], e[2])
 		match e[0]:
-			"sniper":
+			"sniper", "grenadier":
 				n = Soldier.new()
-				n.mode = "sniper"
+				n.mode = e[0]
 			"turret":
 				n = Turret.new()
 			"barrel":
@@ -242,6 +248,21 @@ func shake(amount: float) -> void:
 
 
 ## Efecto visual de explosión, con sonido y temblor proporcionales al tamaño.
+## Granada enemiga: arco hasta target_x, con marca de aviso en el suelo (bomb.gd). Daña al jugador.
+func throw_grenade(from: Vector2, target_x: float) -> void:
+	var gy := ground_y_at(target_x)
+	if gy > 900.0:
+		gy = 262.0
+	var vy := -230.0
+	var g := 380.0
+	var time := (-vy + sqrt(vy * vy + 2.0 * g * maxf(gy - from.y, 0.0))) / g
+	var b := Bomb.new()
+	b.target_x = target_x
+	b.vel = Vector2((target_x - from.x) / time, vy)
+	b.position = from
+	add_child(b)
+
+
 func explode(pos: Vector2, radius := 12.0, sound := true) -> void:
 	var e := Explosion.new()
 	e.position = pos
