@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://172q0ges1xc7"
-path="res://.godot/imported/player_bigotes_torso.png-a0ee64cd4d4636ae76ca29793a4923d1.ctex"
+uid="uid://by6dwn2fjswww"
+path="res://.godot/imported/player_eduardo_body.png-be369a6d2f798ebe9f0bf339449fe034.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_bigotes_torso.png"
-dest_files=["res://.godot/imported/player_bigotes_torso.png-a0ee64cd4d4636ae76ca29793a4923d1.ctex"]
+source_file="res://assets/sprites/player_eduardo_body.png"
+dest_files=["res://.godot/imported/player_eduardo_body.png-be369a6d2f798ebe9f0bf339449fe034.ctex"]
 
 [params]
 

@@ -10,9 +10,9 @@ Autores: Gwyn y Eduardo · Última revisión: 29-09-2026 (v0.7: campaña de la O
 
 **ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra y Metal Slug: un soldado recorre Argentina, México, EUA y Alemania hasta el nivel secreto de la ONU, disparando contra oleadas de enemigos, tanques y bombardeos. Cada país tiene 3 fases y cada fase termina con un jefe político; entre fases un mapa muestra la ruta.
 
-**Historia:** ✅ aceptada (29-09-2026) la propuesta de Eduardo *ONU: Trying to save the world*: la Orden Mundial, 4 países (Argentina, México, EUA, Alemania) + nivel secreto en la ONU, con caricaturas de políticos reales. Detalle en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+**Historia:** ✅ aceptada (29-09-2026) la propuesta de Eduardo *ONU: Trying to save the world*: la Orden Mundial, 4 países (Argentina, México, EUA, Alemania) + nivel secreto en la ONU, con caricaturas de políticos reales. Detalle en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. **Excepción (30-09-2026, decisión de Eduardo):** Eduardo y Eder sí son soldados jugables en ELIGE TU SOLDADO. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
-**Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
+**Soldados jugables:** El Presi (traje y banda presidencial tricolor) y La Tenienta (coleta y pañuelo rojo), ficticios, más **Eduardo** (pelo negro, camiseta negra y chaleco verde oliva, pantalón caqui) y **Eder** (pelo castaño corto, camisa de flores, pantalón gris), diseñados por Eduardo con ChatGPT (30-09-2026, `tools/sprites/chatgpt/`). Eduardo y Eder usan **sprites de cuerpo entero** (32 poses cada uno: quieto, correr, saltar, agacharse, disparar, granada, cuerpo a tierra, cuchillo, victoria), montados por `tools/sprites/heroes_sheets.py`; El Presi y La Tenienta siguen con piernas + torso. ☐ Faltan poses de disparar hacia arriba y hacia abajo para Eduardo y Eder. El Chato y Don Bigotes se quitaron. Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
 **Ruta de la campaña (v0.7, en el código):** Argentina → México → EUA → Alemania → nivel secreto en la ONU, 15 fases (ver "Niveles" y [`historia.md`](historia.md)). La ruta anterior (Triple Frontera → Bolivia → Frontera Norte) se sustituyó; sus jefes (Fortaleza Roja, Helicóptero Cóndor, Comandante Kruger, Camión) siguen en el código pero ya no aparecen.
 
@@ -149,7 +149,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 ## Preguntas abiertas
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
-- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Tono de burla tipo Metal Slug, **sin gore**: derrotas cómicas, sin sangre. Lista en [`historia.md`](historia.md).
+- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Tono de burla tipo Metal Slug / Broforce, **con sangre y gore de arcade** (cambio de Gwyn, 30-09-2026): sangre pixelada y enemigos que revientan en trozos. Eduardo tiene pase libre para decidir historia, personajes y nivel de violencia. Lista en [`historia.md`](historia.md).
 - ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
 - ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?

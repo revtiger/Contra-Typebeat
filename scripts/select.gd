@@ -7,7 +7,8 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 const LogoText = preload("res://scripts/logo_text.gd")
 
 ## id del soldado (sprites player_<id>_*.png) y nombre en la placa
-const SOLDIERS := [["presi", "EL PRESI"], ["tenienta", "LA TENIENTA"], ["chato", "EL CHATO"], ["bigotes", "DON BIGOTES"]]
+## Eduardo y Eder: diseños de Eduardo hechos con ChatGPT (sprites de cuerpo entero)
+const SOLDIERS := [["presi", "EL PRESI"], ["tenienta", "LA TENIENTA"], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
 const WIN := Vector2(84, 104)
 const STEP := 92.0
 const X0 := 60.0
