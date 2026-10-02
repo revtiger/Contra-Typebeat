@@ -1,8 +1,9 @@
 """Retratos de la pantalla ELIGE TU SOLDADO, al estilo de Metal Slug X: cara grande de tres cuartos,
 sombreado de cómic, expresión exagerada. Genera la versión a color (elegido) y en sepia (sin elegir).
 
-Soldados (ficticios): presi, tenienta, chato, bigotes.
+Soldados: presi, tenienta (ficticios) y eduardo, eder (diseños de Eduardo).
 Uso:  python tools/sprites/portraits.py  ->  assets/sprites/portraits.png (fila 0 color, fila 1 sepia)
+Si existe tools/sprites/pixellab/portrait_<id>.png (hecho con PixelLab), se usa en vez del dibujado.
 """
 import os
 import sys
@@ -13,6 +14,7 @@ from px import Pen, canvas, outline, preview  # noqa: E402
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "sprites")
 PREV = os.path.join(os.path.dirname(__file__), "preview")
+AI = os.path.join(os.path.dirname(__file__), "pixellab")  # retratos generados con PixelLab
 W, H = 72, 96
 INK = (20, 14, 16)
 
@@ -25,14 +27,9 @@ HEROES = {
                  "hair": [(92, 32, 16), (150, 58, 28), (200, 98, 50)], "style": "ponytail",
                  "cloth": [(52, 60, 32), (82, 94, 52), (116, 130, 76)], "mouth": "smirk", "extra": "bandana",
                  "bg": [(30, 52, 60), (12, 20, 26)]},
-    "chato": {"skin": [(120, 70, 44), (176, 112, 74), (212, 150, 104), (238, 190, 146)],
-              "hair": [(30, 22, 18), (62, 48, 38), (96, 76, 60)], "style": "cap",
-              "cloth": [(128, 100, 58), (168, 136, 84), (204, 176, 120)], "mouth": "yell", "extra": "cap",
-              "bg": [(60, 50, 20), (24, 20, 8)]},
-    "bigotes": {"skin": [(140, 82, 58), (196, 128, 92), (228, 168, 126), (246, 204, 168)],
-                "hair": [(120, 116, 110), (170, 166, 158), (214, 210, 202)], "style": "helmet",
-                "cloth": [(44, 48, 38), (70, 78, 58), (104, 112, 86)], "mouth": "cigar", "extra": "helmet",
-                "bg": [(40, 40, 60), (14, 14, 24)]},
+    # diseños de Eduardo (ChatGPT): el retrato sale de tools/sprites/chatgpt/portrait_<id>.png
+    "eduardo": {},
+    "eder": {},
 }
 
 
@@ -183,6 +180,14 @@ def hair(p, h):
 
 
 def portrait(name):
+    # si hay un retrato hecho con PixelLab (72x96), se usa ese en lugar del dibujado por código
+    # (o con los diseños de ChatGPT de Eduardo, recortados por chatgpt_heroes.py)
+    ai = os.path.join(AI, "portrait_%s.png" % name)
+    if not os.path.exists(ai):
+        ai = os.path.join(os.path.dirname(__file__), "chatgpt", "portrait_%s.png" % name)
+    if os.path.exists(ai):
+        from PIL import Image
+        return Image.open(ai).convert("RGBA").resize((W, H), Image.NEAREST)
     h = HEROES[name]
     img = canvas(W, H)
     p = Pen(img)

@@ -1,0 +1,44 @@
+{
+ "frame": [
+  96,
+  128
+ ],
+ "pivot": [
+  61,
+  127
+ ],
+ "anims": {
+  "idle": {
+   "row": 0,
+   "frames": 5
+  },
+  "walk": {
+   "row": 1,
+   "frames": 7
+  },
+  "talk": {
+   "row": 2,
+   "frames": 9
+  },
+  "throw": {
+   "row": 3,
+   "frames": 9
+  },
+  "thumbs": {
+   "row": 4,
+   "frames": 9
+  }
+ },
+ "mic": [
+  28,
+  44
+ ],
+ "hand_throw": [
+  8,
+  38
+ ],
+ "shoulder": [
+  60,
+  49
+ ]
+}

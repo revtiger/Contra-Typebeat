@@ -29,13 +29,14 @@ godot --path .
 
 Armas (munición limitada, al acabarse vuelve la pistola): dispara a la cápsula voladora para soltar **H** (ametralladora), **R** (cohetes), **F** (llamas), **L** (láser), **S** (escopeta) o **B** (+10 bombas).
 
-Campaña: 1 Argentina–Brasil (Triple Frontera), 2 Bolivia (Quebradas de Tupiza), 3 frontera México–EE.UU. (jefe: La Presidenta Mecha), 4 EE.UU.–ONU (próximamente). Cada misión tiene mini jefe y jefe final, y entre misiones hay un mapa con la ruta.
+Campaña (historia *ONU: Trying to save the world*): Argentina → México → EUA → Alemania → nivel secreto en la ONU, 3 fases cada uno (15 en total). Cada fase termina en un jefe político (minijefe en X.1 y X.2, jefe final en X.3) y entre fases hay un mapa mundial con la ruta. Detalle en [docs/historia.md](docs/historia.md).
 
 Las armas que no se recogen parpadean y desaparecen a los 9 segundos.
 
 ## Estructura
 - `scripts/game.gd`: autoload con vidas, puntos, récord, controles, sonido y pausa
-- `scripts/levels.gd`: datos de las misiones (suelo, plataformas, enemigos)
+- `scripts/levels.gd`: las 15 fases (zonas, plantillas de terreno, enemigos y jefe de cada fase)
+- `scripts/politician.gd`, `massa.gd`, `ritual.gd`, `door.gd`: jefes políticos (Massa animado), ritual del pentagrama y puertas del nivel secreto
 - `scripts/intro.gd`, `menu.gd`, `select.gd`, `map.gd`, `level.gd`: las escenas (intro, menú, ELIGE TU SOLDADO, mapa, misión)
 - `scripts/logo_text.gd`: letras cinceladas del logo; `scripts/city.gd`: ciudad en llamas del menú
 - `scripts/player.gd`: jugador
@@ -43,7 +44,7 @@ Las armas que no se recogen parpadean y desaparecen a los 9 segundos.
 - `scripts/barrel.gd`, `mine.gd`, `jet.gd`, `bomb.gd`: peligros del desierto
 - `scripts/pickup.gd`: cápsula y armas
 - `scripts/sfx.gd`: sintetizador de efectos y música
-- `scripts/mecha.gd`, `boss_part.gd`: jefe por piezas de la misión 3
+- `scripts/mecha.gd`, `boss_part.gd`: La Presidenta Mecha, jefe por piezas (transfiguración de Sheinbaum en la fase 2.3)
 - `tools/sprites/`: generadores de sprites (Python + Pillow) → `assets/sprites/`
 - `tests/autoplay.gd`: prueba automática que juega sola y guarda capturas (ver CLAUDE.md)
 

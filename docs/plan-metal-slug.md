@@ -64,7 +64,7 @@ Hoy todo se dibuja con `_draw()` y se construye por código. Sirvió para el pro
 
 ## 6. Decisiones abiertas
 
-- ✅ Decidido: ficticios. **Personajes basados en políticos reales.** Recomendación: personajes **ficticios** que parodien el cargo o el estilo (banda presidencial, discursos, carteles de propaganda inventados), sin la cara, el nombre ni los lemas reales de personas concretas. Motivos: las tiendas (Steam, itch.io, consolas) y las redes suelen rechazar juegos en los que se dispara a un político real y reconocible; hay riesgo legal por uso de imagen; y el chiste funciona igual con una parodia. Los villanos concretos están por definir (Zarko y El Socio se descartaron).
+- ✅ Decidido (28-09-2026): **se permiten caricaturas de políticos reales**, como propuso Eduardo. Antes la decisión era "solo ficticios"; Gwyn la cambió. Riesgo conocido a tener en cuenta al publicar: algunas tiendas y redes pueden poner pegas a juegos en los que se dispara a políticos reales reconocibles. Lista de personajes en `docs/historia.md` (Zarko y El Socio siguen descartados).
 - ✅ Nombre: el juego pasa a llamarse **ONU: Outbreak** (el repositorio sigue como Contra-Typebeat).
 - ✅ Decidido: IA + ajustes a mano. ¿Quién dibuja? ¿Uno de los dos, un artista externo o IA + limpieza en Aseprite?
 - ✅ Decidido: 100 % Metal Slug. ¿Controles sin disparo diagonal o mantenemos las diagonales?

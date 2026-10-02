@@ -1,6 +1,6 @@
 # Documento de diseño: ONU: Outbreak
 
-Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
+Autores: Gwyn y Eduardo · Última revisión: 29-09-2026 (v0.7: campaña de la Orden Mundial)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
@@ -8,13 +8,13 @@ Autores: Gwyn y Eduardo · Última revisión: 27-09-2026 (v0.6)
 
 ## Resumen
 
-**ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra: un soldado recorre América de sur a norte disparando en 8 direcciones contra oleadas de enemigos, tanques y bombardeos. Cada misión tiene un mini jefe a mitad de camino y un jefe final, y entre misiones un mapa muestra la ruta.
+**ONU: Outbreak** (antes Contra-Typebeat) es un run and gun 2D de desplazamiento lateral inspirado en Contra y Metal Slug: un soldado recorre Argentina, México, EUA y Alemania hasta el nivel secreto de la ONU, disparando contra oleadas de enemigos, tanques y bombardeos. Cada país tiene 3 fases y cada fase termina con un jefe político; entre fases un mapa muestra la ruta.
 
-**Historia:** ☐ por definir. El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. La intro no cuenta historia: es de título, como la de Metal Slug 2.
+**Historia:** ✅ aceptada (29-09-2026) la propuesta de Eduardo *ONU: Trying to save the world*: la Orden Mundial, 4 países (Argentina, México, EUA, Alemania) + nivel secreto en la ONU, con caricaturas de políticos reales. Detalle en [`historia.md`](historia.md). El General Zarko y El Socio se descartaron, y Gwyn y Eduardo (los autores) no son personajes de la historia. **Excepción (30-09-2026, decisión de Eduardo):** Eduardo y Eder sí son soldados jugables en ELIGE TU SOLDADO. La intro no cuenta historia: es de título, como la de Metal Slug 2.
 
-**Soldados jugables (ficticios):** El Presi (traje y banda presidencial tricolor), La Tenienta (coleta y pañuelo rojo), El Chato (gorra azul hacia atrás) y Don Bigotes (veterano con casco, bigote canoso, parche y puro). Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
+**Soldados jugables:** El Presi (traje y banda presidencial tricolor) y La Tenienta (coleta y pañuelo rojo), ficticios, más **Eduardo** (pelo negro, camiseta negra y chaleco verde oliva, pantalón caqui) y **Eder** (pelo castaño corto, camisa de flores, pantalón gris), diseñados por Eduardo con ChatGPT (30-09-2026, `tools/sprites/chatgpt/`). Eduardo y Eder usan **sprites de cuerpo entero** (32 poses cada uno: quieto, correr, saltar, agacharse, disparar, granada, cuerpo a tierra, cuchillo, victoria), montados por `tools/sprites/heroes_sheets.py`; El Presi y La Tenienta siguen con piernas + torso. ☐ Faltan poses de disparar hacia arriba y hacia abajo para Eduardo y Eder. El Chato y Don Bigotes se quitaron. Se eligen en ELIGE TU SOLDADO y cambian el sprite con el que se juega.
 
-**Ruta de la campaña:** Argentina–Brasil (Triple Frontera) → Bolivia → frontera México–EE.UU. → EE.UU.: reunión secreta de la ONU en Nueva York (propuesta de Eduardo, próximamente).
+**Ruta de la campaña (v0.7, en el código):** Argentina → México → EUA → Alemania → nivel secreto en la ONU, 15 fases (ver "Niveles" y [`historia.md`](historia.md)). La ruta anterior (Triple Frontera → Bolivia → Frontera Norte) se sustituyó; sus jefes (Fortaleza Roja, Helicóptero Cóndor, Comandante Kruger, Camión) siguen en el código pero ya no aparecen.
 
 | Aspecto | Definición |
 |---|---|
@@ -43,7 +43,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 **TIME:** empieza en 60 y baja 1 cada 4 segundos. En los últimos 10 parpadea en rojo y pita; a 0 el jugador muere. Se reinicia al reaparecer, al aparecer un mini jefe y al llegar al jefe final.
 
-**Flujo de pantallas:** intro estilo Metal Slug 2 (se salta con cualquier botón) → menú (Jugar, Elegir misión, Controles, Ver intro, Salir) → **ELIGE TU SOLDADO** (estilo Metal Slug X, cuenta atrás de 30) → **mapa** con la ruta → misión (mini jefe + jefe final) → "Misión cumplida" → **mapa** con el siguiente destino → … Si la siguiente misión aún no existe, el mapa la marca como "PRÓXIMAMENTE" y vuelve al menú. Esc pausa la partida.
+**Flujo de pantallas:** intro estilo Metal Slug 2 (se salta con cualquier botón) → menú (Jugar, Elegir fase, Controles, Ver intro, Salir) → **ELIGE TU SOLDADO** (estilo Metal Slug X, cuenta atrás de 30) → **mapa mundial** con la ruta y el jefe de la fase → fase → "¡Fase X.Y superada!" (o "¡País liberado!" tras el jefe final) → **mapa** → … → tras la fase 5.3, "¡Apocalipsis detenido!" y el mapa con "¡Mundo salvado!" vuelve al menú. Esc pausa la partida.
 
 ## Controles
 
@@ -78,6 +78,11 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Comandante Kruger | Mini jefe (misión 1) | Ametralladora a la altura del pecho (se esquiva tumbándose), granadas con aviso, salto con triple disparo. 45 de vida | ✅ |
 | La Presidenta Mecha | Jefe (misión 3) | Mecha gigante por piezas con patas de araña: brazo ametralladora (ráfagas en abanico), dos cápsulas de misiles que caen con aviso y pisotón con onda que hay que saltar. Cada pieza se rompe por separado y se lleva su ataque; la cabeza es punto débil (daño doble) | ✅ |
 | Camión lanzacohetes | Mini jefe (misión 2) | Cohetes que caen del cielo con marca en el suelo (5 a media vida) y artillero que apunta. 60 de vida | ✅ |
+| Jefes políticos | Minijefe / jefe final | Caricaturas de PixelLab (`politician.gd`): esperan fuera de pantalla, entran andando al llegar a la arena y combinan ataques ☐ **provisionales** (ráfaga, abanico, granadas, bombas del cielo, soldados, embestida, onda rasante, salto). Los jefes finales se enfurecen a media vida. Al perder salen volando dando vueltas ("¡Recibió su merecido!"), sin sangre | ✅ |
+| **Sergio Massa** (animado) | Minijefe 1.1 | Primer jefe con animaciones completas de PixelLab (`massa.gd`): respira, camina, gesticula. Ataques: **Discurso** (saca el micrófono y lanza "promesas", bocadillos lentos que se pueden reventar a tiros), **Plan Platita** (saca un fajo del saco y lo lanza en arco; al caer se abre en billetes que revolotean), **¡Pulgar arriba!** (guiña y llama a 2 militantes). A media vida se enfada ("¡PLAN PLATITA!"): suda, va más rápido y saca **La Maquinita**, un cañón de imprimir billetes al hombro que dispara 3 ráfagas con retroceso. 70 de vida | ✅ |
+| Transfiguración | Jefe final 2.3 | Sheinbaum se transforma en **La Presidenta Mecha** (el mecha por piezas) | ✅ |
+| Ritual del pentagrama | Jefe final 5.3 | Tras vencer al líder de la Orden aparecen los jefes finales en las puntas de un pentagrama, giran y se fusionan en **La Orden Fusionada** (flota, 260 de vida, todos los ataques) | ✅ |
+| Puerta blindada | Objetivo (5.1, 5.2) | Fin de fase en el nivel secreto: se abre al llegar | ✅ |
 | Cápsula voladora | Objeto | Cruza la pantalla; al dispararle suelta un arma o una caja de bombas (B, +10). Si no se recoge, parpadea y desaparece a los 9 s | ✅ |
 | Pistola | Arma | Munición infinita; es el arma a la que se vuelve | ✅ |
 | H: ametralladora pesada | Arma | 200 balas, cadencia muy alta con algo de dispersión | ✅ |
@@ -94,12 +99,27 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 ## Niveles
 
-Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
+15 fases en `scripts/levels.gd` (5 zonas x 3). Cada fase usa una de 5 plantillas de terreno (selva, desierto, ciudad, nieve, base) con variaciones de enemigos y armas, mide 3000 px y termina en la arena del jefe. Banderas y carteles de propaganda cambian según el país.
 
-1. **Argentina–Brasil: Triple Frontera** ✅ (selva): fosos de agua, puentes, un escalón elevado, mini jefe Comandante Kruger y La Fortaleza Roja al final.
-2. **Bolivia: Quebradas de Tupiza** ✅ (árido): mesetas rojas, dunas y cactus; cañones sin fondo, barriles, minas, 2 tanques, 2 bombardeos, mini jefe Camión lanzacohetes y el Helicóptero Cóndor al final.
-3. **Frontera México–EE.UU.** ✅ (ciudad al atardecer): calles en ruinas, edificios coloniales con cúpulas, carteles de propaganda inventados, 2 tanques, 2 bombardeos, mini jefe Comandante Kruger y La Presidenta Mecha al final. ☐ Falta el tramo de la escuela del que se habló.
-4. **EE.UU.: reunión secreta de la ONU** ☐ (próximamente).
+| Fase | Escenario | Jefe |
+|---|---|---|
+| 1.1 | Argentina: Monte Misionero (selva) | Minijefe Sergio Massa |
+| 1.2 | Argentina: Quebrada de Humahuaca (desierto) | Minijefa Cristina Kirchner |
+| 1.3 | Argentina: Buenos Aires, Casa Rosada (ciudad) | **Javier Milei** |
+| 2.1 | México: Selva del Sureste | Minijefe AMLO |
+| 2.2 | México: Desierto del Norte | Minijefe Carlos Salinas de Gortari |
+| 2.3 | México: Capital, Palacio Nacional | **Claudia Sheinbaum → Presidenta Mecha** |
+| 3.1 | EUA: Frontera de Texas (desierto) | Minijefe Joe Biden |
+| 3.2 | EUA: Pantanos de Florida (selva) | Minijefe Barack Obama |
+| 3.3 | EUA: Washington, Casa Blanca (ciudad) | **Donald Trump** |
+| 4.1 | Alemania: Selva Negra (nieve) | Minijefa Angela Merkel |
+| 4.2 | Alemania: Alpes Bávaros (nieve) | Minijefe Olaf Scholz |
+| 4.3 | Alemania: Berlín, Bundestag (ciudad) | **Friedrich Merz** |
+| 5.1 | ONU: Sótanos (base) | Puerta 1 |
+| 5.2 | ONU: Laboratorio de la Orden (base) | Puerta 2 |
+| 5.3 | ONU: Sala del Consejo Secreto (base) | **Líder de la Orden → La Orden Fusionada** |
+
+☐ Pendiente: escenarios únicos por fase (ahora se repiten las 5 plantillas), habilidades definitivas de cada jefe, político aliado y ayudante religioso.
 
 ## Estilo visual y sonido
 
@@ -108,6 +128,7 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 - **Letras de logo cinceladas** (`tools/sprites/logo.py`): cursiva, bisel y relieve 3D, en piedra, oro y acero. Se usan en la intro, el menú y los títulos de pantalla.
 - **ELIGE TU SOLDADO estilo Metal Slug X:** marco de acero remachado, retratos de cómic (el elegido a color, el resto en sepia), placas con el nombre y cuenta atrás.
 - **Sprites (v0.5):** el protagonista (traje, banda presidencial tricolor, mochila y rifle; cara inventada), los soldados (selva y desierto) y La Presidenta Mecha ya son sprites PNG en `assets/sprites/`. Los generan los programas de `tools/sprites/` y se pueden retocar en Aseprite. El protagonista tiene piernas y torso separados, como en Metal Slug. Siguen dibujados por código: torretas, tanques, mini jefes, jefes de las misiones 1 y 2 y objetos.
+- **Arte con PixelLab (IA):** ya están hechos con PixelLab los 4 retratos de ELIGE TU SOLDADO (primer plano caricaturesco, fondo oscuro) y el rascacielos en llamas animado del menú. Los originales están en `tools/sprites/pixellab/`; `portraits.py` y `tower.py` montan las hojas. ☐ Siguiente: sprites de juego de los soldados.
 - Música y efectos generados por código (estilo 8 bits): tema de menú, uno por misión y uno de jefe. ☐ Sustituir por música compuesta si alguien se anima.
 
 ## Alcance del primer prototipo
@@ -123,11 +144,12 @@ Los mini jefes bloquean la cámara al aparecer hasta que se les derrota.
 | Nivel 2 Desierto con jefe ✅ (v0.2) | |
 | Intro estilo póster, mapa de campaña, mini jefes y armas que desaparecen ✅ (v0.3) | |
 | Intro estilo Metal Slug 2, ELIGE TU SOLDADO con 4 soldados, logo cincelado, fuente única ✅ (v0.6) | |
+| Campaña de la Orden Mundial: 15 fases, 14 jefes políticos, nieve y base secreta, mapa mundial ✅ (v0.7) | |
 
 ## Preguntas abiertas
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
-- ✅ Personajes: **ficticios**. Se puede parodiar el cargo (banda presidencial, propaganda inventada), pero sin la cara, el nombre ni los lemas reales de personas concretas.
+- ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Tono de burla tipo Metal Slug / Broforce, **con sangre y gore de arcade** (cambio de Gwyn, 30-09-2026): sangre pixelada y enemigos que revientan en trozos. Eduardo tiene pase libre para decidir historia, personajes y nivel de violencia. Lista en [`historia.md`](historia.md).
 - ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
 - ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?

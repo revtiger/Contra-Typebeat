@@ -2,7 +2,11 @@ extends Node2D
 ## Ciudad de noche con un rascacielos que estalla y arde (intro y menú, estilo "Duro de matar").
 
 const TOWER := Rect2(330, 108, 64, 170)
-const FIRE_FLOORS := 7
+## rascacielos en llamas animado (PixelLab, tools/sprites/tower.py): 9 fotogramas de 96x192
+const TOWER_TEX := preload("res://assets/sprites/city_tower.png")
+const TOWER_FRAME := Vector2(96, 192)
+const TOWER_FRAMES := 9
+const TOWER_FPS := 10.0
 
 var burning := false
 var t := 0.0
@@ -61,43 +65,39 @@ func _draw() -> void:
 
 	# rascacielos
 	var tw := TOWER
+	if burning:
+		_draw_burning_tower(glow)
+		_draw_street()
+		return
 	draw_rect(tw, Color(0.14, 0.15, 0.2))
 	draw_rect(Rect2(tw.position.x + 26, tw.position.y - 14, 12, 14), Color(0.14, 0.15, 0.2))
 	draw_line(Vector2(tw.position.x + 32, tw.position.y - 14), Vector2(tw.position.x + 32, tw.position.y - 30), Color(0.3, 0.3, 0.35), 1)
 	if int(t * 2.0) % 2 == 0:
 		draw_rect(Rect2(tw.position.x + 31, tw.position.y - 31, 3, 2), Color(1, 0.1, 0.1))
 	rng.seed = 21
-	var floor_i := 0
 	for wy in range(int(tw.position.y) + 4, 262, 8):
-		var on_fire := burning and floor_i < FIRE_FLOORS
 		for wx in range(int(tw.position.x) + 4, int(tw.end.x) - 3, 7):
 			var c := Color(0.95, 0.85, 0.5, 0.8) if rng.randf() < 0.4 else Color(0.2, 0.22, 0.3)
-			if on_fire:
-				var k := 0.5 + 0.5 * sin(t * 13.0 + wx * 0.7 + wy * 1.3)
-				c = Color(1, 0.35, 0.05).lerp(Color(1, 0.9, 0.3), k)
 			draw_rect(Rect2(wx, wy, 4, 5), c)
-		floor_i += 1
 
-	if burning:
-		# resplandor, llamas y humo
-		var c := tower_top() + Vector2(0, 14)
-		draw_circle(c, 60, Color(1, 0.45, 0.1, 0.12 * glow))
-		draw_circle(c, 35, Color(1, 0.55, 0.15, 0.15 * glow))
-		for i in 10:
-			var fx := tw.position.x + 2 + i * 6.5
-			var fh := 8.0 + 6.0 * absf(sin(t * 7.0 + i * 2.1))
-			var fy := tw.position.y + 6 + (i % 3) * 16
-			var side := -1.0 if i < 5 else 1.0
-			var base := Vector2(tw.position.x if side < 0 else tw.end.x, fy)
-			if i % 2 == 0:
-				draw_colored_polygon(PackedVector2Array([base, base + Vector2(side * fh, -fh * 0.6), base + Vector2(0, -8)]), Color(1, 0.5, 0.1, 0.9))
-			draw_colored_polygon(PackedVector2Array([Vector2(fx, tw.position.y), Vector2(fx + 3, tw.position.y - fh), Vector2(fx + 6, tw.position.y)]), Color(1, 0.6 + 0.3 * sin(t * 9.0 + i), 0.15))
-		for i in 8:
-			var k := fmod(t * 0.25 + i / 8.0, 1.0)
-			var sp := tower_top() + Vector2(k * 90 + sin(i * 3.0) * 8, -k * 120 - 10)
-			draw_circle(sp, 8 + k * 22, Color(0.15, 0.13, 0.14, 0.55 * (1.0 - k) * glow))
+	_draw_street()
 
-	# calle
+
+## Sprite animado del rascacielos en llamas, con resplandor detrás y humo que tapa el borde de arriba.
+func _draw_burning_tower(glow: float) -> void:
+	var c := tower_top() + Vector2(0, 14)
+	draw_circle(c, 60, Color(1, 0.45, 0.1, 0.12 * glow))
+	draw_circle(c, 35, Color(1, 0.55, 0.15, 0.15 * glow))
+	var f := int(t * TOWER_FPS) % TOWER_FRAMES
+	var pos := Vector2(TOWER.get_center().x - TOWER_FRAME.x / 2.0, 270 - TOWER_FRAME.y)
+	draw_texture_rect_region(TOWER_TEX, Rect2(pos, TOWER_FRAME), Rect2(Vector2(f * TOWER_FRAME.x, 0), TOWER_FRAME))
+	for i in 8:
+		var k := fmod(t * 0.25 + i / 8.0, 1.0)
+		var sp := Vector2(pos.x + 48, pos.y + 6) + Vector2(k * 90 + sin(i * 3.0) * 8, -k * 90)
+		draw_circle(sp, 10 + k * 22, Color(0.15, 0.13, 0.14, 0.6 * (1.0 - k) * glow))
+
+
+func _draw_street() -> void:
 	draw_rect(Rect2(0, 262, 480, 8), Color(0.05, 0.05, 0.08))
 	for i in 8:
 		draw_rect(Rect2(i * 64 + 20, 250, 2, 12), Color(0.2, 0.2, 0.25))
