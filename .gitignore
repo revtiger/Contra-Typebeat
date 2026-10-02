@@ -1,3 +1,5 @@
 .godot/
 export/
 build/
+tools/sprites/preview/
+__pycache__/

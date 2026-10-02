@@ -1,0 +1,71 @@
+{
+ "heroes": [
+  "presi",
+  "tenienta",
+  "chato",
+  "bigotes"
+ ],
+ "frame": [
+  48,
+  48
+ ],
+ "feet": [
+  24,
+  46
+ ],
+ "legs": {
+  "idle": 0,
+  "run": 1,
+  "jump": 2,
+  "crouch": 3,
+  "crawl": 4
+ },
+ "torso": {
+  "fwd": 0,
+  "up": 1,
+  "down": 2,
+  "crouch_fwd": 3,
+  "throw": 4,
+  "crouch_throw": 5,
+  "knife": 6,
+  "crouch_knife": 7
+ },
+ "bob": {
+  "run": [
+   1,
+   0,
+   -1,
+   0,
+   1,
+   0,
+   -1,
+   0
+  ]
+ },
+ "muzzle": {
+  "fwd": [
+   23,
+   -20
+  ],
+  "up": [
+   8,
+   -38
+  ],
+  "down": [
+   4,
+   -3
+  ],
+  "crouch_fwd": [
+   23,
+   -12
+  ]
+ },
+ "death_frame": [
+  64,
+  48
+ ],
+ "death_feet": [
+  46,
+  46
+ ]
+}

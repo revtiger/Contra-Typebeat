@@ -12,6 +12,8 @@ const Barrel = preload("res://scripts/barrel.gd")
 const Mine = preload("res://scripts/mine.gd")
 const Jet = preload("res://scripts/jet.gd")
 const Miniboss = preload("res://scripts/miniboss.gd")
+const Mecha = preload("res://scripts/mecha.gd")
+const Hud = preload("res://scripts/hud.gd")
 const Bomb = preload("res://scripts/bomb.gd")
 const Pickup = preload("res://scripts/pickup.gd")
 const Terrain = preload("res://scripts/terrain.gd")
@@ -20,6 +22,8 @@ const Explosion = preload("res://scripts/explosion.gd")
 
 const SCREEN_W := 480.0
 const SCREEN_H := 270.0
+const START_TIME := 60
+const TIME_TICK := 4.0  # como en Metal Slug: TIME baja 1 cada 4 s
 
 var data: Dictionary
 var theme := "jungle"
@@ -37,8 +41,9 @@ var boss_announced := false
 var state := "play"  # play | over | clear
 var spawn_t := 2.5
 var next_entity := 0
-var hud := Label.new()
-var banner := Label.new()
+var hud := Hud.new()
+var time_left := START_TIME
+var time_acc := 0.0
 var banner_t := 2.5
 
 
@@ -66,6 +71,8 @@ func _ready() -> void:
 	var layers := [["mountains", 0.85, -9], ["jungle", 0.55, -8], ["water", 0.0, -5]]
 	if theme == "desert":
 		layers = [["mesas", 0.85, -9], ["dunes", 0.55, -8], ["chasm", 0.0, -5]]
+	elif theme == "city":
+		layers = [["colonial", 0.85, -9], ["ruins", 0.55, -8], ["sewer", 0.0, -5]]
 	for k in layers:
 		var bg := Background.new()
 		bg.kind = k[0]
@@ -91,17 +98,9 @@ func _ready() -> void:
 
 	var ui := CanvasLayer.new()
 	add_child(ui)
-	for l in [hud, banner]:
-		l.add_theme_font_size_override("font_size", 11)
-		l.add_theme_color_override("font_outline_color", Color.BLACK)
-		l.add_theme_constant_override("outline_size", 4)
-		ui.add_child(l)
-	hud.position = Vector2(6, 3)
-	banner.size = Vector2(SCREEN_W, SCREEN_H)
-	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	banner.add_theme_font_size_override("font_size", 20)
-	banner.text = data["name"] + "\n¡VAMOS!"
+	hud.level = self
+	ui.add_child(hud)
+	hud.banner_text = data["name"] + "\n¡VAMOS!"
 	Game.play_music(data["music"])
 
 
@@ -149,11 +148,13 @@ func _physics_process(delta: float) -> void:
 		boss_announced = true
 		Game.play_music("boss")
 		show_banner("¡JEFE FINAL!\n" + data["boss_name"], 2.0)
+		reset_time()
 
+	_tick_time(delta)
 	if banner_t > 0.0:
 		banner_t -= delta
 		if banner_t <= 0.0 and state == "play":
-			banner.text = ""
+			hud.banner_text = ""
 
 	if state == "over":
 		if Input.is_action_just_pressed("restart"):
@@ -163,10 +164,6 @@ func _physics_process(delta: float) -> void:
 	elif state == "clear" and banner_t <= 0.0 and Game.accept_pressed():
 		Game.next_level()
 
-	var ammo_text := "∞" if player.ammo < 0 else str(player.ammo)
-	hud.text = "VIDAS %s   PUNTOS %06d   RÉCORD %06d\nARMA %s %s   BOMBAS %d" % [
-		"♥".repeat(maxi(Game.lives, 0)), Game.score, Game.record,
-		Game.WEAPON_NAMES[player.weapon], ammo_text, player.bombs]
 
 
 func _spawn_entities() -> void:
@@ -194,7 +191,10 @@ func _spawn_entities() -> void:
 				n = Jet.new()
 				pos = Vector2(cam_left + SCREEN_W + 40, 26)
 			"boss":
-				n = Boss.new() if e[3] == "wall" else Heli.new()
+				match e[3]:
+					"wall": n = Boss.new()
+					"heli": n = Heli.new()
+					_: n = Mecha.new()
 				boss = n
 			"capsule":
 				n = Pickup.new()
@@ -220,9 +220,29 @@ func safe_x(x: float) -> float:
 	return x
 
 
+## TIME: baja 1 cada TIME_TICK segundos; a 0 el jugador muere. Pitido en los últimos 10.
+func _tick_time(delta: float) -> void:
+	if state != "play" or player.dead:
+		return
+	time_acc += delta
+	if time_acc < TIME_TICK:
+		return
+	time_acc -= TIME_TICK
+	time_left -= 1
+	if time_left <= 10 and time_left > 0:
+		Game.sfx("beep", -10.0, 1.3)
+	if time_left <= 0:
+		player.hit(true)
+
+
+func reset_time() -> void:
+	time_left = START_TIME
+	time_acc = 0.0
+
+
 func show_banner(text: String, duration: float) -> void:
 	if state == "play":
-		banner.text = text
+		hud.banner_text = text
 		banner_t = duration
 
 
@@ -230,6 +250,7 @@ func show_banner(text: String, duration: float) -> void:
 func lock_camera(x: float, title: String) -> void:
 	lock_left = x
 	show_banner("¡ALERTA!\n" + title, 2.0)
+	reset_time()
 	Game.play_music("boss")
 
 
@@ -292,9 +313,10 @@ func _on_player_died() -> void:
 		state = "over"
 		Game.save_record()
 		Game.stop_music()
-		banner.text = "GAME OVER\nPuntos: %d\n\nEnter: reintentar   Q: menú" % Game.score
+		hud.banner_text = "GAME OVER\nPuntos: %d\n\nEnter: reintentar   Q: menú" % Game.score
 		return
 	player.respawn(Vector2(safe_x(cam_left + 50), 20))
+	reset_time()
 
 
 func stage_clear() -> void:
@@ -305,4 +327,4 @@ func stage_clear() -> void:
 	Game.save_record()
 	Game.stop_music()
 	Game.sfx("pickup")
-	banner.text = "¡MISIÓN CUMPLIDA!\nPuntos: %d   Récord: %d\n\nPulsa para ver el mapa" % [Game.score, Game.record]
+	hud.banner_text = "¡MISIÓN CUMPLIDA!\nPuntos: %d   Récord: %d\n\nPulsa para ver el mapa" % [Game.score, Game.record]

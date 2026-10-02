@@ -1,4 +1,5 @@
 extends Area2D
+const PixelFont = preload("res://scripts/pixel_font.gd")
 ## "capsule": cápsula voladora que cruza la pantalla; al dispararle suelta el arma.
 ## "item": el arma que cae al suelo y se recoge al tocarla.
 
@@ -89,4 +90,4 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO, 7, Color(0.9, 0.15, 0.15))
 		draw_line(Vector2(-12, -2), Vector2(-5, 0), Color(0.9, 0.8, 0.2), 3)
 		draw_line(Vector2(12, -2), Vector2(5, 0), Color(0.9, 0.8, 0.2), 3)
-		draw_string(ThemeDB.fallback_font, Vector2(-4, 4), weapon, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color.WHITE)
+		draw_string(PixelFont.font("small"), Vector2(-3, 5), weapon, HORIZONTAL_ALIGNMENT_LEFT, -1, PixelFont.size("small"))

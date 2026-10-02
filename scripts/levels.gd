@@ -9,13 +9,13 @@ extends RefCounted
 ##   capsule: extra = lo que suelta: arma (H, R, F, L, S) o B (+10 bombas)
 ##   jet: bombardeo aéreo que apunta a donde está el jugador
 ##   miniboss: extra = "comandante" o "camion". Bloquea la cámara hasta que muere
-##   boss: extra = "wall" (muro) o "heli" (helicóptero). El nombre que se anuncia va en "boss_name"
+##   boss: extra = "wall" (muro), "heli" (helicóptero) o "mecha" (Presidenta Mecha). El nombre que se anuncia va en "boss_name"
 ## Referencia de alturas: el salto sube ~70 px; los tramos de suelo pueden subir hasta ~35 px.
 
 const LIST := [
 	{
 		"name": "MISIÓN 1: TRIPLE FRONTERA",
-		"boss_name": "EL MURO DE ZARKO",
+		"boss_name": "LA FORTALEZA ROJA",
 		"theme": "jungle",
 		"music": "level",
 		"end": 4300,
@@ -70,6 +70,35 @@ const LIST := [
 			["sniper", 3450, 125], ["mine", 3520, 230], ["mine", 3580, 230], ["jet", 3650, 0],
 			["barrel", 3820, 230], ["sniper", 3930, 175],
 			["boss", 4300, 60, "heli"],
+		],
+	},
+	{
+		"name": "MISIÓN 3: FRONTERA NORTE",
+		"boss_name": "LA PRESIDENTA MECHA",
+		"theme": "city",
+		"music": "city",
+		"end": 4000,
+		"ground": [
+			[0, 800, 230], [850, 1400, 230], [1400, 1700, 205], [1700, 2200, 230], [2250, 2900, 230],
+			[2900, 3200, 210], [3250, 4000, 230],
+		],
+		"platforms": [
+			[250, 110, 175], [600, 100, 175], [680, 90, 125], [1000, 120, 175], [1180, 100, 130],
+			[1500, 90, 150], [1850, 120, 175], [2000, 100, 125], [2400, 120, 175], [2550, 110, 130],
+			[3000, 100, 160], [3350, 120, 175],
+		],
+		"entities": [
+			# tramo 1: calle en ruinas
+			["sniper", 290, 175], ["barrel", 470, 230], ["barrel", 484, 230], ["grenadier", 560, 230],
+			["capsule", 700, 60, "H"], ["sniper", 720, 125], ["tank", 1100, 230], ["sniper", 1210, 130],
+			# tramo 2: plaza y mini jefe
+			["turret", 1560, 205], ["jet", 1450, 0], ["barrel", 1760, 230], ["barrel", 1774, 230],
+			["grenadier", 1900, 230], ["capsule", 1800, 60, "B"], ["miniboss", 2150, 230, "comandante"],
+			# tramo 3: avenida bombardeada
+			["capsule", 2350, 60, "R"], ["sniper", 2440, 175], ["sniper", 2590, 130], ["mine", 2700, 230],
+			["tank", 2800, 230], ["turret", 3050, 210], ["jet", 2950, 0], ["grenadier", 3150, 210],
+			["capsule", 3250, 60, "S"], ["sniper", 3380, 175], ["barrel", 3460, 230], ["barrel", 3474, 230],
+			["boss", 3900, 230, "mecha"],
 		],
 	},
 ]

@@ -1,0 +1,37 @@
+{
+ "chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZÑ0123456789!-.&| ",
+ "styles": {
+  "big_stone": {
+   "y": 0,
+   "w": 47,
+   "h": 50,
+   "advance": 34,
+   "space": 18,
+   "face_h": 42
+  },
+  "big_gold": {
+   "y": 50,
+   "w": 47,
+   "h": 50,
+   "advance": 34,
+   "space": 18,
+   "face_h": 42
+  },
+  "small_steel": {
+   "y": 100,
+   "w": 25,
+   "h": 27,
+   "advance": 17,
+   "space": 9,
+   "face_h": 21
+  },
+  "small_gold": {
+   "y": 127,
+   "w": 25,
+   "h": 27,
+   "advance": 17,
+   "space": 9,
+   "face_h": 21
+  }
+ }
+}

@@ -3,6 +3,7 @@ extends Node
 
 const Levels = preload("res://scripts/levels.gd")
 const Sfx = preload("res://scripts/sfx.gd")
+const PixelFont = preload("res://scripts/pixel_font.gd")
 
 const START_LIVES := 3
 const RECORD_PATH := "user://record.cfg"
@@ -13,6 +14,8 @@ const SOUNDS := ["shot", "laser", "fire", "jump", "hit", "boom", "small_boom", "
 var score := 0
 var lives := START_LIVES
 var level := 0
+## Soldado elegido en ELIGE TU SOLDADO (sprites player_<hero>_*.png)
+var hero := "presi"
 var record := 0
 var autoplay := false
 
@@ -26,6 +29,7 @@ var _pause_layer := CanvasLayer.new()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().root.theme = PixelFont.default_theme()
 	_setup_input()
 	_load_record()
 	for i in 14:
@@ -43,13 +47,20 @@ func _ready() -> void:
 	shade.color = Color(0, 0, 0, 0.6)
 	shade.size = Vector2(480, 270)
 	_pause_layer.add_child(shade)
-	var l := Label.new()
-	l.text = "PAUSA\n\nEsc / Start: continuar\nQ / Select: salir al menú"
-	l.size = Vector2(480, 270)
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 14)
-	_pause_layer.add_child(l)
+	var pt := Label.new()
+	pt.text = "PAUSA"
+	PixelFont.apply(pt, "title", 2)
+	pt.size = Vector2(480, 40)
+	pt.position.y = 90
+	pt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pause_layer.add_child(pt)
+	var ph := Label.new()
+	ph.text = "Esc / Start: continuar\nQ / Select: salir al menu"
+	PixelFont.apply(ph, "white")
+	ph.size = Vector2(480, 40)
+	ph.position.y = 140
+	ph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pause_layer.add_child(ph)
 	add_child(_pause_layer)
 
 	if "autoplay" in OS.get_cmdline_user_args():
@@ -99,11 +110,16 @@ func accept_pressed() -> bool:
 
 # ---------- flujo de partida ----------
 
-## Empieza una partida nueva en la misión lv, pasando antes por el mapa.
+## Empieza una partida nueva en la misión lv: primero ELIGE TU SOLDADO y después el mapa.
 func start_game(lv := 0) -> void:
 	score = 0
 	lives = START_LIVES
 	level = lv
+	_go("res://scenes/select.tscn")
+
+
+func choose_hero(id: String) -> void:
+	hero = id
 	_go("res://scenes/map.tscn")
 
 

@@ -1,4 +1,4 @@
-# Contra-Typebeat: reglas del proyecto
+# ONU: Outbreak (antes Contra-Typebeat): reglas del proyecto
 
 Juego 2D de acción estilo Contra en **Godot 4.7.2** (GDScript). Equipo de dos personas, cada una con su Claude Code:
 
@@ -42,10 +42,16 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Autoload `Game` (`scripts/game.gd`): vidas, puntos, récord, misión actual, controles, sonido (`Game.sfx("boom")`) y pausa.
 - Autoload `Juice` (`scripts/juice.gd`): `Juice.hitstop(segundos)` y `Juice.shake(cantidad)` para la sensación de impacto.
 - Estilo Metal Slug: el plan y las fases están en `docs/plan-metal-slug.md`. Personajes siempre ficticios (nada de caras, nombres ni lemas de políticos reales).
-- Escenas: `intro.tscn` → `menu.tscn` → `map.tscn` → `level.tscn` → `map.tscn` … Las misiones son datos en `scripts/levels.gd`; para crear una basta con añadir un bloque ahí y su parada en `STOPS` de `scripts/map.gd` (la parada i es la misión i).
+- Escenas: `intro.tscn` → `menu.tscn` → `select.tscn` (ELIGE TU SOLDADO) → `map.tscn` → `level.tscn` → `map.tscn` … Las misiones son datos en `scripts/levels.gd`; para crear una basta con añadir un bloque ahí y su parada en `STOPS` de `scripts/map.gd` (la parada i es la misión i).
 - Mini jefes (`scripts/miniboss.gd`) bloquean la cámara con `level.lock_camera()` y la liberan al morir.
 - Explosiones que hacen daño: `level.blast(pos, radio, daña_jugador)`; solo visuales: `level.explode(pos, radio)`.
 - Resolución interna 480x270, escalada a la ventana.
+- **Sprites:** los PNG de `assets/sprites/` los generan `tools/sprites/humans.py` (protagonista y soldados) y `tools/sprites/mecha.py` (jefe mecha), con Python + Pillow. Para cambiar un sprite: editar el generador y ejecutarlo (`python tools/sprites/humans.py`), o retocar el PNG en Aseprite. Los `*_meta.json` guardan filas de animación, pivotes y bocas de cañón: si se mueve el arma en el sprite, hay que regenerar el meta. Fotogramas de 48x48 con los pies en (24, 46).
+- **Contexto del proyecto:** la skill `.claude/skills/contra-typebeat/SKILL.md` resume decisiones, estado y mapa del código. Actualizarla cuando cambie algo importante.
+- **Una sola fuente para todo el texto:** `scripts/pixel_font.gd` (`PixelFont.apply(label, estilo, escala)`; para `draw_string` usar `PixelFont.font(estilo)` y `PixelFont.size(estilo)`). Jerarquía: `title` títulos, `small` valores y opción elegida, `white` texto normal, `label` ayudas, `metal` TIME. No usar la fuente por defecto de Godot.
+- Fuente pixelada del HUD: `tools/sprites/font.py` → `assets/sprites/font.png`. El HUD (`scripts/hud.gd`) la dibuja con `draw_text(texto, pos, estilo, alineación)`; estilos `small`, `label`, `title` y `metal`.
+- `Juice.hitstop()` se deshace comprobando el reloj real en cada fotograma; la prueba automática da `ERROR` si el juego queda en cámara lenta más de 0,5 s.
+- `scripts/sprite_util.gd` carga las hojas (una fila por animación) como SpriteFrames.
 
 ## Probar
 

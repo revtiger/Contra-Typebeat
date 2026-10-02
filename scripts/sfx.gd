@@ -114,6 +114,10 @@ static func music(track: String) -> AudioStreamWAV:
 			bpm = 162.0
 			root = 50  # Re
 			chords = [[0, 3, 7], [1, 5, 8], [-2, 2, 5], [-5, -1, 2]]  # frigio: Dm Eb C A
+		"city":
+			bpm = 156.0
+			root = 43  # Sol
+			chords = [[0, 3, 7], [-2, 2, 5], [-4, 0, 3], [-5, -1, 2]]  # Gm F Eb D
 		"boss":
 			bpm = 172.0
 			root = 40

@@ -9,15 +9,17 @@ signal died
 
 const Bullet = preload("res://scripts/bullet.gd")
 const Grenade = preload("res://scripts/grenade.gd")
+const SpriteUtil = preload("res://scripts/sprite_util.gd")
+const META_PATH := "res://assets/sprites/player_meta.json"
 
 const SPEED := 90.0
 const CROUCH_SPEED := 38.0
 const JUMP_V := -360.0
 const GRAVITY := 900.0
 const W := 12.0
-const STAND_H := 26.0
-const CROUCH_H := 15.0
-const JUMP_H := 22.0
+const STAND_H := 30.0
+const CROUCH_H := 18.0
+const JUMP_H := 24.0
 const START_BOMBS := 10
 const KNIFE_RANGE := 24.0
 
@@ -54,6 +56,11 @@ var col := CollisionShape2D.new()
 var hurt := Area2D.new()
 var hurt_shape := RectangleShape2D.new()
 var hurt_col := CollisionShape2D.new()
+var meta: Dictionary
+var legs: AnimatedSprite2D
+var torso: AnimatedSprite2D
+var death_spr: AnimatedSprite2D
+var fx := Node2D.new()
 
 
 func _ready() -> void:
@@ -69,6 +76,7 @@ func _ready() -> void:
 	hurt.add_child(hurt_col)
 	add_child(hurt)
 	_set_height(STAND_H)
+	_setup_sprites()
 
 
 func _set_height(h: float) -> void:
@@ -164,13 +172,15 @@ func _standing_on_bridge() -> bool:
 
 
 func _muzzle() -> Vector2:
+	var key := "fwd"
 	if aim == Vector2.UP:
-		return Vector2(facing * 3, -34)
-	if aim == Vector2.DOWN:
-		return Vector2(0, 0)
-	if crouching:
-		return Vector2(facing * 15, -9)
-	return Vector2(facing * 15, -17)
+		key = "up"
+	elif aim == Vector2.DOWN:
+		key = "down"
+	elif crouching:
+		key = "crouch_fwd"
+	var m := SpriteUtil.v(meta["muzzle"][key])
+	return Vector2(m.x * facing, m.y + torso.position.y)
 
 
 ## Cuchillo: si hay un soldado pegado delante, se le apuñala en vez de disparar.
@@ -284,79 +294,89 @@ func add_bombs(n: int) -> void:
 	Game.sfx("pickup", -4.0, 0.8)
 
 
-# ---------- dibujo con formas simples (origen en los pies) ----------
-# Proporciones exageradas estilo Metal Slug: cabeza grande, chaleco, piernas cortas.
+# ---------- sprites (assets/sprites/player_*.png, generados por tools/sprites/humans.py) ----------
 
-const SKIN := Color(0.96, 0.74, 0.55)
-const PANTS := Color(0.25, 0.3, 0.55)
-const VEST := Color(0.45, 0.52, 0.3)
-const BANDANA := Color(0.9, 0.15, 0.15)
-const HAIR := Color(0.95, 0.8, 0.35)
-const GUN := Color(0.3, 0.3, 0.33)
-const BOOT := Color(0.25, 0.18, 0.12)
+func _setup_sprites() -> void:
+	meta = SpriteUtil.meta(META_PATH)
+	var fw: int = meta["frame"][0]
+	var fh: int = meta["frame"][1]
+	var feet := SpriteUtil.v(meta["feet"])
+	var L: Dictionary = meta["legs"]
+	var T: Dictionary = meta["torso"]
+	legs = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_legs.png" % Game.hero, fw, fh, {
+		"idle": [L["idle"], 1, 1, true], "run": [L["run"], 8, 14, true], "jump": [L["jump"], 2, 1, false],
+		"crouch": [L["crouch"], 1, 1, true], "crawl": [L["crawl"], 4, 8, true]}), feet)
+	var tanims := {}
+	for n in T:
+		tanims[n] = [T[n], 3 if n.ends_with("knife") else 2, 1, false]
+	torso = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_torso.png" % Game.hero, fw, fh, tanims), feet)
+	var df: Array = meta["death_frame"]
+	death_spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/player_%s_death.png" % Game.hero, df[0], df[1],
+		{"die": [0, 4, 8, false]}), SpriteUtil.v(meta["death_feet"]))
+	death_spr.visible = false
+	for n in [legs, torso, death_spr]:
+		add_child(n)
+	add_child(fx)
+	fx.draw.connect(_draw_fx)
 
 
-func _r(x: float, y: float, w: float, h: float, c: Color) -> void:
-	if facing < 0:
-		x = -x - w
-	draw_rect(Rect2(x, y, w, h), c)
-
-
-func _head(y: float) -> void:
-	_r(-4, y, 9, 8, SKIN)
-	_r(-5, y - 1, 10, 3, HAIR)
-	_r(-5, y + 2, 10, 1, BANDANA)
-	_r(-8, y + 2, 3, 1, BANDANA)
-	_r(3, y + 3, 1, 2, Color(0.1, 0.1, 0.1))
-
-
-func _draw() -> void:
-	if invuln > 0.0 and not Game.autoplay and int(anim_t * 20) % 2 == 0:
+func _process(_delta: float) -> void:
+	if legs == null:
 		return
+	modulate.a = 0.35 if invuln > 0.0 and not Game.autoplay and int(anim_t * 20) % 2 == 0 else 1.0
+	for n in [legs, torso, death_spr]:
+		n.scale.x = facing
 	if dead:
-		_r(-12, -6, 12, 5, PANTS)
-		_r(0, -7, 8, 6, VEST)
-		_r(8, -8, 7, 7, SKIN)
-		_r(8, -9, 7, 2, HAIR)
+		legs.visible = false
+		torso.visible = false
+		if not death_spr.visible:
+			death_spr.visible = true
+			death_spr.play("die")
+		fx.queue_redraw()
 		return
+	legs.visible = true
+	torso.visible = true
+	death_spr.visible = false
 	var on_floor := is_on_floor()
 	var moving := absf(velocity.x) > 1.0
-	var ph := sin(anim_t * (9.0 if crouching else 15.0)) * 3.0 if moving and on_floor else 0.0
-	var top := -30.0
+	var bob := 0
 	if crouching:
-		# agachado: piernas dobladas, torso bajo
-		_r(-6 + ph, -4, 6, 4, PANTS)
-		_r(1 - ph, -4, 6, 4, PANTS)
-		_r(-7, -1, 5, 1, BOOT)
-		_r(3, -1, 5, 1, BOOT)
-		_r(-5, -12, 10, 8, VEST)
-		top = -21.0
+		_play(legs, "crawl" if moving else "crouch")
 	elif not on_floor:
-		# salto: piernas recogidas
-		_r(-5, -10, 5, 6, PANTS)
-		_r(1, -8, 5, 5, PANTS)
-		_r(-5, -18, 10, 9, VEST)
+		legs.animation = "jump"
+		legs.frame = 0 if velocity.y < 0.0 else 1
+	elif moving:
+		_play(legs, "run")
+		bob = meta["bob"]["run"][legs.frame]
 	else:
-		_r(-4 + ph, -10, 4, 9, PANTS)
-		_r(1 - ph, -10, 4, 9, PANTS)
-		_r(-5 + ph, -2, 6, 2, BOOT)
-		_r(0 - ph, -2, 6, 2, BOOT)
-		_r(-5, -20, 10, 11, VEST)
-		_r(-5, -12, 10, 2, Color(0.3, 0.22, 0.12))
-	_head(top)
-	# brazos y arma
-	var sh := Vector2(facing * 2, top + 12)
-	var gun_len := 12.0 if weapon == "P" else 16.0
+		_play(legs, "idle")
+	torso.position.y = bob
+	var prefix := "crouch_" if crouching else ""
 	if knife_t > 0.0:
-		var k := 1.0 - knife_t / 0.18
-		draw_arc(sh, 16, -1.2 * facing + (0.0 if facing > 0 else PI), (1.2 - 2.4 * k) * facing + (0.0 if facing > 0 else PI), 8, Color(1, 1, 1, 0.8), 2)
-		draw_line(sh, sh + Vector2(facing * 10, -4 + 8 * k), Color(0.85, 0.85, 0.9), 2)
+		torso.animation = prefix + "knife"
+		torso.frame = clampi(int((1.0 - knife_t / 0.18) * 3.0), 0, 2)
 	elif throw_t > 0.0:
-		draw_line(sh, sh + Vector2(-facing * 4, -10), SKIN, 3)
+		torso.animation = prefix + "throw"
+		torso.frame = 0 if throw_t > 0.1 else 1
 	else:
-		draw_line(sh, sh + aim * 6, SKIN, 3)
-		draw_line(sh + aim * 3, sh + aim * gun_len, GUN, 3 if weapon != "P" else 2)
-	if flash_t > 0.0:
-		var m := position + _muzzle() - position
-		draw_circle(m, 4, Color(1, 0.95, 0.5))
-		draw_circle(m, 2, Color.WHITE)
+		if aim == Vector2.UP:
+			torso.animation = "up"
+		elif aim == Vector2.DOWN:
+			torso.animation = "down"
+		else:
+			torso.animation = prefix + "fwd"
+		torso.frame = 1 if flash_t > 0.0 else 0
+	fx.queue_redraw()
+
+
+func _play(spr: AnimatedSprite2D, anim: String) -> void:
+	if spr.animation != anim or not spr.is_playing():
+		spr.play(anim)
+
+
+## Fogonazo del disparo, por encima de los sprites.
+func _draw_fx() -> void:
+	if flash_t > 0.0 and not dead:
+		var m := _muzzle()
+		fx.draw_circle(m, 4, Color(1, 0.95, 0.5))
+		fx.draw_circle(m, 2, Color.WHITE)

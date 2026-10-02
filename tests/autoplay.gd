@@ -15,6 +15,7 @@ var only_intro := false
 var frame := 0
 var level_frame := 0
 var last_scene = null
+var slow_since := -1
 
 
 func _ready() -> void:
@@ -37,6 +38,18 @@ func _shot(tag: String) -> void:
 	get_viewport().get_texture().get_image().save_png("%s/%s_%04d.png" % [out_dir, tag, frame])
 
 
+func _process(_delta: float) -> void:
+	# vigilante: el hitstop nunca debe dejar el juego lento más de medio segundo real
+	if Engine.time_scale < 1.0:
+		if slow_since < 0:
+			slow_since = Time.get_ticks_msec()
+		elif Time.get_ticks_msec() - slow_since > 500:
+			push_error("ERROR: el juego lleva más de 0,5 s en cámara lenta (time_scale=%.2f)" % Engine.time_scale)
+			slow_since = Time.get_ticks_msec() + 100000
+	else:
+		slow_since = -1
+
+
 func _physics_process(_delta: float) -> void:
 	frame += 1
 	if only_intro:
@@ -52,6 +65,19 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	var lvl = get_tree().current_scene
+	if lvl != null and lvl.is_in_group("select"):
+		# ELIGE TU SOLDADO: captura y elegir (en modo campaña prueba cada vez un soldado distinto)
+		if frame % 150 == 60:
+			_shot("seleccion")
+		if frame % 150 == 70 and "campaign" in OS.get_cmdline_user_args():
+			Input.action_press("right")
+		elif frame % 150 == 72:
+			Input.action_release("right")
+		elif frame % 150 == 110:
+			Input.action_press("restart")
+		elif frame % 150 == 115:
+			Input.action_release("restart")
+		return
 	if lvl != null and lvl.is_in_group("map"):
 		# mapa: captura y pulsar para continuar
 		if frame % 150 == 100:
@@ -99,6 +125,8 @@ func _physics_process(_delta: float) -> void:
 		Input.action_release("left")
 		Input.action_release("right")
 		Input.action_release("up")
+		if mb and level_frame % 120 == 0:
+			print("  [mini jefe] jugador x=%.0f y=%.0f suelo=%s | mini jefe x=%.0f vida=%d" % [p.position.x, p.position.y, p.is_on_floor(), mb.position.x, mb.hp])
 		if mb:
 			var mdx: float = mb.position.x - p.position.x
 			if absf(mdx) > 60.0 or signf(mdx) != float(p.facing):
@@ -124,7 +152,7 @@ func _physics_process(_delta: float) -> void:
 		Input.action_press("grenade")
 	elif level_frame % 150 == 77:
 		Input.action_release("grenade")
-	if level_frame % 50 == 0:
+	if level_frame % 50 == 0 and (lvl.lock_left == INF or p.position.y < 200.0):
 		Input.action_press("jump")
 	elif level_frame % 50 == 25:
 		Input.action_release("jump")
@@ -137,7 +165,7 @@ func _physics_process(_delta: float) -> void:
 		_shot("nivel%d" % Game.level)
 		var boss_info := ""
 		if is_instance_valid(lvl.boss) and lvl.cam_left >= lvl.boss_arena - 1.0:
-			boss_info = "  jefe=%s vida=%d pos=%s" % [lvl.boss.get("state"), lvl.boss.hp, lvl.boss.position.round()]
+			boss_info = "  jefe=%s vida=%s pos=%s" % [lvl.boss.get("state"), str(lvl.boss.hp), lvl.boss.position.round()]
 		print("frame %d  x=%.0f cam=%.0f puntos=%d estado=%s arma=%s%s" % [
 			level_frame, p.position.x, lvl.cam_left, Game.score, lvl.state, p.weapon, boss_info])
 	if lvl.state == "clear" and "campaign" in OS.get_cmdline_user_args():
