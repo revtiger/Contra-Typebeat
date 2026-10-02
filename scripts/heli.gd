@@ -1,5 +1,5 @@
 extends StaticBody2D
-## Jefe de la misión 2: helicóptero de ataque. Entra por la derecha cuando la cámara se bloquea
+## Jefe helicóptero de ataque (era el de Bolivia; ahora sin usar, se puede reaprovechar). Entra por la derecha cuando la cámara se bloquea
 ## y alterna ráfagas apuntadas, bombas (con aviso en el suelo) y un abanico de balas a media vida.
 
 const Bullet = preload("res://scripts/bullet.gd")
