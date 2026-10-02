@@ -13,7 +13,7 @@ const STAND_H := 26.0
 const PRONE_H := 10.0
 const BALL_H := 16.0
 const BULLET_SPEED := 300.0
-const FIRE_RATE := {"N": 0.16, "M": 0.07, "S": 0.24}
+const FIRE_RATE := {"N": 0.16, "M": 0.07, "S": 0.24, "L": 0.38, "F": 0.2}
 
 var facing := 1
 var aim := Vector2.RIGHT
@@ -100,6 +100,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.y = JUMP_V
 			jumping = true
+			Game.sfx("jump", -14.0)
 	if Input.is_action_just_released("jump") and velocity.y < -140.0:
 		velocity.y = -140.0
 
@@ -156,8 +157,22 @@ func _fire() -> void:
 		var b := Bullet.new()
 		b.from_player = true
 		b.vel = d * BULLET_SPEED
+		match weapon:
+			"L":
+				b.kind = "laser"
+				b.vel = d * 440.0
+				b.damage = 3
+				b.pierce = true
+			"F":
+				b.kind = "fire"
+				b.vel = d * 190.0
+				b.damage = 2
 		b.position = position + _muzzle()
 		get_parent().add_child(b)
+	match weapon:
+		"L": Game.sfx("laser", -12.0)
+		"F": Game.sfx("fire", -10.0)
+		_: Game.sfx("shot", -16.0, {"N": 1.0, "M": 1.25, "S": 0.8}[weapon])
 
 
 func hit(force := false) -> void:
@@ -165,6 +180,7 @@ func hit(force := false) -> void:
 		return
 	dead = true
 	death_t = 1.2
+	Game.sfx("death", -6.0)
 	velocity = Vector2(-facing * 60, -220)
 	weapon = "N"
 	col.set_deferred("disabled", true)
@@ -183,6 +199,7 @@ func respawn(pos: Vector2) -> void:
 
 func set_weapon(w: String) -> void:
 	weapon = w
+	Game.sfx("pickup", -4.0)
 
 
 # ---------- dibujo con formas simples (origen en los pies) ----------
@@ -201,7 +218,7 @@ func _r(x: float, y: float, w: float, h: float, c: Color) -> void:
 
 
 func _draw() -> void:
-	if invuln > 0.0 and int(anim_t * 20) % 2 == 0:
+	if invuln > 0.0 and not Game.autoplay and int(anim_t * 20) % 2 == 0:
 		return
 	if dead:
 		_r(-12, -6, 12, 5, PANTS)
