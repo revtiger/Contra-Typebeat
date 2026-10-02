@@ -275,6 +275,20 @@ def aim_torso(body_fn, cloth, aim, recoil=0, dy=0):
         body_fn(pen, dy)
         m = rifle(pen, g, (0, 1), (-1, 0))
         arm(pen, sh_n, (30, 23 + dy), (g[0] + 1, g[1]), cloth)
+    elif aim == "diag_up":
+        # 45° hacia arriba y adelante; el retroceso empuja la empuñadura hacia atrás y abajo
+        g = (30 - recoil, 26 + dy + recoil)
+        arm(pen, sh_f, (27, 24 + dy), (34 - recoil, 21 + dy + recoil), cloth)
+        body_fn(pen, dy)
+        m = rifle(pen, g, (0.71, -0.71), (0.71, 0.71))
+        arm(pen, sh_n, (27, 27 + dy), (g[0] - 1, g[1] + 1), cloth)
+    elif aim == "diag_down":
+        # 45° hacia abajo y adelante (solo en el aire)
+        g = (29 - recoil, 26 + dy - recoil)
+        arm(pen, sh_f, (26, 27 + dy), (33 - recoil, 30 + dy - recoil), cloth)
+        body_fn(pen, dy)
+        m = rifle(pen, g, (0.71, 0.71), (-0.71, 0.71))
+        arm(pen, sh_n, (26, 25 + dy), (g[0] - 1, g[1]), cloth)
     img = outline(img)
     return img, (round(m[0]), round(m[1]))
 
@@ -346,6 +360,16 @@ def hero(hero_id="presi"):
     names.append("knife")
     rows.append([knife_torso(body_fn, cloth, s, 8) for s in range(3)])
     names.append("crouch_knife")
+    # diagonales: van al final para no mover las filas anteriores
+    for name in ("diag_up", "diag_down"):
+        frames = []
+        for rc in (0, 1):
+            f, m = aim_torso(body_fn, cloth, name, rc)
+            frames.append(f)
+            if rc == 0:
+                muzzle[name] = [m[0] - 24, m[1] - FEET_Y]
+        rows.append(frames)
+        names.append(name)
 
     # muerte: cuerpo entero que cae de espaldas (hoja de 64x48, pies en (46, 46))
     full = canvas(FW, FH)
