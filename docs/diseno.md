@@ -52,6 +52,8 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Moverse | Flechas / WASD | Cruceta o stick |
 | Apuntar arriba | Arriba | Cruceta arriba |
 | Disparar hacia abajo (solo en el aire) | Abajo | Cruceta abajo |
+| Disparar en diagonal hacia arriba | Arriba + izquierda/derecha | Cruceta en diagonal |
+| Disparar en diagonal hacia abajo (solo en el aire) | Abajo + izquierda/derecha | Cruceta en diagonal |
 | Agacharse (se puede avanzar agachado) | Abajo | Cruceta abajo |
 | Saltar | Z / Espacio / K | A |
 | Bajar de un puente | Abajo + Saltar | Abajo + A |
@@ -150,7 +152,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 - ☐ Misión 3 (México–EE.UU.): empieza en una escuela, ¿y luego qué? ¿Qué papel tiene la escuela (base enemiga abandonada, refugio)?
 - ✅ Personajes: **caricaturas de políticos reales** permitidas (cambio de Gwyn, 28-09-2026; antes eran solo ficticios). Los soldados jugables siguen siendo inventados. Tono de burla tipo Metal Slug / Broforce, **con sangre y gore de arcade** (cambio de Gwyn, 30-09-2026): sangre pixelada y enemigos que revientan en trozos. Eduardo tiene pase libre para decidir historia, personajes y nivel de violencia. Lista en [`historia.md`](historia.md).
-- ✅ Controles: **100 % Metal Slug** (sin disparo diagonal).
+- ✅ Controles: estilo Metal Slug **con disparo en diagonal** (cambio de Gwyn, 02-10-2026; antes era sin diagonales). Arriba + lado apunta en diagonal hacia arriba; en el aire, Abajo + lado apunta en diagonal hacia abajo. El Presi y La Tenienta tienen poses diagonales; Eduardo y Eder disparan en diagonal pero aún con la pose de frente (☐ usar las poses de `docs/propuestas/poses_extra/`).
 - ✅ Arte: sprites generados con IA que se van ajustando a mano en Aseprite.
 - ☐ ¿Modo cooperativo de 2 jugadores en la misma pantalla?
 - ☐ ¿Solo PC o también exportar a navegador?

@@ -26,7 +26,9 @@
   "throw": 4,
   "crouch_throw": 5,
   "knife": 6,
-  "crouch_knife": 7
+  "crouch_knife": 7,
+  "diag_up": 8,
+  "diag_down": 9
  },
  "bob": {
   "run": [
@@ -56,6 +58,14 @@
   "crouch_fwd": [
    23,
    -12
+  ],
+  "diag_up": [
+   19,
+   -34
+  ],
+  "diag_down": [
+   19,
+   -7
   ]
  },
  "death_frame": [
