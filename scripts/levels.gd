@@ -21,7 +21,7 @@ const END := 3000
 ## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe]
 const ZONES := [
 	{"zone": "ARGENTINA", "country": "ar", "freed": "LIBERADA", "phases": [
-		["MONTE MISIONERO", "jungle", "massa"],
+		["PUEBLO DE LA PAMPA", "pueblo", "massa"],
 		["QUEBRADA DE HUMAHUACA", "desert", "kirchner"],
 		["BUENOS AIRES · CASA ROSADA", "city", "milei"],
 	]},
@@ -47,7 +47,7 @@ const ZONES := [
 	]},
 ]
 
-const MUSIC := {"jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
+const MUSIC := {"pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
 
 const TEMPLATES := {
 	"jungle": {
@@ -120,6 +120,9 @@ const TEMPLATES := {
 	},
 }
 
+## Temas que reaprovechan el trazado de otra plantilla (solo cambia el dibujo)
+const LAYOUT := {"pueblo": "jungle"}
+
 static var LIST := _build()
 
 
@@ -129,7 +132,7 @@ static func _build() -> Array:
 		var z: Dictionary = ZONES[zi]
 		for pi in 3:
 			var ph: Array = z["phases"][pi]
-			var tpl: Dictionary = TEMPLATES[ph[1]]
+			var tpl: Dictionary = TEMPLATES[LAYOUT.get(ph[1], ph[1])]
 			var boss_id: String = ph[2]
 			var entities: Array = _vary(tpl["entities"], zi + pi)
 			var role := "final" if pi == 2 else "mini"

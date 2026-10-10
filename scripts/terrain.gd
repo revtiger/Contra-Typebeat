@@ -5,6 +5,8 @@ var size := Vector2.ZERO
 var one_way := false
 var theme := "jungle"
 
+const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
+
 
 func _draw() -> void:
 	var desert := theme == "desert"
@@ -16,6 +18,9 @@ func _draw() -> void:
 		return
 	if theme == "snow":
 		_draw_snow()
+		return
+	if theme == "pueblo":
+		_draw_pueblo()
 		return
 	if one_way:
 		if desert:
@@ -53,6 +58,32 @@ func _draw() -> void:
 	# caras laterales para que se note el borde en fosos y escalones
 	draw_rect(Rect2(0, 0, 2, size.y), edge)
 	draw_rect(Rect2(size.x - 2, 0, 2, size.y), edge)
+
+
+## Pueblo de la pampa: calle de adoquines con tierra y pasto (tira de ground_pueblo.png, sacada de
+## las ilustraciones); los puentes son tablones de madera vieja.
+func _draw_pueblo() -> void:
+	if one_way:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.42, 0.27, 0.15))
+		for x in range(0, int(size.x), 10):
+			draw_line(Vector2(x, 0), Vector2(x, size.y), Color(0.24, 0.15, 0.09))
+			draw_rect(Rect2(x + 2, 3, 1, 1), Color(0.2, 0.12, 0.08))
+		draw_rect(Rect2(0, 0, size.x, 2), Color(0.66, 0.46, 0.26))
+		draw_rect(Rect2(0, size.y - 1, size.x, 1), Color(0.2, 0.12, 0.08))
+		return
+	var tw := float(PUEBLO_GROUND.get_width())
+	var th := float(PUEBLO_GROUND.get_height())
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.17, 0.11, 0.07))
+	# la tira se alinea con la x del mundo para que no se note el corte entre bloques
+	var x := -fposmod(global_position.x, tw)
+	while x < size.x:
+		var sx := maxf(0.0, -x)
+		var w := minf(tw - sx, size.x - maxf(x, 0.0))
+		draw_texture_rect_region(PUEBLO_GROUND, Rect2(maxf(x, 0.0), -3, w, th), Rect2(sx, 0, w, th))
+		x += tw
+	draw_rect(Rect2(0, th - 3, size.x, 2), Color(0.12, 0.08, 0.05))
+	draw_rect(Rect2(0, 0, 2, size.y), Color(0.12, 0.08, 0.05))
+	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.12, 0.08, 0.05))
 
 
 ## Ciudad: asfalto con bordillo y hormigón agrietado; los puentes son vigas de acero.

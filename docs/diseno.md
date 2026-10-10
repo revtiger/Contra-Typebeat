@@ -103,7 +103,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 | Fase | Escenario | Jefe |
 |---|---|---|
-| 1.1 | Argentina: Monte Misionero (selva) | Minijefe Sergio Massa |
+| 1.1 | Argentina: Pueblo de la pampa al atardecer (ilustraciones de Eduardo, `tools/sprites/pueblo.py`) | Minijefe Sergio Massa |
 | 1.2 | Argentina: Quebrada de Humahuaca (desierto) | Minijefa Cristina Kirchner |
 | 1.3 | Argentina: Buenos Aires, Casa Rosada (ciudad) | **Javier Milei** |
 | 2.1 | México: Selva del Sureste | Minijefe AMLO |

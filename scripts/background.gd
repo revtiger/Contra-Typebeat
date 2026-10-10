@@ -5,6 +5,7 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Ciudad: sky, colonial (edificios con cúpulas y bandera), ruins (ruinas y carteles de propaganda inventados), sewer.
 ## Nieve (Alemania): sky, alps, pines, ice y snowfall (copos delante, fijos en pantalla).
 ## Base secreta (ONU): sky, vault (muro con emblemas y pantallas), machines (servidores y carteles), abyss.
+## Pueblo de la pampa (1.1): pueblo (ilustraciones de Eduardo en una sola tira, bg_pueblo.png) y water (zanja).
 ## country (ar, mx, us, de, un) elige la bandera que ondea y los lemas de los carteles.
 ## Con screen_scroll = true el fondo se desplaza solo (menú e intro, sin cámara).
 
@@ -26,6 +27,9 @@ var main
 var t := 0.0
 
 const WIDTH := 5400.0
+const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
+## x de las uniones entre las 3 escenas de bg_pueblo.png (las tapa un poste de luz)
+const PUEBLO_SEAMS := [667, 1326]
 
 
 func _ready() -> void:
@@ -37,6 +41,11 @@ func _process(delta: float) -> void:
 	if kind == "sky":
 		return
 	t += delta
+	if kind == "pueblo":
+		# la tira avanza justo lo necesario para que su final coincida con la arena del jefe
+		var span: float = maxf(1.0, main.boss_arena)
+		position.x = main.cam_left - main.cam_left * (PUEBLO_TEX.get_width() - 480.0) / span
+		return
 	if screen_scroll:
 		position.x = -fmod(main.cam_left * (1.0 - factor), 3000.0)
 	else:
@@ -187,7 +196,18 @@ func _draw() -> void:
 			draw_rect(Rect2(-60, 232, WIDTH, 45), Color(0.08, 0.06, 0.07))
 			for i in int(WIDTH / 40.0):
 				draw_rect(Rect2(-60 + i * 40, 240, 22, 3), Color(0.2, 0.16, 0.14))
+		"pueblo":
+			draw_texture(PUEBLO_TEX, Vector2.ZERO)
+			for sx in PUEBLO_SEAMS:
+				_draw_pole(float(sx))
 		"water":
+			if theme == "pueblo":
+				# zanja de agua turbia
+				draw_rect(Rect2(-60, 246, WIDTH, 30), Color(0.32, 0.24, 0.14))
+				for i in int(WIDTH / 16.0):
+					var wx := -60 + i * 16 + sin(t * 2.0 + i) * 3.0
+					draw_line(Vector2(wx, 249), Vector2(wx + 7, 249), Color(0.7, 0.55, 0.3), 1)
+				return
 			draw_rect(Rect2(-60, 246, WIDTH, 30), Color(0.1, 0.35, 0.7))
 			for i in int(WIDTH / 16.0):
 				var wx := -60 + i * 16 + sin(t * 2.0 + i) * 3.0
@@ -196,6 +216,27 @@ func _draw() -> void:
 			draw_polygon(
 				PackedVector2Array([Vector2(-60, 225), Vector2(WIDTH, 225), Vector2(WIDTH, 275), Vector2(-60, 275)]),
 				PackedColorArray([Color(0.45, 0.25, 0.15), Color(0.45, 0.25, 0.15), Color(0.08, 0.04, 0.03), Color(0.08, 0.04, 0.03)]))
+
+
+## Poste de luz de madera, como los de las ilustraciones del pueblo.
+func _draw_pole(x: float) -> void:
+	var wood := Color(0.24, 0.15, 0.1)
+	var dark := Color(0.13, 0.08, 0.06)
+	draw_rect(Rect2(x - 4, 6, 8, 218), wood)
+	draw_rect(Rect2(x + 2, 6, 2, 218), dark)
+	draw_rect(Rect2(x - 3, 6, 1, 218), Color(0.38, 0.25, 0.16))
+	for y in [22, 34]:
+		draw_rect(Rect2(x - 15, y, 30, 4), wood)
+		draw_rect(Rect2(x - 15, y + 3, 30, 1), dark)
+		for ix in [-13, -6, 5, 12]:
+			draw_rect(Rect2(x + ix, y - 3, 2, 3), Color(0.55, 0.6, 0.55))
+	# farola
+	draw_line(Vector2(x + 4, 60), Vector2(x + 16, 56), dark, 2)
+	draw_rect(Rect2(x + 13, 56, 7, 4), dark)
+	draw_rect(Rect2(x + 14, 60, 5, 2), Color(1.0, 0.82, 0.4))
+	draw_circle(Vector2(x + 16, 63), 6, Color(1.0, 0.8, 0.4, 0.18))
+	for y in range(80, 220, 18):
+		draw_rect(Rect2(x - 4, y, 8, 1), dark)
 
 
 ## Edificios coloniales lejanos: fachadas con arcos, cúpulas, torres y una bandera que ondea.
