@@ -1,6 +1,6 @@
 # Documento de diseño: ONU: Outbreak
 
-Autores: Gwyn y Eduardo · Última revisión: 29-09-2026 (v0.7: campaña de la Orden Mundial)
+Autores: Gwyn y Eduardo · Última revisión: 09-10-2026 (v0.7 en `main`; propuestas al día)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
@@ -157,3 +157,14 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 - ☐ ¿Cuántos niveles para la primera versión completa?
 - ☐ ¿Quién se encarga del arte y quién del sonido?
 - ☐ ¿Se publica (itch.io, Steam) o es proyecto personal?
+
+## Propuestas
+
+Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus imágenes). Nada de esto está en el juego hasta que se acepte y se implemente.
+
+| Propuesta | Estado |
+|---|---|
+| [`nivel1/`](propuestas/nivel1/): caricaturas de AMLO, Salinas y Sheinbaum | ✅ Aceptada e integrada (México, nivel 2) |
+| [`vendedor/`](propuestas/vendedor/): vendedor GDA y su camioneta de 6 ruedas | ✅ Fusionada como diseño (PR #8); ☐ falta meterlo en el juego |
+| [`poses_extra/`](propuestas/poses_extra/): poses nuevas de Eduardo y Eder (arriba, abajo, diagonal, barrida, paracaídas, muerte) | ✅ Aceptada por Gwyn (PR #9). El disparo en diagonal llega con el PR #10 de Gwyn; ☐ falta montar estas poses en los sprites de Eduardo y Eder |
+| [`narrativa_blue_beam/`](propuestas/narrativa_blue_beam/): la IA B.L.U.E. como antagonista oculto | ☐ Pendiente de leer por Gwyn (Eduardo tiene pase libre en historia) |
