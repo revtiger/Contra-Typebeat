@@ -6,7 +6,7 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Nieve (Alemania): sky, alps, pines, ice y snowfall (copos delante, fijos en pantalla).
 ## Base secreta (ONU): sky, vault (muro con emblemas y pantallas), machines (servidores y carteles), abyss.
 ## Pueblo de la pampa (1.1): pueblo (cielo del atardecer y pampa de Eduardo, bg_pueblo.png), casas (tramos del
-## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo) y water (zanja).
+## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo). Sin fosos.
 ## country (ar, mx, us, de, un) elige la bandera que ondea y los lemas de los carteles.
 ## Con screen_scroll = true el fondo se desplaza solo (menú e intro, sin cámara).
 
@@ -204,13 +204,6 @@ func _draw() -> void:
 				draw_texture(tex, Vector2(x, 0))
 				x += tex.get_width()
 		"water":
-			if theme == "pueblo":
-				# zanja de agua turbia
-				draw_rect(Rect2(-60, 246, WIDTH, 30), Color(0.32, 0.24, 0.14))
-				for i in int(WIDTH / 16.0):
-					var wx := -60 + i * 16 + sin(t * 2.0 + i) * 3.0
-					draw_line(Vector2(wx, 249), Vector2(wx + 7, 249), Color(0.7, 0.55, 0.3), 1)
-				return
 			draw_rect(Rect2(-60, 246, WIDTH, 30), Color(0.1, 0.35, 0.7))
 			for i in int(WIDTH / 16.0):
 				var wx := -60 + i * 16 + sin(t * 2.0 + i) * 3.0

@@ -84,7 +84,7 @@ func _ready() -> void:
 	elif theme == "base":
 		layers = [["vault", 0.85, -9], ["machines", 0.55, -8], ["abyss", 0.0, -5]]
 	elif theme == "pueblo":
-		layers = [["pueblo", 0.0, -9], ["casas", 0.0, -8], ["water", 0.0, -5]]
+		layers = [["pueblo", 0.0, -9], ["casas", 0.0, -8]]
 	for k in layers:
 		var bg := Background.new()
 		bg.kind = k[0]

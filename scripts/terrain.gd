@@ -61,16 +61,8 @@ func _draw() -> void:
 
 
 ## Pueblo de la pampa: calle de adoquines con tierra y pasto (tira de ground_pueblo.png, sacada de
-## las ilustraciones); los puentes son tablones de madera vieja.
+## las ilustraciones). El pueblo no tiene tablones ni fosos.
 func _draw_pueblo() -> void:
-	if one_way:
-		draw_rect(Rect2(Vector2.ZERO, size), Color(0.42, 0.27, 0.15))
-		for x in range(0, int(size.x), 10):
-			draw_line(Vector2(x, 0), Vector2(x, size.y), Color(0.24, 0.15, 0.09))
-			draw_rect(Rect2(x + 2, 3, 1, 1), Color(0.2, 0.12, 0.08))
-		draw_rect(Rect2(0, 0, size.x, 2), Color(0.66, 0.46, 0.26))
-		draw_rect(Rect2(0, size.y - 1, size.x, 1), Color(0.2, 0.12, 0.08))
-		return
 	var tw := float(PUEBLO_GROUND.get_width())
 	var th := float(PUEBLO_GROUND.get_height())
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.17, 0.11, 0.07))

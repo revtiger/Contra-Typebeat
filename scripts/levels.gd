@@ -50,6 +50,17 @@ const ZONES := [
 const MUSIC := {"pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
 
 const TEMPLATES := {
+	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
+	"pueblo": {
+		"ground": [[0, END, 230]],
+		"platforms": [],
+		"entities": [
+			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
+			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
+			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230], ["sniper", 2150, 230],
+			["turret", 2300, 230], ["capsule", 2300, 60, "S"], ["grenadier", 2400, 230],
+		],
+	},
 	"jungle": {
 		"ground": [[0, 900, 230], [948, 1500, 230], [1500, 1900, 200], [1948, 2400, 230], [2448, END, 230]],
 		"platforms": [
@@ -120,9 +131,6 @@ const TEMPLATES := {
 	},
 }
 
-## Temas que reaprovechan el trazado de otra plantilla (solo cambia el dibujo)
-const LAYOUT := {"pueblo": "jungle"}
-
 static var LIST := _build()
 
 
@@ -132,7 +140,7 @@ static func _build() -> Array:
 		var z: Dictionary = ZONES[zi]
 		for pi in 3:
 			var ph: Array = z["phases"][pi]
-			var tpl: Dictionary = TEMPLATES[LAYOUT.get(ph[1], ph[1])]
+			var tpl: Dictionary = TEMPLATES[ph[1]]
 			var boss_id: String = ph[2]
 			var entities: Array = _vary(tpl["entities"], zi + pi)
 			var role := "final" if pi == 2 else "mini"
