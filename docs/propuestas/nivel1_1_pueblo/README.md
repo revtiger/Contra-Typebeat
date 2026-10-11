@@ -1,10 +1,12 @@
 # Mapa de la fase 1.1: pueblo de la pampa (12 tramos)
 
-Autor: Eduardo, con Claude · 11-10-2026 · Estado: **en curso**. Los tramos 1 y 2 ya están en el juego (rama `eduardo/argentina-graficos`).
+Autor: Eduardo, con Claude · 11-10-2026 · Estado: **en curso** (rama `eduardo/argentina-graficos`).
+
+**Lo que ya está en el juego (11-10-2026):** la fase de 3000 px está cubierta de casas de punta a punta con 4 tramos: 1 y 2 de Eduardo; 3 = el tramo 2 dado vuelta; 4 = `pueblo_completo.png` sin vecinos, sin el almacén repetido y sin el vagón, con la capilla, la plaza, el segundo almacén y la estación. La pelea con Massa es en la plaza de la capilla, donde termina el pueblo. Todo se arma con `tools/sprites/pueblo.py`. La tabla de abajo es el plan para alargar la fase a 12 tramos.
 
 ## Referencia
 
-[`referencia_pueblo_completo.png`](referencia_pueblo_completo.png): idea de Eduardo de cómo se ve el pueblo seguido, de punta a punta: casas con bandera, almacén, garaje con camión viejo, capilla con torre de reloj y plaza con monumento, otro almacén y la estación de tren con un vagón. Es solo referencia: los tramos reales van a la escala del juego y **sin civiles**.
+[`pueblo_completo.png`](../../../tools/sprites/chatgpt/pueblo/pueblo_completo.png): idea de Eduardo de cómo se ve el pueblo seguido, de punta a punta: casas con bandera, almacén, garaje con camión viejo, capilla con torre de reloj y plaza con monumento, otro almacén y la estación de tren con un vagón. Es solo referencia: los tramos reales van a la escala del juego y **sin civiles**.
 
 ## Cómo encaja en el juego
 

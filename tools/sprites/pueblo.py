@@ -3,6 +3,8 @@
 Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   cielo_pampa.png  cielo del atardecer con un solo sol y la pampa (fondo lejano)
   tramoNN.png      tramos del pueblo sin cielo (fondo transparente), proporción 2,5:1, uno tras otro
+  pueblo_completo.png  pueblo seguido de punta a punta (2000x667, transparente): se le quitan los
+                   vecinos, el almacén repetido y el vagón del final, y sale el tramo 04 (ver COMPLETO)
   1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
 
@@ -34,6 +36,26 @@ GROUND_BLEND = 24
 
 # Tramos cuya calle sale un poco más alta o más baja que la del tramo 1: px que se bajan (+) o suben (-)
 TRAMO_DY = {"02": 3}
+
+# Tramo 04 (el último, con la plaza de la capilla para la pelea con Massa) a partir de pueblo_completo.png (coordenadas del original)
+COMPLETO = {
+	"tramo": "04",
+	# [x0, y0, x1, y1, dx]: tapa la zona copiando lo que hay dx px a la izquierda (-) o derecha (+)
+	"parches": [
+		[576, 420, 614, 512, -36],    # almacenero
+		[890, 425, 924, 508, -100],   # mecánico del garaje
+		[1096, 444, 1136, 462, -45],  # señor del banco: pared y ventana
+		[1094, 455, 1138, 506, -44],  # señor del banco: maceta en su lugar
+		[1580, 424, 1616, 512, -36],  # almacenero 2
+	],
+	"quitar": [408, 748],  # el almacén, que ya sale en el tramo 1
+	"fin": 1935,           # se corta antes del vagón para que el pueblo termine en la pared de la estación
+	"escala": 0.53,        # las casas a la misma escala que el tramo 1
+	"arriba": 64,          # px que se recortan arriba para que la vereda quede como en el tramo 1
+}
+
+# Tramos que son otro tramo dado vuelta (espejo), para variar sin repetir igual: {nuevo: original}
+ESPEJO = {"03": "02"}
 
 
 def load(name: str) -> Image.Image:
@@ -67,6 +89,33 @@ def build_tramos() -> None:
 		print(name, im.size)
 
 
+def build_completo() -> None:
+	c = COMPLETO
+	src = Image.open(SRC / "pueblo_completo.png").convert("RGBA")
+	im = src.crop((0, 0, c["fin"], src.height))
+	for x0, y0, x1, y1, dx in c["parches"]:
+		im.paste(src.crop((x0 + dx, y0, x1 + dx, y1)), (x0, y0))
+	q0, q1 = c["quitar"]
+	cut = Image.new("RGBA", (im.width - (q1 - q0), im.height), (0, 0, 0, 0))
+	cut.paste(im.crop((0, 0, q0, im.height)), (0, 0))
+	cut.paste(im.crop((q1, 0, im.width, im.height)), (q0, 0))
+	s = c["escala"]
+	big = cut.resize((round(cut.width * s), round(cut.height * s)), Image.LANCZOS)
+	out = Image.new("RGBA", (big.width, H), (0, 0, 0, 0))
+	out.paste(big.crop((0, c["arriba"], big.width, c["arriba"] + H)), (0, 0))
+	out.putalpha(out.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
+	name = "pueblo_tramo_" + c["tramo"] + ".png"
+	out.save(OUT / name)
+	print(name, out.size)
+
+
+def build_espejos() -> None:
+	for new, orig in ESPEJO.items():
+		im = Image.open(OUT / f"pueblo_tramo_{orig}.png").transpose(Image.FLIP_LEFT_RIGHT)
+		im.save(OUT / f"pueblo_tramo_{new}.png")
+		print(f"pueblo_tramo_{new}.png (espejo del {orig})", im.size)
+
+
 def build_ground() -> None:
 	src = load(SCENES[0]).crop(GROUND_BOX)
 	s = H / 793
@@ -87,4 +136,6 @@ def build_ground() -> None:
 if __name__ == "__main__":
 	build_sky()
 	build_tramos()
+	build_completo()
+	build_espejos()
 	build_ground()
