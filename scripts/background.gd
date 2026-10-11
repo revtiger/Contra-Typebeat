@@ -5,7 +5,8 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Ciudad: sky, colonial (edificios con cúpulas y bandera), ruins (ruinas y carteles de propaganda inventados), sewer.
 ## Nieve (Alemania): sky, alps, pines, ice y snowfall (copos delante, fijos en pantalla).
 ## Base secreta (ONU): sky, vault (muro con emblemas y pantallas), machines (servidores y carteles), abyss.
-## Pueblo de la pampa (1.1): pueblo (cielo del atardecer y pampa de Eduardo, bg_pueblo.png) y water (zanja).
+## Pueblo de la pampa (1.1): pueblo (cielo del atardecer y pampa de Eduardo, bg_pueblo.png), casas (tramos del
+## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo) y water (zanja).
 ## country (ar, mx, us, de, un) elige la bandera que ondea y los lemas de los carteles.
 ## Con screen_scroll = true el fondo se desplaza solo (menú e intro, sin cámara).
 
@@ -28,6 +29,7 @@ var t := 0.0
 
 const WIDTH := 5400.0
 const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
+const PUEBLO_TRAMOS := 12
 
 
 func _ready() -> void:
@@ -196,6 +198,11 @@ func _draw() -> void:
 				draw_rect(Rect2(-60 + i * 40, 240, 22, 3), Color(0.2, 0.16, 0.14))
 		"pueblo":
 			draw_texture(PUEBLO_TEX, Vector2.ZERO)
+		"casas":
+			var x := 0.0
+			for tex in _tramos():
+				draw_texture(tex, Vector2(x, 0))
+				x += tex.get_width()
 		"water":
 			if theme == "pueblo":
 				# zanja de agua turbia
@@ -212,6 +219,21 @@ func _draw() -> void:
 			draw_polygon(
 				PackedVector2Array([Vector2(-60, 225), Vector2(WIDTH, 225), Vector2(WIDTH, 275), Vector2(-60, 275)]),
 				PackedColorArray([Color(0.45, 0.25, 0.15), Color(0.45, 0.25, 0.15), Color(0.08, 0.04, 0.03), Color(0.08, 0.04, 0.03)]))
+
+
+## Tramos del pueblo que existen (pueblo_tramo_01.png, _02…), en orden. Se guardan en la variable
+## para que las texturas no se liberen al terminar _draw (se verían en blanco).
+var tramos: Array[Texture2D] = []
+
+
+func _tramos() -> Array[Texture2D]:
+	if tramos.is_empty():
+		for i in range(1, PUEBLO_TRAMOS + 1):
+			var path := "res://assets/sprites/pueblo_tramo_%02d.png" % i
+			if not ResourceLoader.exists(path):
+				break
+			tramos.append(load(path))
+	return tramos
 
 
 ## Edificios coloniales lejanos: fachadas con arcos, cúpulas, torres y una bandera que ondea.

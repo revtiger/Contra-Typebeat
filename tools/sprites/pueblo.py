@@ -2,12 +2,13 @@
 
 Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   cielo_pampa.png  cielo del atardecer con un solo sol y la pampa (fondo lejano)
-  1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia;
-  de la 1 sale la calle. Los edificios se añadirán aparte como capa propia.
+  tramoNN.png      tramos del pueblo sin cielo (fondo transparente), 1983x793, uno tras otro
+  1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
 
 Salida:
   assets/sprites/bg_pueblo.png      cielo y pampa, 270 px de alto (se mueve muy despacio)
+  assets/sprites/pueblo_tramo_NN.png  cada tramo escalado a 270 px de alto (casas a la altura del juego)
   assets/sprites/ground_pueblo.png  tira de adoquines y tierra que se repite en el suelo
 
 Uso: python tools/sprites/pueblo.py
@@ -48,6 +49,18 @@ def build_sky() -> None:
 	print("bg_pueblo.png", sky.size)
 
 
+def build_tramos() -> None:
+	for f in sorted(SRC.glob("tramo[0-9][0-9].png")):
+		src = Image.open(f).convert("RGBA")
+		im = src.resize((round(src.width * H / src.height), H), Image.LANCZOS)
+		# bordes nítidos de pixel art: cada píxel es opaco o transparente
+		a = im.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
+		im.putalpha(a)
+		name = "pueblo_tramo_" + f.stem[5:] + ".png"
+		im.save(OUT / name)
+		print(name, im.size)
+
+
 def build_ground() -> None:
 	src = load(SCENES[0]).crop(GROUND_BOX)
 	s = H / 793
@@ -67,4 +80,5 @@ def build_ground() -> None:
 
 if __name__ == "__main__":
 	build_sky()
+	build_tramos()
 	build_ground()
