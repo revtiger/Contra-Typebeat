@@ -2,7 +2,7 @@
 
 Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   cielo_pampa.png  cielo del atardecer con un solo sol y la pampa (fondo lejano)
-  tramoNN.png      tramos del pueblo sin cielo (fondo transparente), 1983x793, uno tras otro
+  tramoNN.png      tramos del pueblo sin cielo (fondo transparente), proporción 2,5:1, uno tras otro
   1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
 
@@ -32,6 +32,9 @@ SKY_FIELD_Y = 195
 GROUND_BOX = (480, 640, 1400, 793)
 GROUND_BLEND = 24
 
+# Tramos cuya calle sale un poco más alta o más baja que la del tramo 1: px que se bajan (+) o suben (-)
+TRAMO_DY = {"02": 3}
+
 
 def load(name: str) -> Image.Image:
 	clean = SRC / f"{name}_limpia.png"
@@ -56,8 +59,11 @@ def build_tramos() -> None:
 		# bordes nítidos de pixel art: cada píxel es opaco o transparente
 		a = im.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
 		im.putalpha(a)
-		name = "pueblo_tramo_" + f.stem[5:] + ".png"
-		im.save(OUT / name)
+		num = f.stem[5:]
+		out = Image.new("RGBA", im.size, (0, 0, 0, 0))
+		out.paste(im, (0, TRAMO_DY.get(num, 0)))
+		name = "pueblo_tramo_" + num + ".png"
+		out.save(OUT / name)
 		print(name, im.size)
 
 
