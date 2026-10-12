@@ -18,6 +18,10 @@ var last_scene = null
 var slow_since := -1
 ## every=N: captura cada N fotogramas (por defecto 120; bajo, p. ej. 6, para revisar animaciones)
 var shot_every := 120
+## run_only: solo corre a la derecha (sin saltar, disparar, granadas ni apuntar), para revisar la animación de correr
+var run_only := false
+## frames=N: termina tras N fotogramas de misión (0 = sin límite)
+var max_frames := 0
 
 
 func _ready() -> void:
@@ -31,6 +35,10 @@ func _ready() -> void:
 			Game.hero = a.substr(5)  # soldado preseleccionado en ELIGE TU SOLDADO
 		elif a.begins_with("every="):
 			shot_every = maxi(int(a.substr(6)), 1)
+		elif a.begins_with("frames="):
+			max_frames = int(a.substr(7))
+		elif a == "run_only":
+			run_only = true
 		elif a == "boss":
 			boss = true
 		elif a == "scene=intro":
@@ -110,6 +118,14 @@ func _physics_process(_delta: float) -> void:
 		lvl.cam_left = lvl.boss_arena - 300
 	p.invuln = 1.0
 	Game.lives = 3
+	if run_only:
+		Input.action_press("right")
+		if level_frame % shot_every == 0:
+			_shot("nivel%d" % Game.level)
+		if level_frame >= max_frames and max_frames > 0:
+			print("FIN: solo correr, frames=%d x=%.0f" % [level_frame, p.position.x])
+			get_tree().quit()
+		return
 	var at_boss: bool = lvl.cam_left >= lvl.boss_arena - 1.0
 	var heli: bool = at_boss and is_instance_valid(lvl.boss) and lvl.boss.get("state") != null
 	if heli:
@@ -189,7 +205,7 @@ func _physics_process(_delta: float) -> void:
 		elif level_frame % 60 == 5:
 			Input.action_release("restart")
 		return
-	if lvl.state == "clear" or level_frame > 9000:
+	if lvl.state == "clear" or level_frame > 9000 or (max_frames > 0 and level_frame >= max_frames):
 		_shot("final")
 		print("FIN: estado=%s puntos=%d frames=%d" % [lvl.state, Game.score, level_frame])
 		get_tree().quit()

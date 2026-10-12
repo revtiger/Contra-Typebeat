@@ -12,8 +12,12 @@ Salida: assets/sprites/player_<id>_body.png (una fila por animación, fotogramas
         assets/sprites/player_<id>_body_meta.json (animaciones y boca del arma)
 player.gd usa estas hojas en lugar de piernas + torso cuando existen.
 
+Si existe tools/sprites/heroes/<id>/<anim>/<anim>_NN.png (fotogramas sueltos ya a escala, hechos por
+chatgpt_frames.py y retocables a mano), esa animación se monta con ellos en lugar de con las poses de las hojas.
+
 Uso: python tools/sprites/heroes_sheets.py
 """
+import glob
 import json
 import os
 
@@ -22,6 +26,7 @@ from PIL import Image
 HERE = os.path.dirname(__file__)
 SRC = os.path.join(HERE, "chatgpt")
 OUT = os.path.join(HERE, "..", "..", "assets", "sprites")
+FRAMES = os.path.join(HERE, "heroes")
 
 HEROES = ["eduardo", "eder"]
 FW, FH = 80, 60
@@ -42,6 +47,13 @@ ANIMS = {
 	"die": ([(2, 1, 0), (2, 1, 1)], 6, False),
 	"win": ([(2, 2, c) for c in range(4)], 5, True),
 	"knife": ([(2, 3, c) for c in range(4)], 18, False),
+}
+
+# animaciones hechas con fotogramas sueltos: fps y duración relativa de cada fotograma (sustituyen a ANIMS)
+LOOSE = {
+	# correr (v18 = piernas de la v15/v16 y arco del arma redibujado), 10 fotogramas. A 13 fps el ciclo dura
+	# 0,77 s, algo más pausado que a 16 (0,63 s, sin patinar); a cambio la bota apoyada patina ~1,5 px por fotograma.
+	"run": (13, [1] * 10),
 }
 
 
@@ -121,16 +133,32 @@ def clean(im):
 	return im
 
 
+def loose_frames(hero, anim):
+	"""Fotogramas sueltos de heroes/<id>/<anim>/ en orden, o None si no hay."""
+	paths = sorted(glob.glob(os.path.join(FRAMES, hero, anim, "%s_[0-9][0-9].png" % anim)))
+	return [Image.open(p).convert("RGBA") for p in paths] or None
+
+
 def build(hero):
 	sheets = {1: cells(os.path.join(SRC, "sprites_%s_1.png" % hero)),
 		2: cells(os.path.join(SRC, "sprites_%s_2.png" % hero))}
 	idle = sheets[1][0][0]
 	ib = alpha_mask(idle).getbbox()
 	scale = HEIGHT / float(ib[3] - ib[1])
-	cols = max(len(v[0]) for v in ANIMS.values())
+	loose = {name: loose_frames(hero, name) for name in ANIMS}
+	cols = max(len(loose[n]) if loose[n] else len(v[0]) for n, v in ANIMS.items())
 	sheet = Image.new("RGBA", (FW * cols, FH * len(ANIMS)), (0, 0, 0, 0))
 	meta = {"frame": [FW, FH], "feet": list(FEET), "anims": {}}
 	for row, (name, (frames, fps, loop)) in enumerate(ANIMS.items()):
+		if loose[name]:
+			for col, frame in enumerate(loose[name]):
+				sheet.alpha_composite(frame, (col * FW, row * FH))
+			meta["anims"][name] = {"row": row, "frames": len(loose[name]), "fps": fps, "loop": loop}
+			if name in LOOSE:
+				meta["anims"][name]["fps"] = LOOSE[name][0]
+				if len(LOOSE[name][1]) == len(loose[name]):
+					meta["anims"][name]["durations"] = LOOSE[name][1]
+			continue
 		for col, (s, r, c) in enumerate(frames):
 			cell = sheets[s][r][c]
 			b = alpha_mask(cell).getbbox()
