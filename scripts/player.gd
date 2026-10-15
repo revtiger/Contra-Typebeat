@@ -1,6 +1,7 @@
 extends CharacterBody2D
 ## Soldado del jugador con controles estilo Metal Slug:
-## - dispara adelante, arriba y (solo en el aire) abajo; sin diagonales
+## - dispara adelante, arriba, en diagonal hacia arriba (Arriba + adelante) y, solo en el aire,
+##   abajo y en diagonal hacia abajo (Abajo + adelante)
 ## - se agacha y avanza agachado; baja de los puentes con Abajo + Saltar
 ## - granadas con botón propio (10 por vida); cuchillo automático si hay un soldado pegado
 ## - armas especiales con munición limitada: al acabarse vuelve la pistola
@@ -115,6 +116,7 @@ func _physics_process(delta: float) -> void:
 	collision_mask = 1 if drop_t > 0.0 else 1 | 8
 
 	var dir := Input.get_axis("left", "right")
+	var side := absf(dir) >= 0.3
 	var up := Input.is_action_pressed("up")
 	var down := Input.is_action_pressed("down")
 	var on_floor := is_on_floor()
@@ -142,9 +144,9 @@ func _physics_process(delta: float) -> void:
 	_set_height(CROUCH_H if crouching else (STAND_H if on_floor else JUMP_H))
 
 	if up:
-		aim = Vector2.UP
+		aim = Vector2(facing, -1).normalized() if side else Vector2.UP
 	elif down and not on_floor:
-		aim = Vector2.DOWN
+		aim = Vector2(facing, 1).normalized() if side else Vector2.DOWN
 	else:
 		aim = Vector2(facing, 0)
 
@@ -167,6 +169,15 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 
+## Nombre de la dirección de apuntado: fwd, up, down, diag_up o diag_down (filas del torso y bocas del cañón).
+func _aim_key() -> String:
+	if aim.x == 0.0:
+		return "up" if aim.y < 0.0 else "down"
+	if aim.y != 0.0:
+		return "diag_up" if aim.y < 0.0 else "diag_down"
+	return "fwd"
+
+
 func _standing_on_bridge() -> bool:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
@@ -179,12 +190,8 @@ func _standing_on_bridge() -> bool:
 func _muzzle() -> Vector2:
 	if body:
 		return _body_muzzle()
-	var key := "fwd"
-	if aim == Vector2.UP:
-		key = "up"
-	elif aim == Vector2.DOWN:
-		key = "down"
-	elif crouching:
+	var key := _aim_key()
+	if key == "fwd" and crouching:
 		key = "crouch_fwd"
 	var m := SpriteUtil.v(meta["muzzle"][key])
 	return Vector2(m.x * facing, m.y + torso.position.y)
@@ -375,12 +382,8 @@ func _process(delta: float) -> void:
 		torso.animation = prefix + "throw"
 		torso.frame = 0 if throw_t > 0.1 else 1
 	else:
-		if aim == Vector2.UP:
-			torso.animation = "up"
-		elif aim == Vector2.DOWN:
-			torso.animation = "down"
-		else:
-			torso.animation = prefix + "fwd"
+		var key := _aim_key()
+		torso.animation = prefix + "fwd" if key == "fwd" else key
 		torso.frame = 1 if flash_t > 0.0 else 0
 	fx.queue_redraw()
 
@@ -418,11 +421,16 @@ func _setup_body(path: String) -> void:
 func _body_muzzle() -> Vector2:
 	var m: Dictionary = body_meta["muzzle"]
 	var p := SpriteUtil.v(m["fwd"])
-	if aim == Vector2.UP:
-		p = Vector2(4, -50)  # ☐ sin pose de apuntar arriba todavía
-	elif aim == Vector2.DOWN:
-		p = Vector2(2, -2)
-	elif crouching:
+	match _aim_key():
+		"up":
+			p = Vector2(4, -50)  # ☐ sin pose de apuntar arriba todavía
+		"down":
+			p = Vector2(2, -2)
+		"diag_up":
+			p = Vector2(22, -44)  # ☐ sin pose diagonal todavía (propuesta en docs/propuestas/poses_extra/)
+		"diag_down":
+			p = Vector2(20, -8)
+	if _aim_key() == "fwd" and crouching:
 		p = SpriteUtil.v(m["prone"] if absf(velocity.x) > 1.0 else m["crouch_fwd"])
 	return Vector2(p.x * facing, p.y)
 

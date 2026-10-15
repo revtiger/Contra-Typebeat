@@ -11,6 +11,7 @@ const LogoText = preload("res://scripts/logo_text.gd")
 ## Controles: acción (texto blanco) y teclas (dorado), alineados en columnas con la fuente monoespaciada.
 const CONTROLS := [
 	["Moverse", "Flechas / WASD"], ["Apuntar arriba", "Arriba"], ["Disparar abajo (aire)", "Abajo"],
+	["Disparar en diagonal", "Arriba/Abajo + lado"],
 	["Saltar", "Z / Espacio / K"], ["Disparar / cuchillo", "X / J"], ["Granada", "C / L"],
 	["Agacharse", "Abajo"], ["Bajar de un puente", "Abajo + Saltar"], ["Pausa", "Esc"],
 ]
