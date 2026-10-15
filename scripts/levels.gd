@@ -21,7 +21,7 @@ const END := 3000
 ## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe]
 const ZONES := [
 	{"zone": "ARGENTINA", "country": "ar", "freed": "LIBERADA", "phases": [
-		["MONTE MISIONERO", "jungle", "massa"],
+		["PUEBLO DE LA PAMPA", "pueblo", "massa"],
 		["QUEBRADA DE HUMAHUACA", "desert", "kirchner"],
 		["BUENOS AIRES · CASA ROSADA", "city", "milei"],
 	]},
@@ -47,9 +47,20 @@ const ZONES := [
 	]},
 ]
 
-const MUSIC := {"jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
+const MUSIC := {"pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
 
 const TEMPLATES := {
+	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
+	"pueblo": {
+		"ground": [[0, END, 230]],
+		"platforms": [],
+		"entities": [
+			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
+			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
+			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230], ["sniper", 2150, 230],
+			["turret", 2300, 230], ["capsule", 2300, 60, "S"], ["grenadier", 2400, 230],
+		],
+	},
 	"jungle": {
 		"ground": [[0, 900, 230], [948, 1500, 230], [1500, 1900, 200], [1948, 2400, 230], [2448, END, 230]],
 		"platforms": [
