@@ -6,7 +6,8 @@ static var _frames_cache := {}
 static var _meta_cache := {}
 
 
-## Crea (o reutiliza) un SpriteFrames. anims = {nombre: [fila, fotogramas, fps, bucle]}.
+## Crea (o reutiliza) un SpriteFrames. anims = {nombre: [fila, fotogramas, fps, bucle]} o
+## [fila, fotogramas, fps, bucle, duraciones]: duración relativa de cada fotograma (1.0 = 1/fps).
 static func frames(path: String, fw: int, fh: int, anims: Dictionary) -> SpriteFrames:
 	var key := path + str(anims)
 	if _frames_cache.has(key):
@@ -23,7 +24,7 @@ static func frames(path: String, fw: int, fh: int, anims: Dictionary) -> SpriteF
 			var at := AtlasTexture.new()
 			at.atlas = tex
 			at.region = Rect2(i * fw, a[0] * fh, fw, fh)
-			sf.add_frame(anim_name, at)
+			sf.add_frame(anim_name, at, a[4][i] if a.size() > 4 else 1.0)
 	_frames_cache[key] = sf
 	return sf
 

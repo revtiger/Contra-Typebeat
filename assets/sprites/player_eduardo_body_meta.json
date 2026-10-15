@@ -16,9 +16,21 @@
   },
   "run": {
    "row": 1,
-   "frames": 4,
-   "fps": 12,
-   "loop": true
+   "frames": 10,
+   "fps": 13,
+   "loop": true,
+   "durations": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
   },
   "jump": {
    "row": 2,

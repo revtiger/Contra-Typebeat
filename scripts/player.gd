@@ -411,6 +411,8 @@ func _setup_body(path: String) -> void:
 	for n in body_meta["anims"]:
 		var a: Dictionary = body_meta["anims"][n]
 		anims[n] = [a["row"], a["frames"], a["fps"], a["loop"]]
+		if a.has("durations"):
+			anims[n].append(a["durations"])
 	var fr: Array = body_meta["frame"]
 	body = SpriteUtil.sprite(SpriteUtil.frames(path, fr[0], fr[1], anims), SpriteUtil.v(body_meta["feet"]))
 	add_child(body)
