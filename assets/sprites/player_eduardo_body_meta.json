@@ -1,11 +1,11 @@
 {
  "frame": [
-  80,
-  60
+  96,
+  80
  ],
  "feet": [
-  30,
-  58
+  40,
+  76
  ],
  "anims": {
   "idle": {
@@ -64,8 +64,8 @@
   },
   "die": {
    "row": 7,
-   "frames": 2,
-   "fps": 6,
+   "frames": 8,
+   "fps": 10,
    "loop": false
   },
   "win": {
@@ -79,20 +79,62 @@
    "frames": 4,
    "fps": 18,
    "loop": false
+  },
+  "up": {
+   "row": 10,
+   "frames": 2,
+   "fps": 1,
+   "loop": false
+  },
+  "up_run": {
+   "row": 11,
+   "frames": 4,
+   "fps": 12,
+   "loop": true
+  },
+  "diag_up": {
+   "row": 12,
+   "frames": 2,
+   "fps": 1,
+   "loop": false
+  },
+  "diag_up_run": {
+   "row": 13,
+   "frames": 4,
+   "fps": 12,
+   "loop": true
+  },
+  "diag_down": {
+   "row": 14,
+   "frames": 2,
+   "fps": 1,
+   "loop": false
   }
  },
  "muzzle": {
   "fwd": [
-   29,
-   -25
+   22,
+   -26
   ],
-  "crouch_fwd": [
-   30,
-   -21
+  "up": [
+   5,
+   -46
+  ],
+  "diag_up": [
+   15,
+   -43
+  ],
+  "diag_down": [
+   12,
+   -11
   ],
   "prone": [
-   41,
-   -8
+   25,
+   -12
+  ],
+  "crouch_fwd": [
+   31,
+   -23
   ]
  }
 }

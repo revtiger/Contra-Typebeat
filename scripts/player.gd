@@ -393,10 +393,8 @@ func _play(spr: AnimatedSprite2D, anim: String) -> void:
 		spr.play(anim)
 
 
-## Fogonazo del disparo, por encima de los sprites (en cuerpo entero, solo si la pose no lo trae dibujado).
+## Fogonazo del disparo, por encima de los sprites (las poses de cuerpo entero ya no lo traen dibujado).
 func _draw_fx() -> void:
-	if body and body.animation in ["shoot", "prone"]:
-		return
 	if flash_t > 0.0 and not dead:
 		var m := _muzzle()
 		fx.draw_circle(m, 4, Color(1, 0.95, 0.5))
@@ -422,17 +420,13 @@ func _setup_body(path: String) -> void:
 
 func _body_muzzle() -> Vector2:
 	var m: Dictionary = body_meta["muzzle"]
+	var key := _aim_key()
 	var p := SpriteUtil.v(m["fwd"])
-	match _aim_key():
-		"up":
-			p = Vector2(4, -50)  # ☐ sin pose de apuntar arriba todavía
-		"down":
-			p = Vector2(2, -2)
-		"diag_up":
-			p = Vector2(22, -44)  # ☐ sin pose diagonal todavía (propuesta en docs/propuestas/poses_extra/)
-		"diag_down":
-			p = Vector2(20, -8)
-	if _aim_key() == "fwd" and crouching:
+	if m.has(key):
+		p = SpriteUtil.v(m[key])
+	elif key == "down":
+		p = Vector2(2, -2)  # sin pose de disparar hacia abajo: sale de entre los pies
+	if key == "fwd" and crouching:
 		p = SpriteUtil.v(m["prone"] if absf(velocity.x) > 1.0 else m["crouch_fwd"])
 	return Vector2(p.x * facing, p.y)
 
@@ -459,6 +453,8 @@ func _process_body(delta: float) -> void:
 		body.frame = 1 if flash_t > 0.0 else 0
 	elif crouching:
 		body.animation = "crouch"
+	elif _aim_pose(on_floor, moving):
+		pass
 	elif not on_floor:
 		body.animation = "jump"
 		body.frame = 0 if velocity.y < 0.0 else 1
@@ -471,3 +467,17 @@ func _process_body(delta: float) -> void:
 	else:
 		_play(body, "idle")
 	fx.queue_redraw()
+
+
+## Poses de apuntar arriba, en diagonal hacia arriba o (en el aire) en diagonal hacia abajo, si la hoja las tiene.
+## Quieto o en el aire: fotograma 0 en reposo y 1 con el retroceso del disparo. Corriendo: <pose>_run en bucle.
+func _aim_pose(on_floor: bool, moving: bool) -> bool:
+	var key := _aim_key()
+	if key == "fwd" or key == "down" or not body.sprite_frames.has_animation(key):
+		return false
+	if moving and on_floor and body.sprite_frames.has_animation(key + "_run"):
+		_play(body, key + "_run")
+	else:
+		body.animation = key
+		body.frame = 1 if flash_t > 0.0 else 0
+	return true
