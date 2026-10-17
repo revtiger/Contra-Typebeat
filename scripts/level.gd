@@ -100,7 +100,10 @@ func _ready() -> void:
 		add_child(bg)
 
 	for g in ground:
-		_add_block(Rect2(g[0], g[2], g[1] - g[0], 320 - g[2]), false)
+		if g.size() > 3 and g[3] != g[2]:
+			_add_slope(g)
+		else:
+			_add_block(Rect2(g[0], g[2], g[1] - g[0], 320 - g[2]), false)
 	for p in data["platforms"]:
 		_add_block(Rect2(p[0], p[2], p[1], 8), true)
 
@@ -136,6 +139,26 @@ func _add_block(rect: Rect2, one_way: bool) -> void:
 	var vis := Terrain.new()
 	vis.size = rect.size
 	vis.one_way = one_way
+	vis.theme = theme
+	body.add_child(vis)
+	add_child(body)
+
+
+## Cuesta: tramo de suelo [x0, x1, y_inicio, y_fin] con colisión en polígono (el jugador y los
+## enemigos suben y bajan andando; la pendiente no debe pasar de ~35°).
+func _add_slope(g: Array) -> void:
+	var w: float = g[1] - g[0]
+	var body := StaticBody2D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	body.position = Vector2(g[0], 0)
+	var cp := CollisionPolygon2D.new()
+	cp.polygon = PackedVector2Array([Vector2(0, g[2]), Vector2(w, g[3]), Vector2(w, 320), Vector2(0, 320)])
+	body.add_child(cp)
+	var vis := Terrain.new()
+	vis.size = Vector2(w, 320)
+	vis.top0 = g[2]
+	vis.top1 = g[3]
 	vis.theme = theme
 	body.add_child(vis)
 	add_child(body)
@@ -237,6 +260,8 @@ func _spawn_entities() -> void:
 func ground_y_at(x: float) -> float:
 	for g in ground:
 		if x >= g[0] and x <= g[1]:
+			if g.size() > 3:
+				return lerpf(g[2], g[3], (x - g[0]) / maxf(1.0, g[1] - g[0]))
 			return g[2]
 	return 999.0
 

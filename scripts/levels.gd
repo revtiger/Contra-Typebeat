@@ -24,7 +24,7 @@ const END := 3000
 const ZONES := [
 	{"zone": "ARGENTINA", "country": "ar", "freed": "LIBERADA", "phases": [
 		["PUEBLO DE LA PAMPA", "pueblo", "massa"],
-		["QUEBRADA DE HUMAHUACA", "desert", "kirchner", "quebrada"],
+		["QUEBRADA DE HUMAHUACA", "quebrada", "kirchner"],
 		["BUENOS AIRES · CASA ROSADA", "city", "milei", "baires"],
 	]},
 	{"zone": "MÉXICO", "country": "mx", "phases": [
@@ -49,9 +49,36 @@ const ZONES := [
 	]},
 ]
 
-const MUSIC := {"pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
+const MUSIC := {"quebrada": "desert", "pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
 
 const TEMPLATES := {
+	# Quebrada de Humahuaca (1.2), al estilo Metal Slug (Gwyn, 17-10-2026): colina, escalones de roca,
+	# rampa a una meseta alta y, en la segunda mitad, DOS CAMINOS a la vez en pantalla que se juntan antes
+	# del jefe: arriba, cornisas de roca con francotiradores y las cápsulas; abajo, el fondo del cañón
+	# (más hundido) con tanques, minas y barriles. Suelo [x0, x1, y] plano o [x0, x1, y_inicio, y_fin] cuesta.
+	"quebrada": {
+		"ground": [
+			[0, 260, 230], [260, 340, 230, 205], [340, 460, 205], [460, 540, 205, 230], [540, 640, 230],
+			[680, 760, 230], [760, 880, 200], [880, 920, 230], [920, 1020, 230, 170], [1020, 1260, 170],
+			[1260, 1340, 170, 245], [1340, 2160, 245], [2160, 2270, 245, 230], [2270, END, 230],
+		],
+		"platforms": [
+			[1250, 210, 135], [1500, 190, 128], [1730, 200, 135], [1975, 170, 142], [2190, 90, 175],
+		],
+		"entities": [
+			["sniper", 380, 205], ["barrel", 580, 230], ["capsule", 620, 60, "H"], ["mine", 710, 230],
+			["grenadier", 820, 200], ["sniper", 1060, 170], ["turret", 1150, 170], ["jet", 1100, 0],
+			["sniper", 1230, 170],
+			# camino de arriba (cornisas)
+			["sniper", 1420, 135], ["capsule", 1580, 40, "L"], ["sniper", 1640, 128], ["grenadier", 1860, 135],
+			["sniper", 2080, 142], ["capsule", 2060, 40, "B"],
+			# camino de abajo (fondo del cañón)
+			["barrel", 1420, 245], ["barrel", 1434, 245], ["mine", 1520, 245], ["tank", 1700, 245, "israeli"],
+			["grenadier", 1800, 245], ["mine", 1930, 245], ["tank", 2060, 245, "usa"],
+			# se juntan
+			["sniper", 2300, 230], ["barrel", 2380, 230],
+		],
+	},
 	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
 	"pueblo": {
 		"ground": [[0, END, 230]],

@@ -90,7 +90,8 @@ func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 2
 	collision_mask = 1 | 8
-	floor_snap_length = 4.0
+	floor_snap_length = 8.0  # pega al suelo al bajar cuestas
+	floor_constant_speed = true
 	col.shape = shape
 	add_child(col)
 	hurt.collision_layer = 0
