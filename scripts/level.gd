@@ -202,6 +202,8 @@ func _spawn_entities() -> void:
 				n = Mine.new()
 			"tank":
 				n = Tank.new()
+				if e.size() > 3:
+					n.kind = e[3]  # comunista, israeli o usa (si no, se alterna según la x)
 			"miniboss":
 				n = Miniboss.new()
 				n.kind = e[3]

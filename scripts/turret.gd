@@ -1,7 +1,13 @@
 extends StaticBody2D
 ## Torreta fija que gira hacia el jugador y dispara. Aguanta varios impactos.
+## Sprites de PixelLab (tools/sprites/turret.py): búnker de sacos terreros y ametralladora que gira encima.
 
 const Bullet = preload("res://scripts/bullet.gd")
+const BASE := preload("res://assets/sprites/turret_base.png")
+const GUN := preload("res://assets/sprites/turret_gun.png")
+## pivote del arma sobre el búnker y punto de giro dentro del sprite del arma (cerca de la culata)
+const PIVOT := Vector2(0, -23)
+const GUN_PIVOT := Vector2(6, 3)
 
 var hp := 8
 var shoot_t := 1.0
@@ -17,16 +23,16 @@ func _ready() -> void:
 	collision_mask = 0
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(20, 18)
+	r.size = Vector2(34, 24)
 	cs.shape = r
-	cs.position = Vector2(0, -9)
+	cs.position = Vector2(0, -12)
 	add_child(cs)
 
 
 func _physics_process(delta: float) -> void:
 	flash -= delta
 	var p = main.player
-	var to: Vector2 = (p.position + Vector2(0, -14)) - (position + Vector2(0, -12))
+	var to: Vector2 = (p.position + Vector2(0, -14)) - (position + PIVOT)
 	aim = Vector2.from_angle(roundf(to.angle() / (PI / 6)) * (PI / 6))
 	var on_screen: bool = position.x > main.cam_left + 10 and position.x < main.cam_left + 470
 	shoot_t -= delta
@@ -35,7 +41,7 @@ func _physics_process(delta: float) -> void:
 		var b := Bullet.new()
 		b.from_player = false
 		b.vel = aim * 110.0
-		b.position = position + Vector2(0, -12) + aim * 12
+		b.position = position + PIVOT + aim * (GUN.get_width() - GUN_PIVOT.x)
 		get_parent().add_child(b)
 		Game.sfx("shot", -18.0, 0.55)
 	if position.x < main.cam_left - 60:
@@ -54,8 +60,9 @@ func take_damage(n: int) -> void:
 
 
 func _draw() -> void:
-	var white := flash > 0.0
-	draw_rect(Rect2(-10, -8, 20, 8), Color.WHITE if white else Color(0.35, 0.35, 0.4))
-	draw_circle(Vector2(0, -12), 7, Color.WHITE if white else Color(0.5, 0.5, 0.55))
-	draw_line(Vector2(0, -12), Vector2(0, -12) + aim * 12, Color(0.15, 0.15, 0.15), 3)
-	draw_circle(Vector2(0, -12), 2.5, Color(1, 0.2, 0.2))
+	var tint := Color(4, 4, 4) if flash > 0.0 else Color.WHITE
+	draw_texture(BASE, Vector2(-BASE.get_width() / 2.0, -BASE.get_height()), tint)
+	# el arma gira sobre su pivote; apuntando a la izquierda se voltea para que la culata no quede boca abajo
+	draw_set_transform(PIVOT, aim.angle(), Vector2(1, -1 if aim.x < -0.01 else 1))
+	draw_texture(GUN, -GUN_PIVOT, tint)
+	draw_set_transform(Vector2.ZERO)
