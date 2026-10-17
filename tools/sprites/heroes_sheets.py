@@ -65,6 +65,7 @@ ANIMS = {
 	"shoot": ([(1, 3, 0), (1, 3, 1), (1, 3, 2), (1, 3, 3)], 20, False),
 	"throw": ([(2, 0, c) for c in range(4)], 14, False),
 	"prone": ([(2, 1, 1), (2, 1, 2)], 1, False),
+	"go_prone": ([(2, 1, 0)], 1, False),
 	"die": ([(5, 2, c) for c in range(4)] + [(5, 3, c) for c in range(4)], 10, False),
 	"win": ([(2, 2, c) for c in range(4)], 5, True),
 	"knife": ([(2, 3, c) for c in range(4)], 18, False),
@@ -82,6 +83,9 @@ MUZZLE_FROM = {"shoot": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": 
 RUN_LEGS = os.path.join(FRAMES, "eduardo", "run")
 RUN_TORSO = {"run": "idle", "up_run": "up", "diag_up_run": "diag_up"}
 RUN_FPS = 13
+# Arrastrarse cuerpo a tierra: la pose tumbada con las piernas empujando (desplazamiento de la mitad de atrás)
+CRAWL_DX = [0, 1, 2, 1]
+CRAWL_FPS = 8
 HIP = 17              # altura de la cadera sobre los pies: por debajo, piernas; por encima, torso
 BOB = 2               # rebote máximo del torso al correr (px)
 # Fogonazos de verdad (los que venían dibujados en las poses), pequeño y grande por dirección.
@@ -91,7 +95,12 @@ FLASH_SRC = {
 	"diag_up": [(4, 0, 1), (4, 0, 2)],
 	"diag_down": [(3, 2, 0), (3, 2, 1)],
 }
-FLASH_CELL = 40       # cada fogonazo en una casilla de 40x40 con la boca del arma en el centro
+FLASH_CELL = 40
+# Punta del cañón en cada fotograma: dirección hacia la que apunta cada animación
+TIP_DIR = {
+	"idle": (1, 0), "run": (1, 0), "shoot": (1, 0), "jump": (1, 0), "prone": (1, 0), "crawl": (1, 0),
+	"up": (0, -1), "up_run": (0, -1), "diag_up": (1, -1), "diag_up_run": (1, -1), "diag_down": (1, 1),
+}       # cada fogonazo en una casilla de 40x40 con la boca del arma en el centro
 
 # animaciones hechas con fotogramas sueltos: fps y duración relativa de cada fotograma (sustituyen a ANIMS)
 LOOSE = {
@@ -396,6 +405,46 @@ def run_frames(torso, hero):
 	return frames, bobs
 
 
+def gun_tip(frame, d):
+	"""Punta del cañón: el píxel gris del arma (o su contorno) más lejos en la dirección d, sin contar
+	las botas. Coordenadas relativas a los pies."""
+	px = frame.load()
+	best, best_v = None, None
+	for y in range(FEET[1] - 5):
+		for x in range(FW):
+			r, g, b, a = px[x, y]
+			if a == 0 or max(r, g, b) - min(r, g, b) > 28 or (r + g + b) / 3 > 130:
+				continue
+			v = x * d[0] + y * d[1]
+			if best_v is None or v > best_v:
+				best, best_v = (x, y), v
+	return [best[0] - FEET[0], best[1] - FEET[1]]
+
+
+def _add_row(sheet, frames):
+	"""Devuelve la hoja con una fila más al final."""
+	out = Image.new("RGBA", (sheet.width, sheet.height + FH), (0, 0, 0, 0))
+	out.alpha_composite(sheet)
+	for col, f in enumerate(frames):
+		out.alpha_composite(f, (col * FW, sheet.height))
+	return out
+
+
+def crawl_frames(prone):
+	"""Arrastrarse: la mitad de atrás de la pose tumbada (piernas) avanza y vuelve; el resto queda quieto."""
+	b = prone.getbbox()
+	split = b[0] + (b[2] - b[0]) * 45 // 100
+	back = prone.crop((0, 0, split, FH))
+	front = prone.crop((split, 0, FW, FH))
+	out = []
+	for dx in CRAWL_DX:
+		f = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		f.alpha_composite(back, (dx, 0))
+		f.alpha_composite(front, (split, 0))
+		out.append(f)
+	return out
+
+
 def flash_sheet(hero, sheets, scale):
 	"""Hoja de fogonazos: una fila por dirección, pequeño y grande, con la boca del arma en el centro."""
 	half = FLASH_CELL // 2
@@ -502,6 +551,12 @@ def build(hero):
 			sheet.alpha_composite(to_palette(frame, pal), (col * FW, row * FH))
 		meta["anims"][name] = {"row": row, "frames": len(frames), "fps": fps, "loop": loop}
 
+	# arrastrarse (sale de la pose tumbada ya en paleta)
+	prone_row = meta["anims"]["prone"]["row"]
+	crawl = crawl_frames(sheet.crop((0, prone_row * FH, FW, (prone_row + 1) * FH)))
+	sheet = _add_row(sheet, crawl)
+	meta["anims"]["crawl"] = {"row": sheet.height // FH - 1, "frames": len(crawl), "fps": CRAWL_FPS, "loop": True}
+
 	# 4) boca del arma de cada dirección (relativa a los pies)
 	for key, name in MUZZLE_FROM.items():
 		points = [p for _, p in placed.get(name, []) if p]
@@ -521,6 +576,13 @@ def build(hero):
 	meta["muzzle"]["fwd"] = tip("idle", 16, 36)
 	meta["muzzle"]["crouch_fwd"] = tip("crouch", 8, 28)
 
+	# punta del cañón en cada fotograma (el fogonazo sale de ahí aunque el arma se mueva)
+	meta["tips"] = {}
+	for name, d in TIP_DIR.items():
+		a = meta["anims"].get(name)
+		if a:
+			meta["tips"][name] = [gun_tip(sheet.crop((c * FW, a["row"] * FH, (c + 1) * FW, (a["row"] + 1) * FH)), d)
+				for c in range(a["frames"])]
 	meta["flash"] = flash_sheet(hero, sheets, scale)
 	sheet.save(os.path.join(OUT, "player_%s_body.png" % hero))
 	with open(os.path.join(OUT, "player_%s_body_meta.json" % hero), "w", encoding="utf-8", newline="\n") as f:

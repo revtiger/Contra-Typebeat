@@ -67,6 +67,11 @@ var body: AnimatedSprite2D
 var body_meta: Dictionary
 ## Fogonazos de cuerpo entero (player_<id>_flash.png): fila por dirección, pequeño y grande
 var flash_tex: Texture2D
+## Tiempo cuerpo a tierra (los primeros GO_PRONE_T s se ve la pose de tirarse al suelo)
+var prone_t := 0.0
+const GO_PRONE_T := 0.1
+## Alto del cuerpo tumbado (cuerpo entero): las balas a la altura del pecho le pasan por encima
+const PRONE_H := 12.0
 var shot_n := 0
 var shoot_pose_t := 0.0
 
@@ -143,7 +148,8 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("jump") and velocity.y < -140.0:
 		velocity.y = -140.0
 
-	_set_height(CROUCH_H if crouching else (STAND_H if on_floor else JUMP_H))
+	var low := PRONE_H if body else CROUCH_H
+	_set_height(low if crouching else (STAND_H if on_floor else JUMP_H))
 
 	if up:
 		aim = Vector2(facing, -1).normalized() if side else Vector2.UP
@@ -425,28 +431,28 @@ func _setup_body(path: String) -> void:
 	fx.draw.connect(_draw_fx)
 
 
+## Boca del arma: la punta del cañón del fotograma que se ve (tips de la hoja), así el fogonazo y la bala
+## salen del arma aunque se mueva al correr. Sin punta para esa pose, la boca fija de cada dirección.
 func _body_muzzle() -> Vector2:
 	var m: Dictionary = body_meta["muzzle"]
 	var key := _aim_key()
+	if key == "down":
+		return Vector2(2 * facing, -2)  # sin pose de disparar hacia abajo: sale de entre los pies
+	var tips: Dictionary = body_meta.get("tips", {})
 	var p := SpriteUtil.v(m["fwd"])
-	if m.has(key):
+	if tips.has(body.animation) and body.frame < tips[body.animation].size():
+		p = SpriteUtil.v(tips[body.animation][body.frame])
+	elif crouching:
+		p = SpriteUtil.v(m["prone"])
+	elif m.has(key):
 		p = SpriteUtil.v(m[key])
-	elif key == "down":
-		p = Vector2(2, -2)  # sin pose de disparar hacia abajo: sale de entre los pies
-	if key == "fwd" and body.animation == "shoot" and m.has("shoot"):
-		p = SpriteUtil.v(m["shoot"])
-	# corriendo, el torso rebota: la boca del arma va con él
-	var bob: Dictionary = body_meta.get("bob", {})
-	if bob.has(body.animation) and body.frame < bob[body.animation].size():
-		p.y += bob[body.animation][body.frame]
-	if key == "fwd" and crouching:
-		p = SpriteUtil.v(m["prone"] if absf(velocity.x) > 1.0 else m["crouch_fwd"])
 	return Vector2(p.x * facing, p.y)
 
 
 ## Elige la pose: muerte, victoria, cuchillo, granada, cuerpo a tierra, agachado, salto, correr, disparar o quieto.
 func _process_body(delta: float) -> void:
 	shoot_pose_t -= delta
+	prone_t = prone_t + delta if crouching else 0.0
 	body.scale.x = facing
 	var lvl = get_tree().get_first_node_in_group("level")
 	var on_floor := is_on_floor()
@@ -461,11 +467,15 @@ func _process_body(delta: float) -> void:
 	elif throw_t > 0.0:
 		body.animation = "throw"
 		body.frame = clampi(int((1.0 - throw_t / 0.2) * 4.0), 0, 3)
-	elif crouching and moving:
-		body.animation = "prone"
-		body.frame = 1 if flash_t > 0.0 else 0
 	elif crouching:
-		body.animation = "crouch"
+		# abajo: se tira al suelo (un instante) y queda cuerpo a tierra; moviéndose, se arrastra
+		if prone_t < GO_PRONE_T and body.sprite_frames.has_animation("go_prone"):
+			body.animation = "go_prone"
+		elif moving and body.sprite_frames.has_animation("crawl"):
+			_play(body, "crawl")
+		else:
+			body.animation = "prone"
+			body.frame = 1 if flash_t > 0.0 else 0
 	elif _aim_pose(on_floor, moving):
 		pass
 	elif not on_floor:
