@@ -16,8 +16,8 @@
   },
   "run": {
    "row": 1,
-   "frames": 4,
-   "fps": 12,
+   "frames": 10,
+   "fps": 13,
    "loop": true
   },
   "jump": {
@@ -76,8 +76,8 @@
   },
   "up_run": {
    "row": 11,
-   "frames": 4,
-   "fps": 12,
+   "frames": 10,
+   "fps": 13,
    "loop": true
   },
   "diag_up": {
@@ -88,8 +88,8 @@
   },
   "diag_up_run": {
    "row": 13,
-   "frames": 4,
-   "fps": 12,
+   "frames": 10,
+   "fps": 13,
    "loop": true
   },
   "diag_down": {
@@ -100,7 +100,7 @@
   }
  },
  "muzzle": {
-  "fwd": [
+  "shoot": [
    23,
    -21
   ],
@@ -120,9 +120,67 @@
    32,
    -10
   ],
+  "fwd": [
+   32,
+   -27
+  ],
   "crouch_fwd": [
    30,
    -23
   ]
+ },
+ "bob": {
+  "run": [
+   0,
+   2,
+   1,
+   0,
+   0,
+   1,
+   2,
+   1,
+   2,
+   1
+  ],
+  "up_run": [
+   0,
+   2,
+   1,
+   0,
+   0,
+   1,
+   2,
+   1,
+   2,
+   1
+  ],
+  "diag_up_run": [
+   0,
+   2,
+   1,
+   0,
+   0,
+   1,
+   2,
+   1,
+   2,
+   1
+  ]
+ },
+ "flash": {
+  "frame": [
+   40,
+   40
+  ],
+  "anchor": [
+   20,
+   20
+  ],
+  "rows": {
+   "fwd": 0,
+   "up": 1,
+   "diag_up": 2,
+   "diag_down": 3
+  }
  }
 }

@@ -65,6 +65,8 @@ var fx := Node2D.new()
 ## Modo cuerpo entero (Eduardo, Eder): una sola hoja player_<id>_body.png en vez de piernas + torso
 var body: AnimatedSprite2D
 var body_meta: Dictionary
+## Fogonazos de cuerpo entero (player_<id>_flash.png): fila por dirección, pequeño y grande
+var flash_tex: Texture2D
 var shot_n := 0
 var shoot_pose_t := 0.0
 
@@ -397,6 +399,8 @@ func _play(spr: AnimatedSprite2D, anim: String) -> void:
 func _draw_fx() -> void:
 	if flash_t > 0.0 and not dead:
 		var m := _muzzle()
+		if _draw_body_flash(m):
+			return
 		fx.draw_circle(m, 4, Color(1, 0.95, 0.5))
 		fx.draw_circle(m, 2, Color.WHITE)
 
@@ -414,6 +418,9 @@ func _setup_body(path: String) -> void:
 	var fr: Array = body_meta["frame"]
 	body = SpriteUtil.sprite(SpriteUtil.frames(path, fr[0], fr[1], anims), SpriteUtil.v(body_meta["feet"]))
 	add_child(body)
+	var flash_path := path.replace("_body.png", "_flash.png")
+	if body_meta.has("flash") and ResourceLoader.exists(flash_path):
+		flash_tex = load(flash_path)
 	add_child(fx)
 	fx.draw.connect(_draw_fx)
 
@@ -426,6 +433,12 @@ func _body_muzzle() -> Vector2:
 		p = SpriteUtil.v(m[key])
 	elif key == "down":
 		p = Vector2(2, -2)  # sin pose de disparar hacia abajo: sale de entre los pies
+	if key == "fwd" and body.animation == "shoot" and m.has("shoot"):
+		p = SpriteUtil.v(m["shoot"])
+	# corriendo, el torso rebota: la boca del arma va con él
+	var bob: Dictionary = body_meta.get("bob", {})
+	if bob.has(body.animation) and body.frame < bob[body.animation].size():
+		p.y += bob[body.animation][body.frame]
 	if key == "fwd" and crouching:
 		p = SpriteUtil.v(m["prone"] if absf(velocity.x) > 1.0 else m["crouch_fwd"])
 	return Vector2(p.x * facing, p.y)
@@ -467,6 +480,23 @@ func _process_body(delta: float) -> void:
 	else:
 		_play(body, "idle")
 	fx.queue_redraw()
+
+
+## Fogonazo dibujado de cuerpo entero en la boca del arma (pequeño y grande alternos). false si no hay para esta dirección.
+func _draw_body_flash(m: Vector2) -> bool:
+	if flash_tex == null:
+		return false
+	var f: Dictionary = body_meta["flash"]
+	var key := _aim_key()
+	if not f["rows"].has(key):
+		return false
+	var size := SpriteUtil.v(f["frame"])
+	var anchor := SpriteUtil.v(f["anchor"])
+	var src := Rect2(Vector2((shot_n % 2) * size.x, f["rows"][key] * size.y), size)
+	fx.draw_set_transform(m, 0.0, Vector2(facing, 1))
+	fx.draw_texture_rect_region(flash_tex, Rect2(-anchor, size), src)
+	fx.draw_set_transform(Vector2.ZERO)
+	return true
 
 
 ## Poses de apuntar arriba, en diagonal hacia arriba o (en el aire) en diagonal hacia abajo, si la hoja las tiene.

@@ -75,7 +75,23 @@ ANIMS = {
 	"diag_down": ([(3, 2, 3), (3, 2, 1)], 1, False),
 }
 # boca del arma de cada dirección: animación de la que sale (la pose con el fogonazo más grande)
-MUZZLE_FROM = {"fwd": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": "diag_down", "prone": "prone"}
+MUZZLE_FROM = {"shoot": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": "diag_down", "prone": "prone"}
+
+# Carreras al estilo Metal Slug: piernas de la carrera de 10 fotogramas (heroes/eduardo/run, hecha por un amigo
+# de Eduardo) y, por encima de la cadera, el torso firme de la pose de apuntar (el arma no se mueve al correr).
+RUN_LEGS = os.path.join(FRAMES, "eduardo", "run")
+RUN_TORSO = {"run": "idle", "up_run": "up", "diag_up_run": "diag_up"}
+RUN_FPS = 13
+HIP = 17              # altura de la cadera sobre los pies: por debajo, piernas; por encima, torso
+BOB = 2               # rebote máximo del torso al correr (px)
+# Fogonazos de verdad (los que venían dibujados en las poses), pequeño y grande por dirección.
+FLASH_SRC = {
+	"fwd": [(1, 3, 1), (1, 3, 2)],
+	"up": [(3, 0, 0), (3, 0, 1)],
+	"diag_up": [(4, 0, 1), (4, 0, 2)],
+	"diag_down": [(3, 2, 0), (3, 2, 1)],
+}
+FLASH_CELL = 40       # cada fogonazo en una casilla de 40x40 con la boca del arma en el centro
 
 # animaciones hechas con fotogramas sueltos: fps y duración relativa de cada fotograma (sustituyen a ANIMS)
 LOOSE = {
@@ -188,7 +204,7 @@ def _is_flash(r, g, b, a):
 
 
 def strip_flash(cell):
-	"""Quita el fogonazo de la pose. Devuelve (pose sin fogonazo, boca del arma o None, tamaño del fogonazo).
+	"""Quita el fogonazo de la pose. Devuelve (pose sin fogonazo, boca del arma o None, tamaño, fogonazo solo).
 	El fogonazo es la mancha de colores de fuego que toca el fondo (sale fuera de la silueta); la piel,
 	aunque tenga colores parecidos, siempre queda dentro del cuerpo. La boca es el píxel del fogonazo más
 	cercano al centro del cuerpo (donde el fuego toca el cañón)."""
@@ -220,7 +236,7 @@ def strip_flash(cell):
 			if len(comp) >= 30 and edge / len(comp) >= FLASH_EDGE:
 				comps.append(comp)
 	if not comps:
-		return im, None, 0
+		return im, None, 0, None
 	comps.sort(key=len, reverse=True)
 	main = comps[0]
 	mx = sum(p[0] for p in main) / len(main)
@@ -243,9 +259,12 @@ def strip_flash(cell):
 	bx = sum(p[0] for p in body) / len(body)
 	by = sum(p[1] for p in body) / len(body)
 	muzzle = min(main, key=lambda p: (p[0] - bx) ** 2 + (p[1] - by) ** 2)
+	fire = Image.new("RGBA", im.size, (0, 0, 0, 0))
+	fpx = fire.load()
 	for p in gone | halo:
+		fpx[p] = px[p]
 		px[p] = (0, 0, 0, 0)
-	return im, muzzle, len(main)
+	return im, muzzle, len(main), fire
 
 
 def keep_largest(im):
@@ -300,6 +319,109 @@ def to_palette(im, pal):
 	return out
 
 
+def _is_gun(r, g, b):
+	"""Gris del arma (poco color, ni negro del contorno ni claro)."""
+	return max(r, g, b) - min(r, g, b) < 22 and 40 < (r + g + b) / 3 < 150
+
+
+def _pants_to_gray(r, g, b):
+	"""Pantalón caqui de Eduardo -> gris de Eder (misma luz). Las botas (marrón más rojizo) no se tocan."""
+	if r > g > b and g >= 0.69 * r and (r + g + b) / 3 >= 60:
+		v = int((r + g + b) / 3 * 0.42)
+		return (v + 18, v + 16, v + 24)
+	return None
+
+
+def _drop_specks(im, min_px):
+	"""Quita las manchas sueltas de menos de min_px píxeles (restos del arma que llevaban las piernas)."""
+	px = im.load()
+	w, h = im.size
+	seen = set()
+	for y in range(h):
+		for x in range(w):
+			if px[x, y][3] == 0 or (x, y) in seen:
+				continue
+			stack, part = [(x, y)], []
+			seen.add((x, y))
+			while stack:
+				cx, cy = stack.pop()
+				part.append((cx, cy))
+				for nx in (cx - 1, cx, cx + 1):
+					for ny in (cy - 1, cy, cy + 1):
+						if 0 <= nx < w and 0 <= ny < h and px[nx, ny][3] and (nx, ny) not in seen:
+							seen.add((nx, ny))
+							stack.append((nx, ny))
+			if len(part) < min_px:
+				for q in part:
+					px[q] = (0, 0, 0, 0)
+
+
+def run_frames(torso, hero):
+	"""Carrera: piernas de RUN_LEGS (sin el arma que llevaban) + torso fijo con un pequeño rebote.
+	Devuelve (fotogramas, rebote de cada uno)."""
+	paths = sorted(glob.glob(os.path.join(RUN_LEGS, "run_[0-9][0-9].png")))
+	legs = []
+	for p in paths:
+		im = Image.open(p).convert("RGBA")
+		lf = LEGACY.get(im.size, FEET)
+		f = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		f.alpha_composite(im, (FEET[0] - lf[0], FEET[1] - lf[1]))
+		legs.append(f)
+	top0 = legs[0].getbbox()[1]
+	torso_part = torso.crop((0, 0, FW, FEET[1] - HIP))
+	frames, bobs = [], []
+	for f in legs:
+		bob = max(-BOB, min(BOB, f.getbbox()[1] - top0))
+		cut = FEET[1] - HIP + bob
+		px = f.load()
+		for y in range(FH):
+			for x in range(FW):
+				r, g, b, a = px[x, y]
+				if a == 0:
+					continue
+				# fuera: lo que queda por encima de la cadera, el arma inclinada y el contorno (se rehace)
+				if y < cut or _is_gun(r, g, b) or (r + g + b) / 3 < 40:
+					px[x, y] = (0, 0, 0, 0)
+				elif hero != "eduardo" and y < FEET[1] - 6:
+					c = _pants_to_gray(r, g, b)
+					if c:
+						px[x, y] = c + (255,)
+		_drop_specks(f, 8)
+		out = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		out.paste(Image.new("RGBA", (FW, FH), INK), mask=f.getchannel("A").filter(ImageFilter.MaxFilter(3)))
+		out.alpha_composite(f)
+		out.alpha_composite(torso_part, (0, bob))
+		frames.append(out)
+		bobs.append(bob)
+	return frames, bobs
+
+
+def flash_sheet(hero, sheets, scale):
+	"""Hoja de fogonazos: una fila por dirección, pequeño y grande, con la boca del arma en el centro."""
+	half = FLASH_CELL // 2
+	sheet = Image.new("RGBA", (FLASH_CELL * 2, FLASH_CELL * len(FLASH_SRC)), (0, 0, 0, 0))
+	rows = {}
+	for row, (key, srcs) in enumerate(FLASH_SRC.items()):
+		found = []
+		for (s, r, c) in srcs:
+			_, mz, size, fire = strip_flash(sheets[s][r][c])
+			if mz is None:
+				continue
+			small = clean(fire.resize((max(1, round(fire.width * scale)), max(1, round(fire.height * scale))), Image.LANCZOS))
+			cell = Image.new("RGBA", (FLASH_CELL, FLASH_CELL), (0, 0, 0, 0))
+			cell.paste(small, (round(half - mz[0] * scale), round(half - mz[1] * scale)), small)
+			found.append((size, cell))
+		found.sort(key=lambda f: f[0])
+		for col, (_, cell) in enumerate(found[:2]):
+			sheet.alpha_composite(cell, (col * FLASH_CELL, row * FLASH_CELL))
+		rows[key] = row
+	a = sheet.getchannel("A")
+	q = sheet.convert("RGB").quantize(colors=12, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGBA")
+	q.putalpha(a)
+	q.save(os.path.join(OUT, "player_%s_flash.png" % hero))
+	return {"frame": [FLASH_CELL, FLASH_CELL], "anchor": [half, half], "rows": rows}
+
+
 def loose_frames(hero, anim):
 	"""Fotogramas sueltos de heroes/<id>/<anim>/ en orden, o None si no hay."""
 	paths = sorted(glob.glob(os.path.join(FRAMES, hero, anim, "%s_[0-9][0-9].png" % anim)))
@@ -314,6 +436,7 @@ def build(hero):
 	ib = alpha_mask(idle).getbbox()
 	scale = HEIGHT / float(ib[3] - ib[1])
 	loose = {name: loose_frames(hero, name) for name in ANIMS}
+	loose["run"] = None  # la carrera se monta con run_frames (sus piernas vienen de RUN_LEGS)
 	anims = {n: v for n, v in ANIMS.items() if loose[n] or all(s in sheets for s, _, _ in v[0])}
 
 	# 1) cada pose: sin fogonazo, reducida y colocada en su fotograma (aún con todos sus colores)
@@ -323,7 +446,7 @@ def build(hero):
 			continue
 		placed[name] = []
 		for (s, r, c) in frames:
-			cell, mz, size = strip_flash(sheets[s][r][c])
+			cell, mz, size, _ = strip_flash(sheets[s][r][c])
 			b = alpha_mask(cell).getbbox()
 			small = clean(cell.resize((max(1, round(cell.width * scale)), max(1, round(cell.height * scale))), Image.LANCZOS))
 			if name in AIM_ANIMS:
@@ -352,7 +475,8 @@ def build(hero):
 	pal = sample.quantize(colors=PALETTE, method=Image.Quantize.MEDIANCUT, kmeans=3)
 
 	# 3) hoja final
-	cols = max(len(loose[n]) if loose[n] else len(v[0]) for n, v in anims.items())
+	n_legs = len(glob.glob(os.path.join(RUN_LEGS, "run_[0-9][0-9].png")))
+	cols = max([len(loose[n]) if loose[n] else len(v[0]) for n, v in anims.items()] + [n_legs])
 	sheet = Image.new("RGBA", (FW * cols, FH * len(anims)), (0, 0, 0, 0))
 	meta = {"frame": [FW, FH], "feet": list(FEET), "anims": {}, "muzzle": {}}
 	for row, (name, (frames, fps, loop)) in enumerate(anims.items()):
@@ -366,6 +490,14 @@ def build(hero):
 				if len(LOOSE[name][1]) == len(loose[name]):
 					meta["anims"][name]["durations"] = LOOSE[name][1]
 			continue
+		if name in RUN_TORSO:
+			torso = to_palette(placed[RUN_TORSO[name]][0][0], pal)
+			run, bobs = run_frames(torso, hero)
+			for col, frame in enumerate(run):
+				sheet.alpha_composite(frame, (col * FW, row * FH))
+			meta["anims"][name] = {"row": row, "frames": len(run), "fps": RUN_FPS, "loop": True}
+			meta.setdefault("bob", {})[name] = bobs
+			continue
 		for col, (frame, _) in enumerate(placed[name]):
 			sheet.alpha_composite(to_palette(frame, pal), (col * FW, row * FH))
 		meta["anims"][name] = {"row": row, "frames": len(frames), "fps": fps, "loop": loop}
@@ -376,16 +508,20 @@ def build(hero):
 		if points:
 			p = max(points, key=lambda q: q[2])
 			meta["muzzle"][key] = [round(p[0] - FEET[0]), round(p[1] - FEET[1])]
-	# agachado: no tiene fogonazo; el píxel opaco más a la derecha a la altura del cañón
-	fr = sheet.crop((0, meta["anims"]["crouch"]["row"] * FH, FW, (meta["anims"]["crouch"]["row"] + 1) * FH))
-	m = alpha_mask(fr)
-	best = None
-	for y in range(FEET[1] - 28, FEET[1] - 8):
-		bb = m.crop((0, y, FW, y + 1)).getbbox()
-		if bb and (best is None or bb[2] > best[0]):
-			best = (bb[2], y)
-	meta["muzzle"]["crouch_fwd"] = [best[0] - FEET[0], best[1] - FEET[1]]
+	# de frente (quieto y corriendo) y agachado: sin fogonazo; el píxel opaco más a la derecha a la altura del cañón
+	def tip(anim, y0, y1):
+		fr = sheet.crop((0, meta["anims"][anim]["row"] * FH, FW, (meta["anims"][anim]["row"] + 1) * FH))
+		m = alpha_mask(fr)
+		best = None
+		for y in range(FEET[1] - y1, FEET[1] - y0):
+			bb = m.crop((0, y, FW, y + 1)).getbbox()
+			if bb and (best is None or bb[2] > best[0]):
+				best = (bb[2], y)
+		return [best[0] - FEET[0], best[1] - FEET[1]]
+	meta["muzzle"]["fwd"] = tip("idle", 16, 36)
+	meta["muzzle"]["crouch_fwd"] = tip("crouch", 8, 28)
 
+	meta["flash"] = flash_sheet(hero, sheets, scale)
 	sheet.save(os.path.join(OUT, "player_%s_body.png" % hero))
 	with open(os.path.join(OUT, "player_%s_body_meta.json" % hero), "w", encoding="utf-8", newline="\n") as f:
 		json.dump(meta, f, indent=1)
