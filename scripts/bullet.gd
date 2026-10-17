@@ -4,6 +4,8 @@ extends Area2D
 ## y explota), flame (F: llamarada que crece y atraviesa), laser (L: atraviesa), shotgun (S: abanico corto).
 ## Tipos enemigos: normal y shell (obús de tanque).
 
+const Impact = preload("res://scripts/impact.gd")
+
 var vel := Vector2.ZERO
 var from_player := true
 var kind := "normal"
@@ -83,10 +85,21 @@ func _on_hit(other: Node) -> void:
 			other.take_damage(damage)
 			if pierce:
 				_hit.append(other)
+				_spark()
 				return
 	elif other.is_in_group("player"):
 		other.hit()
+	_spark()
 	queue_free()
+
+
+## Chispa de impacto donde la bala toca algo (las llamas no la sueltan: ya son fuego).
+func _spark() -> void:
+	if kind in ["flame", "fire"] or get_parent() == null:
+		return
+	var s := Impact.new()
+	s.position = position
+	get_parent().add_child(s)
 
 
 func _draw() -> void:

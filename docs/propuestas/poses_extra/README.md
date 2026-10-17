@@ -1,14 +1,14 @@
 # Propuesta: poses nuevas de Eduardo y Eder
 
-Autor: Eduardo · 01-10-2026 · Estado: **propuesta, pendiente de aceptar**. Todavía no hay nada en el juego.
+Autor: Eduardo · 01-10-2026 · Estado: **aceptada y montada en el juego (16-10-2026)**. Las hojas se movieron a `tools/sprites/chatgpt/sprites_<id>_3.png` (arriba y abajo), `_4.png` (diagonal y barrida) y `_5.png` (paracaídas y muerte); las usa `tools/sprites/heroes_sheets.py`. Ya en el juego: arriba, diagonal arriba (quieto y corriendo), diagonal abajo en el aire y muerte. Sin usar: barrida y paracaídas.
 
 Hojas hechas con ChatGPT, 4x4 poses cada una, con el mismo estilo que las de `tools/sprites/chatgpt/`.
 
 | Hoja | Eduardo | Eder | Contenido |
 |---|---|---|---|
-| 1 | [`eduardo_1_arriba_abajo.png`](eduardo_1_arriba_abajo.png) | [`eder_1_arriba_abajo.png`](eder_1_arriba_abajo.png) | Disparar **arriba** quieto y corriendo; disparar **abajo** (en diagonal hacia el suelo) quieto y corriendo |
-| 2 | [`eduardo_2_diagonal_barrida.png`](eduardo_2_diagonal_barrida.png) | [`eder_2_diagonal_barrida.png`](eder_2_diagonal_barrida.png) | Disparar en **diagonal hacia arriba** quieto y corriendo; **barrerse** y levantarse |
-| 3 | [`eduardo_3_paracaidas_muerte.png`](eduardo_3_paracaidas_muerte.png) | [`eder_3_paracaidas_muerte.png`](eder_3_paracaidas_muerte.png) | **Descenso en paracaídas** y aterrizaje; **muerte** (cae hacia atrás y queda tumbado) |
+| 1 | `sprites_eduardo_3.png` | `sprites_eder_3.png` | Disparar **arriba** quieto y corriendo; disparar **abajo** (en diagonal hacia el suelo) quieto y corriendo |
+| 2 | `sprites_eduardo_4.png` | `sprites_eder_4.png` | Disparar en **diagonal hacia arriba** quieto y corriendo; **barrerse** y levantarse |
+| 3 | `sprites_eduardo_5.png` | `sprites_eder_5.png` | **Descenso en paracaídas** y aterrizaje; **muerte** (cae hacia atrás y queda tumbado) |
 
 ## Qué resolvería en el juego
 
