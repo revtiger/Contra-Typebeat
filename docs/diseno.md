@@ -97,7 +97,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la pistola. Recoger la misma arma suma munición. Al morir se pierde el arma y las bombas vuelven a 10.
 
-**Sensación de impacto (autoload `Juice`):** el juego se congela un instante (*hitstop*) al matar, con las explosiones de granada y al morir; la cámara tiembla con los disparos pesados y las explosiones; los soldados salen despedidos girando al morir.
+**Sensación de impacto (autoload `Juice`):** el juego se congela un instante (*hitstop*) al matar, con las explosiones de granada y al morir; la cámara tiembla con los disparos pesados y las explosiones; los soldados salen despedidos girando al morir. **Explosiones (16-10-2026):** animación de 12 fotogramas hecha con Sprite Fusion (`assets/sprites/explosion.png`: destello, bola de fuego, estallido y humo), escalada al radio de cada explosión, con la metralla por código. Origen en `tools/sprites/spritefusion/explosion/` (semilla de PixelLab animada con Sprite Fusion). ☐ Impacto de bala con Sprite Fusion (faltan créditos).
 
 ## Niveles
 
