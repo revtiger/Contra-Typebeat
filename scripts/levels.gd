@@ -18,12 +18,14 @@ extends RefCounted
 
 const END := 3000
 
-## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe]
+## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe, ambientación opcional]
+## La ambientación (fondo, suelo) es la plantilla salvo que se indique otra: la 1.2 y la 1.3 usan el
+## terreno de "desert" y "city" con arte propio de Argentina hecho con PixelLab (tools/sprites/argentina.py).
 const ZONES := [
 	{"zone": "ARGENTINA", "country": "ar", "freed": "LIBERADA", "phases": [
 		["PUEBLO DE LA PAMPA", "pueblo", "massa"],
-		["QUEBRADA DE HUMAHUACA", "desert", "kirchner"],
-		["BUENOS AIRES · CASA ROSADA", "city", "milei"],
+		["QUEBRADA DE HUMAHUACA", "desert", "kirchner", "quebrada"],
+		["BUENOS AIRES · CASA ROSADA", "city", "milei", "baires"],
 	]},
 	{"zone": "MÉXICO", "country": "mx", "phases": [
 		["SELVA DEL SURESTE", "jungle", "amlo"],
@@ -160,7 +162,7 @@ static func _build() -> Array:
 				"name": "%d.%d %s: %s" % [zi + 1, pi + 1, z["zone"], ph[0]],
 				"boss_name": boss_name,
 				"boss_role": role,
-				"theme": ph[1],
+				"theme": ph[3] if ph.size() > 3 else ph[1],
 				"music": MUSIC[ph[1]],
 				"end": END,
 				"ground": tpl["ground"],

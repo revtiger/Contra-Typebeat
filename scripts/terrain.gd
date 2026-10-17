@@ -6,6 +6,11 @@ var one_way := false
 var theme := "jungle"
 
 const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
+## Suelos de PixelLab de la 1.2 y la 1.3 (tools/sprites/argentina.py): tira que se repite y color de relleno debajo
+const STRIPS := {
+	"quebrada": [preload("res://assets/sprites/ground_quebrada.png"), Color(0.16, 0.06, 0.08)],
+	"baires": [preload("res://assets/sprites/ground_baires.png"), Color(0.08, 0.05, 0.1)],
+}
 
 
 func _draw() -> void:
@@ -21,6 +26,9 @@ func _draw() -> void:
 		return
 	if theme == "pueblo":
 		_draw_pueblo()
+		return
+	if STRIPS.has(theme):
+		_draw_strip(STRIPS[theme][0], STRIPS[theme][1])
 		return
 	if one_way:
 		if desert:
@@ -149,3 +157,23 @@ func _draw_base() -> void:
 		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.15, 0.16, 0.2), 1)
 	draw_rect(Rect2(0, 0, 2, size.y), Color(0.12, 0.13, 0.16))
 	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.12, 0.13, 0.16))
+
+
+## Suelo hecho con una tira de imagen alineada con la x del mundo (sin cortes entre bloques).
+## Los salientes (one_way) usan solo la parte de arriba de la tira y un borde oscuro debajo.
+func _draw_strip(tex: Texture2D, fill: Color) -> void:
+	var tw := float(tex.get_width())
+	var th := minf(float(tex.get_height()), size.y)
+	if not one_way:
+		draw_rect(Rect2(Vector2.ZERO, size), fill)
+	var x := -fposmod(global_position.x, tw)
+	while x < size.x:
+		var sx := maxf(0.0, -x)
+		var w := minf(tw - sx, size.x - maxf(x, 0.0))
+		draw_texture_rect_region(tex, Rect2(maxf(x, 0.0), 0, w, th), Rect2(sx, 0, w, th))
+		x += tw
+	var edge := fill.darkened(0.3)
+	if one_way:
+		draw_rect(Rect2(0, size.y - 2, size.x, 2), edge)
+	draw_rect(Rect2(0, 0, 2, size.y), edge)
+	draw_rect(Rect2(size.x - 2, 0, 2, size.y), edge)

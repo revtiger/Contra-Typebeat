@@ -97,7 +97,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la pistola. Recoger la misma arma suma munición. Al morir se pierde el arma y las bombas vuelven a 10.
 
-**Sensación de impacto (autoload `Juice`):** el juego se congela un instante (*hitstop*) al matar, con las explosiones de granada y al morir; la cámara tiembla con los disparos pesados y las explosiones; los soldados salen despedidos girando al morir. **Explosiones (16-10-2026):** animación de 12 fotogramas hecha con Sprite Fusion (`assets/sprites/explosion.png`: destello, bola de fuego, estallido y humo), escalada al radio de cada explosión, con la metralla por código. Origen en `tools/sprites/spritefusion/explosion/` (semilla de PixelLab animada con Sprite Fusion). ☐ Impacto de bala con Sprite Fusion (faltan créditos).
+**Sensación de impacto (autoload `Juice`):** el juego se congela un instante (*hitstop*) al matar, con las explosiones de granada y al morir; la cámara tiembla con los disparos pesados y las explosiones; los soldados salen despedidos girando al morir. **Explosiones (16-10-2026):** animación de 12 fotogramas hecha con Sprite Fusion (`assets/sprites/explosion.png`: destello, bola de fuego, estallido y humo), escalada al radio de cada explosión, con la metralla por código. Origen en `tools/sprites/spritefusion/explosion/` (semilla de PixelLab animada con Sprite Fusion). **Impacto de bala (17-10-2026):** chispa de 6 fotogramas hecha con PixelLab (`create_vfx`, `scripts/impact.gd`, `tools/sprites/impacto.py`) donde la bala toca algo; las llamas no la sueltan.
 
 ## Niveles
 
@@ -170,3 +170,6 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 | [`vendedor/`](propuestas/vendedor/): vendedor GDA y su camioneta de 6 ruedas | ✅ Fusionada como diseño (PR #8); ☐ falta meterlo en el juego |
 | [`poses_extra/`](propuestas/poses_extra/): poses nuevas de Eduardo y Eder (arriba, abajo, diagonal, barrida, paracaídas, muerte) | ✅ Aceptada por Gwyn (PR #9) y montada en el juego (16-10-2026): las hojas pasaron a `tools/sprites/chatgpt/sprites_<id>_3..5.png`. ☐ Barrida y paracaídas sin usar |
 | [`narrativa_blue_beam/`](propuestas/narrativa_blue_beam/): la IA B.L.U.E. como antagonista oculto | ☐ Pendiente de leer por Gwyn (Eduardo tiene pase libre en historia) |
+
+
+**Arte de la 1.2 y la 1.3 (17-10-2026, PixelLab):** la Quebrada de Humahuaca (cerros de colores, cardones, suelo de roca roja) y Buenos Aires (edificios antiguos y la Casa Rosada al final, donde espera el jefe) tienen fondo panorámico y suelo propios (`tools/sprites/argentina.py`). Usan el terreno de las plantillas `desert` y `city` con la ambientación `quebrada` y `baires` (cuarto dato de la fase en `ZONES`).

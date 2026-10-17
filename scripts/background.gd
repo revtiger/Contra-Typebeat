@@ -30,6 +30,13 @@ var t := 0.0
 const WIDTH := 5400.0
 const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
 const PUEBLO_TRAMOS := 12
+## Fondos panorámicos de PixelLab (tools/sprites/argentina.py): "tile" se repite y avanza despacio;
+## "pan" avanza lo justo para que su final (la Casa Rosada) quede en pantalla al llegar al jefe.
+const PANORAMAS := {
+	"quebrada": [preload("res://assets/sprites/bg_quebrada.png"), "tile"],
+	"baires": [preload("res://assets/sprites/bg_baires.png"), "pan"],
+}
+const PANORAMA_SPEED := 0.12
 
 
 func _ready() -> void:
@@ -45,6 +52,14 @@ func _process(delta: float) -> void:
 		# el cielo avanza muy despacio: justo lo necesario para que su final llegue a la arena del jefe
 		var span: float = maxf(1.0, main.boss_arena)
 		position.x = main.cam_left - main.cam_left * (PUEBLO_TEX.get_width() - 480.0) / span
+		return
+	if kind == "panorama" and PANORAMAS.has(theme):
+		var tex: Texture2D = PANORAMAS[theme][0]
+		if PANORAMAS[theme][1] == "pan":
+			var span: float = maxf(1.0, main.boss_arena)
+			position.x = main.cam_left - minf(main.cam_left, span) * (tex.get_width() - 480.0) / span
+		else:
+			position.x = main.cam_left - fposmod(main.cam_left * PANORAMA_SPEED, tex.get_width())
 		return
 	if screen_scroll:
 		position.x = -fmod(main.cam_left * (1.0 - factor), 3000.0)
@@ -198,6 +213,12 @@ func _draw() -> void:
 				draw_rect(Rect2(-60 + i * 40, 240, 22, 3), Color(0.2, 0.16, 0.14))
 		"pueblo":
 			draw_texture(PUEBLO_TEX, Vector2.ZERO)
+		"panorama":
+			if PANORAMAS.has(theme):
+				var tex: Texture2D = PANORAMAS[theme][0]
+				draw_texture(tex, Vector2.ZERO)
+				if PANORAMAS[theme][1] == "tile":
+					draw_texture(tex, Vector2(tex.get_width(), 0))
 		"casas":
 			var x := 0.0
 			for tex in _tramos():
