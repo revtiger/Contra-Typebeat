@@ -22,6 +22,14 @@ const STAND_H := 30.0
 const CROUCH_H := 18.0
 const JUMP_H := 24.0
 const START_BOMBS := 10
+## Ventajas de cada soldado (Gwyn, 17-10-2026):
+## - hp: golpes que aguanta antes de perder una vida, con barra de vida en el HUD (Eduardo, como un tanque de Metal Slug)
+## - bombs: granadas al empezar y al reaparecer (Eder)
+## - dual: la pistola dispara dos balas paralelas (Eder, doble pistola)
+const PERKS := {
+	"eduardo": {"hp": 3},
+	"eder": {"bombs": 20, "dual": true},
+}
 const KNIFE_RANGE := 24.0
 
 ## Armas: cadencia en segundos y munición al recogerlas (-1 = infinita).
@@ -46,6 +54,8 @@ var drop_t := 0.0
 var weapon := "P"
 var ammo := -1
 var bombs := START_BOMBS
+var max_hp := 1
+var hp := 1
 var knife_t := 0.0
 var throw_t := 0.0
 var flash_t := 0.0
@@ -90,6 +100,9 @@ func _ready() -> void:
 	add_child(hurt)
 	_set_height(STAND_H)
 	_setup_sprites()
+	max_hp = _perk("hp", 1)
+	hp = max_hp
+	bombs = _perk("bombs", START_BOMBS)
 
 
 func _set_height(h: float) -> void:
@@ -222,7 +235,7 @@ func _try_knife() -> bool:
 	return false
 
 
-func _bullet(v: Vector2, kind: String, damage: int, pierce := false, life := 1.6) -> void:
+func _bullet(v: Vector2, kind: String, damage: int, pierce := false, life := 1.6, offset := Vector2.ZERO) -> void:
 	var b := Bullet.new()
 	b.from_player = true
 	b.vel = v
@@ -230,7 +243,7 @@ func _bullet(v: Vector2, kind: String, damage: int, pierce := false, life := 1.6
 	b.damage = damage
 	b.pierce = pierce
 	b.life = life
-	b.position = position + _muzzle()
+	b.position = position + _muzzle() + offset
 	get_parent().add_child(b)
 
 
@@ -241,7 +254,13 @@ func _fire() -> void:
 	shoot_pose_t = 0.25
 	match weapon:
 		"P":
-			_bullet(aim * 320.0, "normal", 1)
+			if _perk("dual", false):
+				# doble pistola: dos balas paralelas, a 3 px a cada lado de la línea de tiro
+				var side := aim.orthogonal() * 3.0
+				_bullet(aim * 320.0, "normal", 1, false, 1.6, side)
+				_bullet(aim * 320.0, "normal", 1, false, 1.6, -side)
+			else:
+				_bullet(aim * 320.0, "normal", 1)
 			Game.sfx("shot", -16.0)
 		"H":
 			_bullet(aim.rotated(randf_range(-0.05, 0.05)) * 380.0, "heavy", 1)
@@ -282,6 +301,15 @@ func _throw_grenade() -> void:
 func hit(force := false) -> void:
 	if dead or (invuln > 0.0 and not force):
 		return
+	# con barra de vida: los golpes restan vida (caer a un foso mata siempre)
+	if hp > 1 and not force:
+		hp -= 1
+		invuln = 1.0
+		Game.sfx("hit", -6.0)
+		Juice.hitstop(0.06)
+		Juice.shake(2.0)
+		return
+	hp = 0
 	dead = true
 	death_t = 1.2
 	Game.sfx("death", -6.0)
@@ -298,7 +326,8 @@ func respawn(pos: Vector2) -> void:
 	position = pos
 	velocity = Vector2.ZERO
 	invuln = 2.0
-	bombs = START_BOMBS
+	bombs = _perk("bombs", START_BOMBS)
+	hp = max_hp
 	col.set_deferred("disabled", false)
 	hurt.set_deferred("monitoring", true)
 
@@ -311,6 +340,11 @@ func set_weapon(w: String) -> void:
 		weapon = w
 		ammo = WEAPONS[w]["ammo"]
 	Game.sfx("pickup", -4.0)
+
+
+## Ventaja del soldado elegido (PERKS) o el valor por defecto.
+func _perk(key: String, default: Variant) -> Variant:
+	return PERKS.get(Game.hero, {}).get(key, default)
 
 
 func add_bombs(n: int) -> void:

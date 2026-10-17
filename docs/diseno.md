@@ -173,3 +173,5 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 
 
 **Arte de la 1.2 y la 1.3 (17-10-2026, PixelLab):** la Quebrada de Humahuaca (cerros de colores, cardones, suelo de roca roja) y Buenos Aires (edificios antiguos y la Casa Rosada al final, donde espera el jefe) tienen fondo panorámico y suelo propios (`tools/sprites/argentina.py`). Usan el terreno de las plantillas `desert` y `city` con la ambientación `quebrada` y `baires` (cuarto dato de la fase en `ZONES`).
+
+**Ventajas de cada soldado (Gwyn, 17-10-2026, `PERKS` en `player.gd`):** Eduardo aguanta 3 golpes antes de perder una vida, con barra de vida bajo el 1UP (caer a un foso mata igual). Eder lleva doble pistola (la pistola dispara dos balas paralelas) y empieza con 20 granadas (también al reaparecer). El Presi y La Tenienta, sin cambios.

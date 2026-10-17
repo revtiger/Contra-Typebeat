@@ -83,6 +83,18 @@ func _draw() -> void:
 	draw_text(str(Game.score), Vector2(112, 4), "small", 2)
 	draw_text("1UP=" , Vector2(6, 20), "label")
 	draw_text(str(maxi(Game.lives, 0)), Vector2(30, 20), "small")
+	# barra de vida (soldados que aguantan varios golpes): un tramo por golpe, bajo el 1UP
+	if p.max_hp > 1:
+		var seg := 12.0
+		var bar := Rect2(6, 32, seg * p.max_hp + 2, 6)
+		draw_rect(bar, Color(0.08, 0.08, 0.12))
+		for i in p.max_hp:
+			var c := Color(0.35, 0.95, 0.4) if p.hp > 1 else Color(1, 0.3, 0.25)
+			if i >= p.hp:
+				c = Color(0.25, 0.1, 0.1)
+			elif p.hp == 1 and int(t * 6.0) % 2 == 0:
+				c = c.lightened(0.4)
+			draw_rect(Rect2(bar.position.x + 1 + i * seg, bar.position.y + 1, seg - 1, 4), c)
 	# recuadro ARMS / BOMB
 	var box := Rect2(46, 15, 68, 23)
 	_frame(box)
