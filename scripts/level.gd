@@ -84,7 +84,7 @@ func _ready() -> void:
 	elif theme == "base":
 		layers = [["vault", 0.85, -9], ["machines", 0.55, -8], ["abyss", 0.0, -5]]
 	elif theme == "pueblo":
-		layers = [["pueblo", 0.0, -9], ["casas", 0.0, -8]]
+		layers = [["pueblo", 0.0, -9], ["aves", 0.0, -9], ["casas", 0.0, -8]]
 	elif theme == "quebrada":
 		layers = [["panorama", 0.0, -9], ["chasm", 0.0, -5]]
 	elif theme == "baires":
