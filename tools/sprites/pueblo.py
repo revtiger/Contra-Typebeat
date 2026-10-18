@@ -6,6 +6,8 @@ Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   pueblo_completo.png  pueblo seguido de punta a punta (2000x667, transparente): se le quitan los
                    vecinos, el almacén repetido y el vagón del final, y sale el tramo 04 (ver COMPLETO)
   1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
+y tramos hechos con PixelLab (create_image_pro, con los tramos 1 y 2 de referencia de estilo) en
+tools/sprites/pixellab/pueblo/ (ver PIXELLAB).
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
 
 Salida:
@@ -55,7 +57,14 @@ COMPLETO = {
 }
 
 # Tramos que son otro tramo dado vuelta (espejo), para variar sin repetir igual: {nuevo: original}
-ESPEJO = {"03": "02"}
+ESPEJO = {}
+
+# Tramos de PixelLab (675x270, transparentes): {tramo: (archivo, x0, x1, arriba)}. Se recorta el margen vacío
+# de los lados (x0..x1), se estira a 675 de ancho y se suben "arriba" px para que el bordillo de la vereda
+# quede a la altura del tramo 1 (y=211).
+PIXELLAB = {
+	"03": ("taller_bb.png", 28, 647, 32),  # taller mecánico con el logo B.B. y tractor rojo (25 generaciones)
+}
 
 
 def load(name: str) -> Image.Image:
@@ -116,6 +125,18 @@ def build_espejos() -> None:
 		print(f"pueblo_tramo_{new}.png (espejo del {orig})", im.size)
 
 
+def build_pixellab() -> None:
+	for num, (fname, x0, x1, up) in PIXELLAB.items():
+		src = Image.open(ROOT / "tools/sprites/pixellab/pueblo" / fname).convert("RGBA").crop((x0, 0, x1, H))
+		s = 675 / src.width
+		big = src.resize((675, round(H * s)), Image.LANCZOS)
+		out = Image.new("RGBA", (675, H), (0, 0, 0, 0))
+		out.paste(big.crop((0, up, 675, up + H)), (0, 0))
+		out.putalpha(out.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
+		out.save(OUT / f"pueblo_tramo_{num}.png")
+		print(f"pueblo_tramo_{num}.png (PixelLab {fname})", out.size)
+
+
 def build_ground() -> None:
 	src = load(SCENES[0]).crop(GROUND_BOX)
 	s = H / 793
@@ -138,4 +159,5 @@ if __name__ == "__main__":
 	build_tramos()
 	build_completo()
 	build_espejos()
+	build_pixellab()
 	build_ground()
