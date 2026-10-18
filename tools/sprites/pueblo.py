@@ -1,24 +1,22 @@
-"""Fondo y suelo del pueblo de la pampa (fase 1.1, Argentina).
+"""Fondo, calle y suelo del pueblo de la pampa (fase 1.1, Argentina).
 
-Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
-  cielo_pampa.png  cielo del atardecer con un solo sol y la pampa (fondo lejano)
-  tramoNN.png      tramos del pueblo sin cielo (fondo transparente), proporción 2,5:1, uno tras otro
-  pueblo_completo.png  pueblo seguido de punta a punta (2000x667, transparente): se le quitan los
-                   vecinos, el almacén repetido y el vagón del final, y sale el tramo 04 (ver COMPLETO)
-  1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
-edificios/<nombre>.png  edificios sueltos de Eduardo (ChatGPT, 1254x1254, transparentes): se ponen en fila
-                   sobre la calle con cercas entre medio y forman tramos nuevos (ver COMPOSICION)
-  arboles/<nombre>.png  árboles sueltos de Eduardo (ChatGPT, transparentes): van entre los edificios, detrás
-y tramos hechos con PixelLab (create_image_pro, con los tramos 1 y 2 de referencia de estilo) en
-tools/sprites/pixellab/pueblo/ (ver PIXELLAB).
-Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
+Fuente: piezas sueltas de Eduardo (ChatGPT, fondo transparente) en tools/sprites/chatgpt/pueblo/:
+  cielo_pampa.png       cielo del atardecer con un solo sol y la pampa (fondo lejano)
+  edificios/<nombre>.png  edificios (1254x1254)
+  arboles/<nombre>.png    árboles
+  valla.png             valla de madera que cubre los huecos entre edificios
+  tramo02.png           de aquí sale la franja de vereda y adoquines de la calle
+  1_almacen.png         de aquí sale la tira del suelo (ground_pueblo.png)
+La calle entera se arma pieza por pieza según CALLE: edificios en fila, valla en los huecos y
+árboles detrás de la valla.
 
 Salida:
-  assets/sprites/bg_pueblo.png      cielo y pampa, 270 px de alto (se mueve muy despacio)
-  assets/sprites/pueblo_tramo_NN.png  cada tramo escalado a 270 px de alto (casas a la altura del juego)
-  assets/sprites/ground_pueblo.png  tira de adoquines y tierra que se repite en el suelo
+  assets/sprites/bg_pueblo.png        cielo y pampa, 270 px de alto (se mueve muy despacio)
+  assets/sprites/pueblo_tramo_NN.png  la calle cortada en trozos de TROZO px (el juego los pone en fila)
+  assets/sprites/ground_pueblo.png    tira de adoquines y tierra que se repite en el suelo
 
-Uso: python tools/sprites/pueblo.py
+Uso: python tools/sprites/pueblo.py  (imprime el largo de la calle: es el "end" de la plantilla
+"pueblo" en scripts/levels.gd)
 """
 from pathlib import Path
 from PIL import Image
@@ -26,7 +24,6 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "tools/sprites/chatgpt/pueblo"
 OUT = ROOT / "assets/sprites"
-SCENES = ["1_almacen", "2_capilla_taller", "3_plaza_massa"]
 H = 270
 
 # Cielo: escala y desplazamiento para que el campo amarillo (y=680 en el original)
@@ -39,40 +36,54 @@ SKY_FIELD_Y = 195
 GROUND_BOX = (480, 640, 1400, 793)
 GROUND_BLEND = 24
 
-# Tramos cuya calle sale un poco más alta o más baja que la del tramo 1: px que se bajan (+) o suben (-)
-TRAMO_DY = {"02": 3}
+# Edificios: alto de la puerta en el original (px), para dejarlos todos a la misma escala del juego.
+# La puerta normal queda de PUERTA px (algo más alta que el soldado); el galpón y la capilla, más grandes.
+EDIFICIOS = {
+	"casa": 350, "almacen": 355, "casa_2_pisos": 350, "panaderia": 440, "casa_garaje": 320,
+	"ferreteria": 412, "capilla": 365, "galpon": 455, "cafe": 380, "encomiendas": 415,
+}
+PUERTA = 52
+PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
+BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
 
-# Tramo 06 (el último, con la plaza de la capilla para la pelea con Massa) a partir de pueblo_completo.png (coordenadas del original)
-COMPLETO = {
-	"tramo": "06",
-	# [x0, y0, x1, y1, dx]: tapa la zona copiando lo que hay dx px a la izquierda (-) o derecha (+)
-	"parches": [
-		[576, 420, 614, 512, -36],    # almacenero
-		[890, 425, 924, 508, -100],   # mecánico del garaje
-		[1096, 444, 1136, 462, -45],  # señor del banco: pared y ventana
-		[1094, 455, 1138, 506, -44],  # señor del banco: maceta en su lugar
-		[1580, 424, 1616, 512, -36],  # almacenero 2
-	],
-	"quitar": [408, 748],  # el almacén, que ya sale en el tramo 1
-	"fin": 1935,           # se corta antes del vagón para que el pueblo termine en la pared de la estación
-	"escala": 0.53,        # las casas a la misma escala que el tramo 1
-	"arriba": 64,          # px que se recortan arriba para que la vereda quede como en el tramo 1
+# Árboles: alto en el juego (px). El tronco apoya en la vereda, detrás de la valla y de los edificios.
+ARBOLES = {
+	"ombu": 150, "ombu_grande": 145, "sauce": 135, "alamo": 175, "jacaranda": 140, "pino": 150,
+	"eucalipto": 165, "naranjo": 100, "cedro": 155, "palmera": 135,
 }
 
-# Tramos que son otro tramo dado vuelta (espejo), para variar sin repetir igual: {nuevo: original}
-ESPEJO = {}
+# Valla: alto en el juego y, en el original, dónde empieza y acaba el tramo que se repite (poste izquierdo
+# incluido) y dónde está el poste derecho, que cierra cada hueco.
+VALLA_ALTO = 34
+VALLA_BOX = (102, 106, 1898, 545)
+VALLA_REPITE = (102, 1812)
 
-# Tramos de PixelLab (675x270, transparentes): {tramo: (archivo, x0, x1, arriba)}. Se recorta el margen vacío
-# de los lados (x0..x1), se estira a 675 de ancho y se suben "arriba" px para que el bordillo de la vereda
-# quede a la altura del tramo 1 (y=211).
-PIXELLAB = {
-	"03": ("taller_bb.png", 28, 647, 32),  # taller mecánico con el logo B.B. y tractor rojo (25 generaciones)
-}
+# La calle de punta a punta: nombre = edificio; número = hueco con valla de ese ancho;
+# (árbol, ancho) = hueco con valla y un árbol detrás. Al final, la capilla con el ombú grande:
+# es la plaza donde pelea Massa (los últimos 480 px).
+CALLE = [
+	16, "casa", ("ombu", 60), "almacen", ("cedro", 52), "casa_2_pisos", ("jacaranda", 56), "casa_garaje",
+	("pino", 54), "casa", ("naranjo", 40), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "cafe",
+	("eucalipto", 52), "casa_2_pisos", ("sauce", 54), "encomiendas", ("jacaranda", 56), "casa",
+	("cedro", 52), "casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40),
+	"casa_2_pisos", ("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje",
+	("cedro", 52), "casa", ("jacaranda", 56), "casa_2_pisos", ("ombu_grande", 130), "capilla", ("sauce", 70), 60,
+]
+TROZO = 800
 
 
 def load(name: str) -> Image.Image:
-	clean = SRC / f"{name}_limpia.png"
-	return Image.open(clean if clean.exists() else SRC / f"{name}.png").convert("RGB")
+	return Image.open(SRC / f"{name}.png").convert("RGB")
+
+
+def opaco(im: Image.Image) -> Image.Image:
+	"""Recorta lo transparente y deja cada píxel opaco o transparente (bordes nítidos de pixel art)."""
+	return im.crop(im.getchannel("A").point(lambda v: 255 if v > 128 else 0).getbbox())
+
+
+def nitido(im: Image.Image) -> Image.Image:
+	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
+	return im
 
 
 def build_sky() -> None:
@@ -86,141 +97,81 @@ def build_sky() -> None:
 	print("bg_pueblo.png", sky.size)
 
 
-def build_tramos() -> None:
-	for f in sorted(SRC.glob("tramo[0-9][0-9].png")):
-		src = Image.open(f).convert("RGBA")
-		im = src.resize((round(src.width * H / src.height), H), Image.LANCZOS)
-		# bordes nítidos de pixel art: cada píxel es opaco o transparente
-		a = im.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
-		im.putalpha(a)
-		num = f.stem[5:]
-		out = Image.new("RGBA", im.size, (0, 0, 0, 0))
-		out.paste(im, (0, TRAMO_DY.get(num, 0)))
-		name = "pueblo_tramo_" + num + ".png"
-		out.save(OUT / name)
-		print(name, im.size)
-
-
-def build_completo() -> None:
-	c = COMPLETO
-	src = Image.open(SRC / "pueblo_completo.png").convert("RGBA")
-	im = src.crop((0, 0, c["fin"], src.height))
-	for x0, y0, x1, y1, dx in c["parches"]:
-		im.paste(src.crop((x0 + dx, y0, x1 + dx, y1)), (x0, y0))
-	q0, q1 = c["quitar"]
-	cut = Image.new("RGBA", (im.width - (q1 - q0), im.height), (0, 0, 0, 0))
-	cut.paste(im.crop((0, 0, q0, im.height)), (0, 0))
-	cut.paste(im.crop((q1, 0, im.width, im.height)), (q0, 0))
-	s = c["escala"]
-	big = cut.resize((round(cut.width * s), round(cut.height * s)), Image.LANCZOS)
-	out = Image.new("RGBA", (big.width, H), (0, 0, 0, 0))
-	out.paste(big.crop((0, c["arriba"], big.width, c["arriba"] + H)), (0, 0))
-	out.putalpha(out.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
-	name = "pueblo_tramo_" + c["tramo"] + ".png"
-	out.save(OUT / name)
-	print(name, out.size)
-
-
-def build_espejos() -> None:
-	for new, orig in ESPEJO.items():
-		im = Image.open(OUT / f"pueblo_tramo_{orig}.png").transpose(Image.FLIP_LEFT_RIGHT)
-		im.save(OUT / f"pueblo_tramo_{new}.png")
-		print(f"pueblo_tramo_{new}.png (espejo del {orig})", im.size)
-
-
-def build_pixellab() -> None:
-	for num, (fname, x0, x1, up) in PIXELLAB.items():
-		src = Image.open(ROOT / "tools/sprites/pixellab/pueblo" / fname).convert("RGBA").crop((x0, 0, x1, H))
-		s = 675 / src.width
-		big = src.resize((675, round(H * s)), Image.LANCZOS)
-		out = Image.new("RGBA", (675, H), (0, 0, 0, 0))
-		out.paste(big.crop((0, up, 675, up + H)), (0, 0))
-		out.putalpha(out.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
-		out.save(OUT / f"pueblo_tramo_{num}.png")
-		print(f"pueblo_tramo_{num}.png (PixelLab {fname})", out.size)
-
-
-# Edificios sueltos: alto de la puerta en el original (px), para dejarlos todos a la misma escala del juego.
-# La puerta normal queda de PUERTA px (algo más alta que el soldado); el galpón y la capilla, más grandes.
-EDIFICIOS = {
-	"casa": 350, "almacen": 355, "casa_2_pisos": 350, "panaderia": 440, "casa_garaje": 320,
-	"ferreteria": 412, "capilla": 365, "galpon": 455, "cafe": 380, "encomiendas": 415,
-}
-PUERTA = 52
-PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
-BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
-
-# Árboles: alto en el juego (px). El tronco apoya en la vereda, detrás de la cerca y de los edificios.
-ARBOLES = {
-	"ombu": 150, "ombu_grande": 145, "sauce": 135, "alamo": 175, "jacaranda": 140, "pino": 150,
-	"eucalipto": 165, "naranjo": 100, "cedro": 155, "palmera": 135,
-}
-
-# Tramos armados con edificios sueltos: número = cerca de ese ancho; (árbol, ancho) = cerca con un árbol detrás
-COMPOSICION = {
-	"04": [10, "casa", ("jacaranda", 54), "panaderia", ("naranjo", 40), "ferreteria", ("ombu", 60), "cafe", 16],
-	"05": [12, "casa_2_pisos", ("alamo", 40), "encomiendas", ("eucalipto", 52), "casa_garaje", ("sauce", 54),
-		"galpon", 14],
-}
-
-
 def edificio(name: str) -> Image.Image:
-	im = Image.open(SRC / "edificios" / f"{name}.png").convert("RGBA")
-	im = im.crop(im.getchannel("A").point(lambda v: 255 if v > 128 else 0).getbbox())
+	im = opaco(Image.open(SRC / "edificios" / f"{name}.png").convert("RGBA"))
 	s = PUERTA_GRANDE.get(name, PUERTA) / EDIFICIOS[name]
-	im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
-	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
-	return im
+	return nitido(im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS))
 
 
 def arbol(name: str) -> Image.Image:
-	im = Image.open(SRC / "arboles" / f"{name}.png").convert("RGBA")
-	im = im.crop(im.getchannel("A").point(lambda v: 255 if v > 128 else 0).getbbox())
+	im = opaco(Image.open(SRC / "arboles" / f"{name}.png").convert("RGBA"))
 	s = ARBOLES[name] / im.height
-	im = im.resize((round(im.width * s), ARBOLES[name]), Image.LANCZOS)
-	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
-	return im
+	return nitido(im.resize((round(im.width * s), ARBOLES[name]), Image.LANCZOS))
 
 
-def build_composicion() -> None:
-	# la calle y la cerca salen del tramo 2 (de Eduardo), así empalman con el resto
-	t2 = Image.open(OUT / "pueblo_tramo_02.png")
-	street = t2.crop((0, 205, 675, H))
-	fence = t2.crop((405, 176, 560, 206))
-	for num, seq in COMPOSICION.items():
-		parts = [p if isinstance(p, (int, tuple)) else edificio(p) for p in seq]
-		gaps = [p[1] if isinstance(p, tuple) else p for p in parts if not isinstance(p, Image.Image)]
-		w = sum(gaps) + sum(p.width for p in parts if isinstance(p, Image.Image))
-		out = Image.new("RGBA", (w, H), (0, 0, 0, 0))
-		# primero los árboles (quedan detrás de todo), centrados en su hueco
-		x = 0
-		for p in parts:
-			if isinstance(p, tuple):
-				t = arbol(p[0])
-				out.alpha_composite(t, (x + p[1] // 2 - t.width // 2, BASE + 2 - t.height))
-			x += p.width if isinstance(p, Image.Image) else (p[1] if isinstance(p, tuple) else p)
-		for x in range(0, w, street.width):
-			out.alpha_composite(street.crop((0, 0, min(street.width, w - x), street.height)), (x, 205))
-		x = 0
-		for p in parts:
-			if isinstance(p, tuple):
-				p = p[1]
-			if isinstance(p, int):
-				fx = x
-				while fx < x + p:
-					fw = min(fence.width, x + p - fx)
-					out.alpha_composite(fence.crop((0, 0, fw, fence.height)), (fx, 176))
-					fx += fw
-				x += p
-			else:
-				out.alpha_composite(p, (x, BASE - p.height))
-				x += p.width
-		out.save(OUT / f"pueblo_tramo_{num}.png")
-		print(f"pueblo_tramo_{num}.png (edificios)", out.size)
+def valla_piezas() -> tuple:
+	"""(tramo que se repite, poste derecho) a la escala del juego."""
+	src = Image.open(SRC / "valla.png").convert("RGBA")
+	x0, y0, x1, y1 = VALLA_BOX
+	s = VALLA_ALTO / (y1 - y0)
+	def esc(box):
+		im = src.crop(box)
+		return nitido(im.resize((max(1, round(im.width * s)), VALLA_ALTO), Image.LANCZOS))
+	return esc((VALLA_REPITE[0], y0, VALLA_REPITE[1], y1)), esc((VALLA_REPITE[1], y0, x1, y1))
+
+
+def valla(w: int, rep: Image.Image, poste: Image.Image) -> Image.Image:
+	out = Image.new("RGBA", (w, VALLA_ALTO), (0, 0, 0, 0))
+	x = 0
+	while x < w:
+		out.alpha_composite(rep.crop((0, 0, min(rep.width, w - x), VALLA_ALTO)), (x, 0))
+		x += rep.width
+	out.alpha_composite(poste, (max(0, w - poste.width), 0))
+	return out
+
+
+def build_calle() -> None:
+	street = Image.open(SRC / "tramo02.png").convert("RGBA")
+	street = street.resize((round(street.width * H / street.height), H), Image.LANCZOS).crop((0, 202, 675, H - 3))  # la vereda del tramo 2 va 3 px más abajo
+	rep, poste = valla_piezas()
+	parts = []
+	for p in CALLE:
+		if isinstance(p, int):
+			parts.append(("hueco", p, None))
+		elif isinstance(p, tuple):
+			parts.append(("hueco", p[1], arbol(p[0])))
+		else:
+			im = edificio(p)
+			parts.append(("edificio", im.width, im))
+	w = sum(p[1] for p in parts)
+	out = Image.new("RGBA", (w, H), (0, 0, 0, 0))
+	# 1) árboles (detrás de todo), centrados en su hueco
+	x = 0
+	for kind, pw, im in parts:
+		if kind == "hueco" and im is not None:
+			out.alpha_composite(im, (x + pw // 2 - im.width // 2, BASE + 2 - im.height))
+		x += pw
+	# 2) la vereda y los adoquines
+	for sx in range(0, w, street.width):
+		out.alpha_composite(street.crop((0, 0, min(street.width, w - sx), street.height)), (sx, 205))
+	# 3) la valla en los huecos y los edificios
+	x = 0
+	for kind, pw, im in parts:
+		if kind == "hueco":
+			out.alpha_composite(valla(pw, rep, poste), (x, BASE + 1 - VALLA_ALTO))
+		else:
+			out.alpha_composite(im, (x, BASE - im.height))
+		x += pw
+	# 4) se corta en trozos para el juego
+	for old in OUT.glob("pueblo_tramo_*.png"):
+		old.unlink()
+	for i, sx in enumerate(range(0, w, TROZO)):
+		out.crop((sx, 0, min(w, sx + TROZO), H)).save(OUT / f"pueblo_tramo_{i + 1:02d}.png")
+	print("calle del pueblo:", w, "px en", (w + TROZO - 1) // TROZO, "trozos")
 
 
 def build_ground() -> None:
-	src = load(SCENES[0]).crop(GROUND_BOX)
+	src = load("1_almacen").crop(GROUND_BOX)
 	s = H / 793
 	g = src.resize((round(src.width * s), round(src.height * s)), Image.LANCZOS)
 	# hacer que se repita sin corte: fundir el final con el principio
@@ -238,9 +189,5 @@ def build_ground() -> None:
 
 if __name__ == "__main__":
 	build_sky()
-	build_tramos()
-	build_completo()
-	build_espejos()
-	build_pixellab()
-	build_composicion()
+	build_calle()
 	build_ground()

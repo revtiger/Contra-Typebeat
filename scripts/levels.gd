@@ -106,10 +106,10 @@ const TEMPLATES := {
 		],
 	},
 	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
-	# Más larga que las demás ("end"): 6 tramos de casas (tools/sprites/pueblo.py) y la plaza al final.
+	# Más larga que las demás ("end" = largo de la calle que imprime tools/sprites/pueblo.py); la capilla al final.
 	"pueblo": {
-		"end": 4540,
-		"ground": [[0, 4540, 230]],
+		"end": 4879,
+		"ground": [[0, 4879, 230]],
 		"platforms": [],
 		"entities": [
 			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
@@ -119,7 +119,8 @@ const TEMPLATES := {
 			# comercios y casas nuevas (tramos 4 y 5)
 			["sniper", 2650, 230], ["tank", 2900, 230, "comunista"], ["capsule", 2950, 60, "R"],
 			["grenadier", 3150, 230], ["turret", 3350, 230], ["sniper", 3500, 230], ["capsule", 3650, 60, "H"],
-			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230],
+			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230], ["grenadier", 4250, 230],
+			["sniper", 4380, 230],
 		],
 	},
 	"jungle": {
