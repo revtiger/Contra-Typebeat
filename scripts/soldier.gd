@@ -3,7 +3,8 @@ extends CharacterBody2D
 ## - "run": corre en línea recta y salta escalones; si te ve cerca a veces se asusta (brazos arriba) y huye
 ## - "sniper": se queda quieto y dispara al jugador en 8 direcciones
 ## - "grenadier": se para a lanzar granadas en arco (con marca de aviso en el suelo)
-## Al morir sale despedido hacia atrás girando, en vez de desaparecer.
+## Al morir sale despedido hacia atrás girando, en vez de desaparecer. En Argentina (soldier_ar.png, de
+## tools/sprites/soldados.py) recibe el disparo, cae de espaldas y queda tirado en el suelo un momento.
 
 const Bullet = preload("res://scripts/bullet.gd")
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
@@ -24,6 +25,9 @@ var state_t := 0.0
 var flash := 0.0
 var can_panic := true
 var spr: AnimatedSprite2D
+## hoja nueva de Argentina: tiene la muerte en 3 poses ("die") y la boca del fusil de cada pose de apuntar
+var ar := false
+var ar_meta := {}
 
 
 func _ready() -> void:
@@ -39,6 +43,10 @@ func _ready() -> void:
 	add_child(cs)
 	can_panic = randf() < 0.45
 	_setup_sprite()
+	if ar:
+		# el soldado de Argentina mide como el héroe: caja más alta para que las balas le den en la cabeza
+		r.size = Vector2(14, 40)
+		cs.position = Vector2(0, -20)
 	match mode:
 		"sniper":
 			hp = 2
@@ -88,6 +96,9 @@ func _physics_process(delta: float) -> void:
 						b.from_player = false
 						b.vel = aim * 120.0
 						b.position = position + Vector2(0, -22) + aim * 14
+						if ar:
+							var m: Array = ar_meta["muzzles"][_aim_idx()]
+							b.position = position + Vector2(m[0] * dir, m[1])
 						get_parent().add_child(b)
 						Game.sfx("shot", -20.0, 0.7)
 				"grenadier":
@@ -96,7 +107,10 @@ func _physics_process(delta: float) -> void:
 					shoot_t -= delta
 					if shoot_t <= 0.0 and on_screen and not p.dead and absf(dx) < 260.0:
 						shoot_t = randf_range(2.2, 3.2)
-						main.throw_grenade(position + Vector2(dir * 6, -24), p.position.x + randf_range(-10, 10))
+						var hand := Vector2(dir * 6, -24)
+						if ar:
+							hand = Vector2(ar_meta["hand"][0] * dir, ar_meta["hand"][1])
+						main.throw_grenade(position + hand, p.position.x + randf_range(-10, 10))
 	move_and_slide()
 	if state == "normal" and mode == "run" and is_on_wall() and is_on_floor():
 		velocity.y = -300.0
@@ -106,6 +120,19 @@ func _physics_process(delta: float) -> void:
 
 
 func _dead_process(delta: float) -> void:
+	if ar:
+		# cae de espaldas y queda tirado; al final se desvanece
+		velocity.x = move_toward(velocity.x, 0.0, 160.0 * delta)
+		position += velocity * delta
+		var gy: float = main.ground_y_at(position.x) if main.has_method("ground_y_at") else 230.0
+		if position.y >= gy:
+			position.y = gy
+			velocity = Vector2.ZERO
+		state_t -= delta
+		modulate.a = clampf(state_t / 0.4, 0.0, 1.0)
+		if state_t <= 0.0:
+			queue_free()
+		return
 	position += velocity * delta
 	rotation += dir * -7.0 * delta
 	state_t -= delta
@@ -131,6 +158,9 @@ func take_damage(n: int) -> void:
 		var from_x: float = main.player.position.x
 		dir = 1 if position.x > from_x else -1
 		velocity = Vector2(dir * 90.0, -170.0)
+		if ar:
+			velocity = Vector2(dir * 70.0, -110.0)
+			state_t = 1.6
 		Game.sfx("death", -14.0, randf_range(1.7, 2.2))
 		Juice.hitstop(0.03)
 
@@ -138,6 +168,18 @@ func take_damage(n: int) -> void:
 # ---------- sprites (assets/sprites/soldier_*.png, generados por tools/sprites/humans.py) ----------
 
 func _setup_sprite() -> void:
+	if main.get("country") == "ar" and ResourceLoader.exists("res://assets/sprites/soldier_ar.png"):
+		ar = true
+		ar_meta = SpriteUtil.meta("res://assets/sprites/soldier_ar_meta.json")
+		var A: Dictionary = ar_meta["rows"]
+		var fr: Array = ar_meta["frame"]
+		spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/soldier_ar.png", fr[0], fr[1], {
+			"idle": [A["idle"], 1, 1, true], "run": [A["run"], 8, 14, true], "panic": [A["panic"], 2, 6, true],
+			"throw": [A["throw"], 2, 1, false], "aim": [A["aim"], 4, 1, false], "flee": [A["flee"], 8, 18, true],
+			"die": [A["die"], 3, 1, false]}),
+			SpriteUtil.v(ar_meta["feet"]))
+		add_child(spr)
+		return
 	var meta := SpriteUtil.meta("res://assets/sprites/soldier_meta.json")
 	var R: Dictionary = meta["rows"]
 	var theme_name: String = "desert" if main.theme in ["desert", "quebrada"] else "jungle"
@@ -157,24 +199,21 @@ func _animate() -> void:
 		"flee":
 			_play("flee")
 		"dead":
-			spr.animation = "panic"
-			spr.frame = 1
+			if ar:
+				# mira al jugador y cae de espaldas: recibe el disparo, cae y queda tirado
+				spr.scale.x = -dir
+				spr.animation = "die"
+				spr.frame = 0 if state_t > 1.45 else (1 if velocity.y != 0.0 else 2)
+			else:
+				spr.animation = "panic"
+				spr.frame = 1
 		_:
 			match mode:
 				"run":
 					_play("run" if is_on_floor() else "idle")
 				"sniper":
-					# fotogramas: adelante, diagonal arriba, arriba, diagonal abajo
-					var ang := rad_to_deg(Vector2(absf(aim.x), aim.y).angle())
-					var idx := 0
-					if ang < -67.0:
-						idx = 2
-					elif ang < -22.0:
-						idx = 1
-					elif ang > 22.0:
-						idx = 3
 					spr.animation = "aim"
-					spr.frame = idx
+					spr.frame = _aim_idx()
 				"grenadier":
 					if shoot_t < 0.5:
 						spr.animation = "throw"
@@ -184,6 +223,18 @@ func _animate() -> void:
 						spr.frame = 1
 					else:
 						spr.animation = "idle"
+
+
+## Fotograma de apuntar: 0 adelante, 1 diagonal arriba, 2 arriba, 3 diagonal abajo.
+func _aim_idx() -> int:
+	var ang := rad_to_deg(Vector2(absf(aim.x), aim.y).angle())
+	if ang < -67.0:
+		return 2
+	if ang < -22.0:
+		return 1
+	if ang > 22.0:
+		return 3
+	return 0
 
 
 func _play(anim: String) -> void:
