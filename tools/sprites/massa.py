@@ -6,9 +6,12 @@ tools/sprites/pixellab/massa2/<traje|chaleco>_base.png y animadas con PixelLab (
 <anim>.png es horizontal, fotogramas de 128x128; el 0 es la base:
   de traje:   idle (4), walk (8, se gira de perfil en el 4), thumbs (pulgar arriba), strip (se quita el
               saco y agarra el rifle; termina en la pose del chaleco)
-              pitch1: lanza una granada con la derecha como un lanzador de béisbol; pitch2 (animado desde el
-              último fotograma de pitch1 y terminando en la base): lanza otra con la izquierda y vuelve a la
-              pose normal. Juntas forman "grenade" (17 fotogramas)
+              pitch1: lanza una granada con la derecha como un lanzador de béisbol. La segunda, con la
+              izquierda, va por tramos alrededor de una pose clave (pitch2_clave.png, edit_image: brazo
+              izquierdo atrás con la granada): pitch2_prepara (del final de pitch1 a la clave), pitch2_latigo
+              (desde la clave: látigo hacia delante; en su fotograma 4 suelta la granada) y pitch2_vuelta
+              (desde ese fotograma sin la granada, pitch2_suelta.png, hasta la base). Juntas forman
+              "grenade" (23 fotogramas)
   de chaleco: v_idle (4), v_walk (8), v_shoot (4, con fogonazo)
   walk2 / v_walk2: ciclos de caminar de 8 pasos animados desde el último fotograma (de perfil) de walk y
               v_walk (<anim>_perfil_base.png); son los que usa el juego
@@ -34,7 +37,8 @@ FW = FH = 64
 ANIMS = [
 	("idle", [("idle", range(0, 5))]),
 	("walk", [("walk2", range(1, 9))]),
-	("grenade", [("pitch1", range(0, 9)), ("pitch2", range(1, 9))]),
+	("grenade", [("pitch1", range(0, 9)), ("pitch2_prepara", range(1, 4)), ("pitch2_latigo", [0, 2, 3, 4]),
+		("pitch2_vuelta", range(1, 7))]),
 	("thumbs", [("thumbs", range(0, 9))]),
 	("strip", [("strip", range(0, 9))]),
 	("v_idle", [("v_idle", range(0, 5))]),

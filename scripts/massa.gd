@@ -22,7 +22,7 @@ const BOSS_NAME := "SERGIO MASSA"
 const HEIGHT := 60.0
 # fps de cada animación de boss_massa_meta.json y si se repite
 const ANIM_FPS := {
-	"idle": [6, true], "walk": [11, true], "grenade": [12, false], "thumbs": [9, false],
+	"idle": [6, true], "walk": [11, true], "grenade": [14, false], "thumbs": [9, false],
 	"strip": [7, false], "v_idle": [6, true], "v_walk": [13, true], "v_shoot": [16, true],
 }
 
