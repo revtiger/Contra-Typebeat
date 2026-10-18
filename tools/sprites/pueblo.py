@@ -14,6 +14,8 @@ Salida:
   assets/sprites/bg_pueblo.png        cielo y pampa, 270 px de alto (se mueve muy despacio)
   assets/sprites/pueblo_tramo_NN.png  la calle cortada en trozos de TROZO px (el juego los pone en fila)
   assets/sprites/ground_pueblo.png    tira de adoquines y tierra que se repite en el suelo
+  scripts/pueblo_casas.gd             puerta, ventanas y vecino de cada edificio en coordenadas del mundo
+                                      (civilian.gd: los vecinos pasean frente a su puerta, entran y se asoman)
 
 Uso: python tools/sprites/pueblo.py  (imprime el largo de la calle: es el "end" de la plantilla
 "pueblo" en scripts/levels.gd)
@@ -42,6 +44,27 @@ EDIFICIOS = {
 	"casa": 350, "almacen": 355, "casa_2_pisos": 350, "panaderia": 440, "casa_garaje": 320,
 	"ferreteria": 412, "capilla": 365, "galpon": 455, "cafe": 380, "encomiendas": 415,
 }
+# Puerta y ventanas de cada edificio, en px del edificio ya a escala del juego: (x0, y0, x1, y1).
+# Las ventanas son el hueco del vidrio, donde se asoma el vecino.
+ZONAS = {
+	"casa": {"puerta": (80, 62, 100, 117), "ventanas": [(33, 63, 50, 88), (133, 63, 152, 88)]},
+	"almacen": {"puerta": (88, 86, 118, 140), "ventanas": [(25, 78, 42, 100)]},
+	"casa_2_pisos": {"puerta": (102, 108, 127, 160), "ventanas": [(52, 45, 78, 68), (112, 45, 130, 70), (46, 110, 72, 138)]},
+	"panaderia": {"puerta": (90, 63, 112, 112), "ventanas": [(30, 72, 78, 96)]},
+	"casa_garaje": {"puerta": (58, 80, 75, 130), "ventanas": [(25, 76, 40, 102)]},
+	"ferreteria": {"puerta": (64, 72, 89, 120), "ventanas": [(28, 78, 58, 104), (97, 78, 120, 104)]},
+	"capilla": {"puerta": (76, 132, 119, 195), "ventanas": [(34, 136, 52, 160), (142, 136, 160, 160)]},
+	"galpon": {"puerta": (52, 60, 125, 131), "ventanas": [(83, 27, 100, 45), (141, 79, 157, 100)]},
+	"cafe": {"puerta": (66, 80, 90, 130), "ventanas": [(28, 79, 55, 104), (104, 79, 130, 104)]},
+	"encomiendas": {"puerta": (97, 47, 120, 100), "ventanas": [(30, 53, 78, 80)]},
+}
+# Quién vive en cada edificio (fila de vecinos.png, ver tools/sprites/vecinos.py); si el edificio se repite
+# se van turnando. -1 = nadie.
+VECINO = {
+	"panaderia": [0], "almacen": [1], "ferreteria": [2], "cafe": [3], "casa_garaje": [4, 10],
+	"encomiendas": [5], "casa": [6, 8, 9, 11], "capilla": [7], "casa_2_pisos": [9, 3, 11, 8], "galpon": [10],
+}
+
 PUERTA = 52
 PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
 BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
@@ -156,18 +179,48 @@ def build_calle() -> None:
 		out.alpha_composite(street.crop((0, 0, min(street.width, w - sx), street.height)), (sx, 205))
 	# 3) la valla en los huecos y los edificios
 	x = 0
+	casas = []
+	turno = {}
+	names = [p for p in CALLE if isinstance(p, str)]
+	ni = 0
 	for kind, pw, im in parts:
 		if kind == "hueco":
 			out.alpha_composite(valla(pw, rep, poste), (x, BASE + 1 - VALLA_ALTO))
 		else:
 			out.alpha_composite(im, (x, BASE - im.height))
+			name = names[ni]
+			ni += 1
+			top = BASE - im.height
+			z = ZONAS[name]
+			def mundo(r):
+				return [x + r[0], top + r[1], x + r[2], top + r[3]]
+			vs = VECINO.get(name, [-1])
+			k = vs[turno.get(name, 0) % len(vs)]
+			turno[name] = turno.get(name, 0) + 1
+			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k))
 		x += pw
+	_write_casas(casas)
 	# 4) se corta en trozos para el juego
 	for old in OUT.glob("pueblo_tramo_*.png"):
 		old.unlink()
 	for i, sx in enumerate(range(0, w, TROZO)):
 		out.crop((sx, 0, min(w, sx + TROZO), H)).save(OUT / f"pueblo_tramo_{i + 1:02d}.png")
 	print("calle del pueblo:", w, "px en", (w + TROZO - 1) // TROZO, "trozos")
+
+
+def _write_casas(casas) -> None:
+	lines = [
+		"extends RefCounted",
+		"## Generado por tools/sprites/pueblo.py: no editar a mano.",
+		"## Edificios de la calle del pueblo (1.1) en coordenadas del mundo:",
+		"## [nombre, puerta [x0, y0, x1, y1], ventanas [[x0, y0, x1, y1], ...], vecino (fila de vecinos.png, -1 nadie)]",
+		"const CASAS := [",
+	]
+	for name, door, wins, k in casas:
+		lines.append(f'\t["{name}", {door}, {wins}, {k}],')
+	lines.append("]")
+	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8")
+	print("pueblo_casas.gd:", len(casas), "edificios")
 
 
 def build_ground() -> None:

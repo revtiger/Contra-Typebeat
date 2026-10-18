@@ -14,8 +14,8 @@ extends RefCounted
 ##   jet: bombardeo aéreo que apunta a donde está el jugador
 ##   boss: extra = "pol:<id>" (politician.gd), "wall", "heli" o "mecha"
 ##   door: extra = número de puerta (nivel secreto)
-##   vecino: civil que pasea por la vereda y huye de la pelea (civilian.gd); extra = cuál (0..11, fila de
-##           vecinos.png), si no se indica, al azar
+##   vecino: civil que pasea frente a su casa y se mete en ella cuando llega la pelea (civilian.gd);
+##           extra = índice de la casa en scripts/pueblo_casas.gd. En el pueblo se ponen solos, uno por casa.
 ## Referencia de alturas: el salto sube ~70 px; los tramos de suelo pueden subir hasta ~35 px.
 
 const END := 3000
@@ -123,11 +123,6 @@ const TEMPLATES := {
 			["grenadier", 3150, 230], ["turret", 3350, 230], ["sniper", 3500, 230], ["capsule", 3650, 60, "H"],
 			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230], ["grenadier", 4250, 230],
 			["sniper", 4380, 230],
-			# vecinos en la vereda (huyen cuando llega la pelea)
-			["vecino", 250, 222, 0], ["vecino", 330, 222, 3], ["vecino", 620, 222, 6], ["vecino", 900, 222, 8],
-			["vecino", 1250, 222, 1], ["vecino", 1420, 222, 4], ["vecino", 1760, 222, 9], ["vecino", 2080, 222, 2],
-			["vecino", 2400, 222, 5], ["vecino", 2760, 222, 10], ["vecino", 3100, 222, 7], ["vecino", 3450, 222, 11],
-			["vecino", 3800, 222, 0], ["vecino", 4150, 222, 9],
 		],
 	},
 	"jungle": {
@@ -221,6 +216,12 @@ static func _build() -> Array:
 			else:
 				boss_name = preload("res://scripts/politician.gd").POLS[boss_id]["name"]
 				entities.append(["boss", end - 110, 230, "pol:" + boss_id])
+			if ph[1] == "pueblo":
+				var casas: Array = preload("res://scripts/pueblo_casas.gd").CASAS
+				for hi in casas.size():
+					if casas[hi][3] >= 0:
+						entities.append(["vecino", (casas[hi][1][0] + casas[hi][1][2]) / 2, 210, hi])
+				entities.sort_custom(func(a, b): return a[1] < b[1])
 			out.append({
 				"phase": "%d.%d" % [zi + 1, pi + 1],
 				"zone": z["zone"],

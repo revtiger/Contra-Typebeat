@@ -249,7 +249,7 @@ func _spawn_entities() -> void:
 				boss = n
 			"vecino":
 				n = Civilian.new()
-				n.kind = e[3] if e.size() > 3 else -1
+				n.house = e[3]
 			"door":
 				n = Door.new()
 				n.number = e[3]
