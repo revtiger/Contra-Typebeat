@@ -146,5 +146,163 @@ def juego():
 	print("soldier_ar.png", sheet.size, "bocas", meta["muzzles"])
 
 
+# --- caras: variantes del mismo soldado (caras_v2.png) pintadas a la escala del juego ---
+# A 48 px de alto la cara mide unos 6x6 px: no se pega otra cabeza, se cambian sus colores en cada fotograma
+# (piel, pelo) y se pinta el bigote o la barba. La dirección de la cara sale de la gorra: "abajo" va de la gorra
+# al centro de la cara (así también funciona en las poses de muerte, tumbado) y "delante" es su perpendicular.
+VARIANTES = {
+	1: {"pelo": "negro", "piel": "tostada", "bigote": True},
+	2: {"pelo": "negro", "piel": "morena"},
+	3: {"pelo": "canoso", "barba": "canosa"},
+	4: {"pelo": "rojo", "barba": "rojiza"},
+}
+
+
+def _hsv(c):
+	import colorsys
+	return colorsys.rgb_to_hsv(c[0] / 255, c[1] / 255, c[2] / 255)
+
+
+def _rgb(h, s, v, a=255):
+	import colorsys
+	r, g, b = colorsys.hsv_to_rgb(h, max(0.0, min(1.0, s)), max(0.0, min(1.0, v)))
+	return (round(r * 255), round(g * 255), round(b * 255), a)
+
+
+def es_piel(c):
+	h, s, v = _hsv(c)
+	return c[3] > 0 and h < 0.088 and s > 0.3 and v > 0.5
+
+
+def es_gorra(c):
+	h, s, v = _hsv(c)
+	return c[3] > 0 and 0.088 <= h <= 0.14 and s > 0.35 and v > 0.3
+
+
+def es_pelo(c):
+	h, s, v = _hsv(c)
+	return c[3] > 0 and h < 0.075 and 0.1 <= s <= 0.65 and 0.12 <= v <= 0.5
+
+
+def _componentes(px, w, h, pred):
+	vistos, comps = set(), []
+	for y in range(h):
+		for x in range(w):
+			if (x, y) in vistos or not pred(px[x, y]):
+				continue
+			pila, comp = [(x, y)], []
+			vistos.add((x, y))
+			while pila:
+				p = pila.pop()
+				comp.append(p)
+				for q in ((p[0] + 1, p[1]), (p[0] - 1, p[1]), (p[0], p[1] + 1), (p[0], p[1] - 1)):
+					if 0 <= q[0] < w and 0 <= q[1] < h and q not in vistos and pred(px[q]):
+						vistos.add(q)
+						pila.append(q)
+			comps.append(comp)
+	return comps
+
+
+def _centro(ps):
+	return (sum(p[0] for p in ps) / len(ps), sum(p[1] for p in ps) / len(ps))
+
+
+def cara(fr, v):
+	"""Fotograma FWxFH -> el mismo con la cara de la variante v."""
+	fr = fr.copy()
+	px = fr.load()
+	w, h = fr.size
+	gorras = [c for c in _componentes(px, w, h, es_gorra) if len(c) >= 6]
+	pieles = [c for c in _componentes(px, w, h, es_piel) if len(c) >= 4]
+	piel_toda = [p for c in pieles for p in c]
+	if not gorras or not pieles:
+		return fr
+	# la gorra y la cara son la pareja (manchas de khaki y de piel) más grande que se toca (a 3 px o menos):
+	# así no se confunden con el camuflaje ni con las manos
+	def cerca(a, b):
+		sb = set(b)
+		return any((p[0] + dx, p[1] + dy) in sb for p in a for dx in range(-3, 4) for dy in range(-3, 4))
+	pares = [(g, c) for g in gorras if len(g) >= 15 for c in pieles if cerca(c, g)]
+	if not pares:
+		return fr
+	gorra, cara_ps = max(pares, key=lambda gc_: len(gc_[0]) + 2 * len(gc_[1]))
+	gc = _centro(gorra)
+	fc = _centro(cara_ps)
+	ux, uy = fc[0] - gc[0], fc[1] - gc[1]
+	n = (ux * ux + uy * uy) ** 0.5 or 1.0
+	ux, uy = ux / n, uy / n
+	fx, fy = uy, -ux  # delante
+	ds = {p: (p[0] - gc[0]) * ux + (p[1] - gc[1]) * uy for p in cara_ps}
+	d0, d1 = min(ds.values()), max(ds.values())
+	dn = {p: (d - d0) / ((d1 - d0) or 1.0) for p, d in ds.items()}
+	sv = {p: (p[0] - fc[0]) * fx + (p[1] - fc[1]) * fy for p in cara_ps}
+	# pelo: lo que no es gorra ni piel junto a la cara, con color de pelo
+	x0 = min(p[0] for p in cara_ps) - 4
+	x1 = max(p[0] for p in cara_ps) + 4
+	y0 = min(p[1] for p in cara_ps) - 4
+	y1 = max(p[1] for p in cara_ps) + 4
+	mid = (d0 + d1) / 2
+	cand = {(x, y) for y in range(max(0, y0), min(h, y1 + 1)) for x in range(max(0, x0), min(w, x1 + 1))
+		if es_pelo(px[x, y]) and (x - gc[0]) * ux + (y - gc[1]) * uy <= mid}
+	# solo el pelo pegado a la cara (no el camuflaje ni la sombra de la gorra)
+	cara_set = set(cara_ps)
+	vec8 = [(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx or dy]
+	pila = [p for p in cand if any((p[0] + dx, p[1] + dy) in cara_set for dx, dy in vec8)]
+	pelo = set(pila)
+	while pila:
+		p = pila.pop()
+		for dx, dy in vec8:
+			q = (p[0] + dx, p[1] + dy)
+			if q in cand and q not in pelo:
+				pelo.add(q)
+				pila.append(q)
+	op = VARIANTES[v]
+	# piel (toda: cara y brazos)
+	if op.get("piel"):
+		for p in piel_toda:
+			hh, s, val = _hsv(px[p])
+			if op["piel"] == "morena":
+				px[p] = _rgb(0.06, s * 0.9 + 0.05, val * 0.55 + 0.02)
+			else:
+				px[p] = _rgb(hh * 0.85, s * 1.05, val * 0.86)
+	for p in pelo:
+		hh, s, val = _hsv(px[p])
+		if op["pelo"] == "negro":
+			px[p] = _rgb(0.05, s * 0.5, val * 0.45)
+		elif op["pelo"] == "canoso":
+			g = round(110 + val * 230)
+			px[p] = (min(255, g), min(255, g), min(255, g + 6), 255)
+		elif op["pelo"] == "rojo":
+			px[p] = _rgb(0.045, 0.72, 0.35 + val * 0.9)
+	if op.get("barba"):
+		for p in cara_ps:
+			if dn[p] >= 0.6:
+				hh, s, val = _hsv(px[p])
+				if op["barba"] == "canosa":
+					g = round(95 + val * 95) if dn[p] < 0.8 else round(120 + val * 85)
+					px[p] = (min(255, g), min(255, g), min(255, g + 8), 255)
+				else:
+					px[p] = _rgb(0.05, 0.65, val * 0.68)
+	if op.get("bigote"):
+		frente = [p for p in cara_ps if sv[p] >= 0.0 and 0.5 <= dn[p] <= 0.72]
+		for p in frente:
+			px[p] = (34, 20, 14, 255)
+	return fr
+
+
+def caras():
+	"""soldier_ar.png -> soldier_ar_1..4.png (las mismas filas con otra cara)."""
+	sheet = Image.open(OUT / "soldier_ar.png").convert("RGBA")
+	for v in VARIANTES:
+		out = Image.new("RGBA", sheet.size, (0, 0, 0, 0))
+		for y in range(0, sheet.height, FH):
+			for x in range(0, sheet.width, FW):
+				fr = sheet.crop((x, y, x + FW, y + FH))
+				if fr.getbbox():
+					out.alpha_composite(cara(fr, v), (x, y))
+		out.save(OUT / f"soldier_ar_{v}.png")
+		print(f"soldier_ar_{v}.png")
+
+
 if __name__ == "__main__":
-	{"base": base, "juego": juego}[sys.argv[1] if len(sys.argv) > 1 else "juego"]()
+	{"base": base, "juego": juego, "caras": caras}[sys.argv[1] if len(sys.argv) > 1 else "juego"]()

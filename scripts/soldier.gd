@@ -10,6 +10,7 @@ const Bullet = preload("res://scripts/bullet.gd")
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
 
 const PANIC_TIME := 0.7
+const AR_CARAS := 4  # variantes de cara de soldier_ar.png
 
 var mode := "run"
 var dir := -1
@@ -173,7 +174,11 @@ func _setup_sprite() -> void:
 		ar_meta = SpriteUtil.meta("res://assets/sprites/soldier_ar_meta.json")
 		var A: Dictionary = ar_meta["rows"]
 		var fr: Array = ar_meta["frame"]
-		spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/soldier_ar.png", fr[0], fr[1], {
+		# cara al azar: el soldado joven (soldier_ar.png) o una de sus variantes (soldier_ar_1..4.png: bigote,
+		# moreno, canoso con barba, pelirrojo), pintadas por tools/sprites/soldados.py caras
+		var cara := randi() % (AR_CARAS + 1)
+		var hoja := "res://assets/sprites/soldier_ar.png" if cara == 0 else "res://assets/sprites/soldier_ar_%d.png" % cara
+		spr = SpriteUtil.sprite(SpriteUtil.frames(hoja, fr[0], fr[1], {
 			"idle": [A["idle"], 1, 1, true], "run": [A["run"], 8, 14, true], "panic": [A["panic"], 2, 6, true],
 			"throw": [A["throw"], 2, 1, false], "aim": [A["aim"], 4, 1, false], "flee": [A["flee"], 8, 18, true],
 			"die": [A["die"], 3, 1, false]}),
