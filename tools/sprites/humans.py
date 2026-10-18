@@ -37,9 +37,9 @@ HERO = {
     "tie": (186, 28, 38),
     "pack": [(64, 66, 40), (92, 94, 58), (124, 126, 80)],
 }
-## Soldados jugables (ficticios). "presi" usa el traje con banda; el resto, uniforme de campaña.
+## Soldados jugables dibujados aquí (ficticios), con uniforme de campaña. (Eduardo y Eder tienen sprites de
+## cuerpo entero de ChatGPT: heroes_sheets.py.)
 HEROES = {
-    "presi": dict(HERO, outfit="suit", hair=HAIR, style="slick"),
     "tenienta": {"outfit": "uniform", "cloth": [(52, 60, 32), (82, 94, 52), (116, 130, 76)],
                  "pants": [(44, 50, 28), (68, 78, 44), (94, 106, 62)], "pack": [(64, 58, 40), (92, 84, 58), (124, 114, 80)],
                  "hair": [(92, 32, 16), (160, 64, 30)], "style": "ponytail"},
@@ -322,7 +322,7 @@ def knife_torso(body_fn, cloth, stage, dy=0):
 
 
 # ---------- generación ----------
-def hero(hero_id="presi"):
+def hero(hero_id="tenienta"):
     cfg = HEROES[hero_id]
     body_fn = make_body(cfg)
     pants = cfg["pants"]

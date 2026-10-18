@@ -1,6 +1,6 @@
 extends Node2D
 ## ELIGE TU SOLDADO, al estilo de la pantalla "SOLDIER SELECT" de Metal Slug X:
-## marco de acero remachado, título cincelado, cuatro ventanas con retrato (el elegido a color,
+## marco de acero remachado, título cincelado, una ventana con retrato por soldado (el elegido a color,
 ## el resto en sepia), placas con el nombre, cuenta atrás y PULSA START.
 
 const PixelFont = preload("res://scripts/pixel_font.gd")
@@ -8,10 +8,10 @@ const LogoText = preload("res://scripts/logo_text.gd")
 
 ## id del soldado (sprites player_<id>_*.png) y nombre en la placa
 ## Eduardo y Eder: diseños de Eduardo hechos con ChatGPT (sprites de cuerpo entero)
-const SOLDIERS := [["presi", "EL PRESI"], ["tenienta", "LA TENIENTA"], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
+## (en el mismo orden que las columnas de assets/sprites/portraits.png, de tools/sprites/portraits.py)
+const SOLDIERS := [["tenienta", "LA TENIENTA"], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
 const WIN := Vector2(84, 104)
 const STEP := 92.0
-const X0 := 60.0
 const Y0 := 52.0
 const PW := 72
 const PH := 96
@@ -62,6 +62,11 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## x de la primera ventana: las ventanas van centradas en la pantalla.
+func _x0() -> float:
+	return 240.0 - ((SOLDIERS.size() - 1) * STEP + WIN.x) / 2.0
+
+
 func _steel(r: Rect2, dark := false) -> void:
 	var base := Color(0.3, 0.32, 0.36) if not dark else Color(0.14, 0.15, 0.18)
 	draw_rect(r, base)
@@ -87,7 +92,7 @@ func _draw() -> void:
 	var small_font := PixelFont.font("white")
 	var fs := PixelFont.size("white")
 	for i in SOLDIERS.size():
-		var pos := Vector2(X0 + i * STEP, Y0)
+		var pos := Vector2(_x0() + i * STEP, Y0)
 		var win := Rect2(pos, WIN)
 		var is_sel := i == sel
 		_steel(win, true)
