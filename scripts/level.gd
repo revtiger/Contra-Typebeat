@@ -22,6 +22,7 @@ const Pickup = preload("res://scripts/pickup.gd")
 const Terrain = preload("res://scripts/terrain.gd")
 const Background = preload("res://scripts/background.gd")
 const Explosion = preload("res://scripts/explosion.gd")
+const Civilian = preload("res://scripts/civilian.gd")
 
 const SCREEN_W := 480.0
 const SCREEN_H := 270.0
@@ -246,6 +247,9 @@ func _spawn_entities() -> void:
 						"heli": n = Heli.new()
 						_: n = Mecha.new()
 				boss = n
+			"vecino":
+				n = Civilian.new()
+				n.kind = e[3] if e.size() > 3 else -1
 			"door":
 				n = Door.new()
 				n.number = e[3]
@@ -344,6 +348,7 @@ func explode(pos: Vector2, radius := 12.0, sound := true) -> void:
 	e.position = pos
 	e.r = radius
 	add_child(e)
+	Civilian.scare_all(get_tree(), pos)
 	if sound:
 		if radius >= 20.0:
 			Game.sfx("boom", -4.0, randf_range(0.85, 1.1))
