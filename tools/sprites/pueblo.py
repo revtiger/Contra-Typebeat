@@ -6,6 +6,8 @@ Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   pueblo_completo.png  pueblo seguido de punta a punta (2000x667, transparente): se le quitan los
                    vecinos, el almacén repetido y el vagón del final, y sale el tramo 04 (ver COMPLETO)
   1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
+edificios/<nombre>.png  edificios sueltos de Eduardo (ChatGPT, 1254x1254, transparentes): se ponen en fila
+                   sobre la calle con cercas entre medio y forman tramos nuevos (ver COMPOSICION)
 y tramos hechos con PixelLab (create_image_pro, con los tramos 1 y 2 de referencia de estilo) en
 tools/sprites/pixellab/pueblo/ (ver PIXELLAB).
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
@@ -39,9 +41,9 @@ GROUND_BLEND = 24
 # Tramos cuya calle sale un poco más alta o más baja que la del tramo 1: px que se bajan (+) o suben (-)
 TRAMO_DY = {"02": 3}
 
-# Tramo 04 (el último, con la plaza de la capilla para la pelea con Massa) a partir de pueblo_completo.png (coordenadas del original)
+# Tramo 06 (el último, con la plaza de la capilla para la pelea con Massa) a partir de pueblo_completo.png (coordenadas del original)
 COMPLETO = {
-	"tramo": "04",
+	"tramo": "06",
 	# [x0, y0, x1, y1, dx]: tapa la zona copiando lo que hay dx px a la izquierda (-) o derecha (+)
 	"parches": [
 		[576, 420, 614, 512, -36],    # almacenero
@@ -137,6 +139,59 @@ def build_pixellab() -> None:
 		print(f"pueblo_tramo_{num}.png (PixelLab {fname})", out.size)
 
 
+# Edificios sueltos: alto de la puerta en el original (px), para dejarlos todos a la misma escala del juego.
+# La puerta normal queda de PUERTA px (algo más alta que el soldado); el galpón y la capilla, más grandes.
+EDIFICIOS = {
+	"casa": 350, "almacen": 355, "casa_2_pisos": 350, "panaderia": 440, "casa_garaje": 320,
+	"ferreteria": 412, "capilla": 365, "galpon": 455, "cafe": 380, "encomiendas": 415,
+}
+PUERTA = 52
+PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
+BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
+
+# Tramos armados con edificios sueltos: números = ancho de cerca entre edificios
+COMPOSICION = {
+	"04": [10, "casa", 24, "panaderia", 30, "ferreteria", 20, "cafe", 16],             # comercios
+	"05": [12, "casa_2_pisos", 28, "encomiendas", 30, "casa_garaje", 24, "galpon", 14],  # casas y galpón
+}
+
+
+def edificio(name: str) -> Image.Image:
+	im = Image.open(SRC / "edificios" / f"{name}.png").convert("RGBA")
+	im = im.crop(im.getchannel("A").point(lambda v: 255 if v > 128 else 0).getbbox())
+	s = PUERTA_GRANDE.get(name, PUERTA) / EDIFICIOS[name]
+	im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
+	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
+	return im
+
+
+def build_composicion() -> None:
+	# la calle y la cerca salen del tramo 2 (de Eduardo), así empalman con el resto
+	t2 = Image.open(OUT / "pueblo_tramo_02.png")
+	street = t2.crop((0, 205, 675, H))
+	fence = t2.crop((405, 176, 560, 206))
+	for num, seq in COMPOSICION.items():
+		parts = [p if isinstance(p, int) else edificio(p) for p in seq]
+		w = sum(p if isinstance(p, int) else p.width for p in parts)
+		out = Image.new("RGBA", (w, H), (0, 0, 0, 0))
+		for x in range(0, w, street.width):
+			out.alpha_composite(street.crop((0, 0, min(street.width, w - x), street.height)), (x, 205))
+		x = 0
+		for p in parts:
+			if isinstance(p, int):
+				fx = x
+				while fx < x + p:
+					fw = min(fence.width, x + p - fx)
+					out.alpha_composite(fence.crop((0, 0, fw, fence.height)), (fx, 176))
+					fx += fw
+				x += p
+			else:
+				out.alpha_composite(p, (x, BASE - p.height))
+				x += p.width
+		out.save(OUT / f"pueblo_tramo_{num}.png")
+		print(f"pueblo_tramo_{num}.png (edificios)", out.size)
+
+
 def build_ground() -> None:
 	src = load(SCENES[0]).crop(GROUND_BOX)
 	s = H / 793
@@ -160,4 +215,5 @@ if __name__ == "__main__":
 	build_completo()
 	build_espejos()
 	build_pixellab()
+	build_composicion()
 	build_ground()

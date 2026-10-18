@@ -105,15 +105,21 @@ const TEMPLATES := {
 			["sniper", 2300, 230], ["barrel", 2380, 230],
 		],
 	},
-	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
+	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
+	# Más larga que las demás ("end"): 6 tramos de casas (tools/sprites/pueblo.py) y la plaza al final.
 	"pueblo": {
-		"ground": [[0, END, 230]],
+		"end": 4525,
+		"ground": [[0, 4525, 230]],
 		"platforms": [],
 		"entities": [
 			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
 			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
 			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230], ["sniper", 2150, 230],
 			["turret", 2300, 230], ["capsule", 2300, 60, "S"], ["grenadier", 2400, 230],
+			# comercios y casas nuevas (tramos 4 y 5)
+			["sniper", 2650, 230], ["tank", 2900, 230, "comunista"], ["capsule", 2950, 60, "R"],
+			["grenadier", 3150, 230], ["turret", 3350, 230], ["sniper", 3500, 230], ["capsule", 3650, 60, "H"],
+			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230],
 		],
 	},
 	"jungle": {
@@ -197,15 +203,16 @@ static func _build() -> Array:
 			var ph: Array = z["phases"][pi]
 			var tpl: Dictionary = TEMPLATES[ph[1]]
 			var boss_id: String = ph[2]
+			var end: int = tpl.get("end", END)
 			var entities: Array = _vary(tpl["entities"], zi + pi)
 			var role := "final" if pi == 2 else "mini"
 			var boss_name := ""
 			if boss_id.begins_with("door:"):
 				role = "door"
-				entities.append(["door", END - 80, 230, int(boss_id.substr(5))])
+				entities.append(["door", end - 80, 230, int(boss_id.substr(5))])
 			else:
 				boss_name = preload("res://scripts/politician.gd").POLS[boss_id]["name"]
-				entities.append(["boss", END - 110, 230, "pol:" + boss_id])
+				entities.append(["boss", end - 110, 230, "pol:" + boss_id])
 			out.append({
 				"phase": "%d.%d" % [zi + 1, pi + 1],
 				"zone": z["zone"],
@@ -217,7 +224,7 @@ static func _build() -> Array:
 				"boss_role": role,
 				"theme": ph[3] if ph.size() > 3 else ph[1],
 				"music": MUSIC[ph[1]],
-				"end": END,
+				"end": end,
 				"ground": tpl["ground"],
 				"platforms": tpl["platforms"],
 				"entities": entities,
