@@ -108,8 +108,8 @@ const TEMPLATES := {
 	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
 	# Más larga que las demás ("end"): 6 tramos de casas (tools/sprites/pueblo.py) y la plaza al final.
 	"pueblo": {
-		"end": 4525,
-		"ground": [[0, 4525, 230]],
+		"end": 4540,
+		"ground": [[0, 4540, 230]],
 		"platforms": [],
 		"entities": [
 			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],

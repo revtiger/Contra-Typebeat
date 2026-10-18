@@ -8,6 +8,7 @@ Fuente: ilustraciones de Eduardo (ChatGPT) en tools/sprites/chatgpt/pueblo/:
   1_almacen, 2_capilla_taller, 3_plaza_massa (1983x793): escenas de referencia; de la 1 sale la calle.
 edificios/<nombre>.png  edificios sueltos de Eduardo (ChatGPT, 1254x1254, transparentes): se ponen en fila
                    sobre la calle con cercas entre medio y forman tramos nuevos (ver COMPOSICION)
+  arboles/<nombre>.png  árboles sueltos de Eduardo (ChatGPT, transparentes): van entre los edificios, detrás
 y tramos hechos con PixelLab (create_image_pro, con los tramos 1 y 2 de referencia de estilo) en
 tools/sprites/pixellab/pueblo/ (ver PIXELLAB).
 Si existe <nombre>_limpia.png (la misma escena sin personajes) se usa esa.
@@ -149,10 +150,17 @@ PUERTA = 52
 PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
 BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
 
-# Tramos armados con edificios sueltos: números = ancho de cerca entre edificios
+# Árboles: alto en el juego (px). El tronco apoya en la vereda, detrás de la cerca y de los edificios.
+ARBOLES = {
+	"ombu": 150, "ombu_grande": 145, "sauce": 135, "alamo": 175, "jacaranda": 140, "pino": 150,
+	"eucalipto": 165, "naranjo": 100, "cedro": 155, "palmera": 135,
+}
+
+# Tramos armados con edificios sueltos: número = cerca de ese ancho; (árbol, ancho) = cerca con un árbol detrás
 COMPOSICION = {
-	"04": [10, "casa", 24, "panaderia", 30, "ferreteria", 20, "cafe", 16],             # comercios
-	"05": [12, "casa_2_pisos", 28, "encomiendas", 30, "casa_garaje", 24, "galpon", 14],  # casas y galpón
+	"04": [10, "casa", ("jacaranda", 54), "panaderia", ("naranjo", 40), "ferreteria", ("ombu", 60), "cafe", 16],
+	"05": [12, "casa_2_pisos", ("alamo", 40), "encomiendas", ("eucalipto", 52), "casa_garaje", ("sauce", 54),
+		"galpon", 14],
 }
 
 
@@ -165,19 +173,38 @@ def edificio(name: str) -> Image.Image:
 	return im
 
 
+def arbol(name: str) -> Image.Image:
+	im = Image.open(SRC / "arboles" / f"{name}.png").convert("RGBA")
+	im = im.crop(im.getchannel("A").point(lambda v: 255 if v > 128 else 0).getbbox())
+	s = ARBOLES[name] / im.height
+	im = im.resize((round(im.width * s), ARBOLES[name]), Image.LANCZOS)
+	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
+	return im
+
+
 def build_composicion() -> None:
 	# la calle y la cerca salen del tramo 2 (de Eduardo), así empalman con el resto
 	t2 = Image.open(OUT / "pueblo_tramo_02.png")
 	street = t2.crop((0, 205, 675, H))
 	fence = t2.crop((405, 176, 560, 206))
 	for num, seq in COMPOSICION.items():
-		parts = [p if isinstance(p, int) else edificio(p) for p in seq]
-		w = sum(p if isinstance(p, int) else p.width for p in parts)
+		parts = [p if isinstance(p, (int, tuple)) else edificio(p) for p in seq]
+		gaps = [p[1] if isinstance(p, tuple) else p for p in parts if not isinstance(p, Image.Image)]
+		w = sum(gaps) + sum(p.width for p in parts if isinstance(p, Image.Image))
 		out = Image.new("RGBA", (w, H), (0, 0, 0, 0))
+		# primero los árboles (quedan detrás de todo), centrados en su hueco
+		x = 0
+		for p in parts:
+			if isinstance(p, tuple):
+				t = arbol(p[0])
+				out.alpha_composite(t, (x + p[1] // 2 - t.width // 2, BASE + 2 - t.height))
+			x += p.width if isinstance(p, Image.Image) else (p[1] if isinstance(p, tuple) else p)
 		for x in range(0, w, street.width):
 			out.alpha_composite(street.crop((0, 0, min(street.width, w - x), street.height)), (x, 205))
 		x = 0
 		for p in parts:
+			if isinstance(p, tuple):
+				p = p[1]
 			if isinstance(p, int):
 				fx = x
 				while fx < x + p:
