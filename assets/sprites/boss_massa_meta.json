@@ -1,11 +1,7 @@
 {
  "frame": [
-  96,
-  128
- ],
- "pivot": [
-  61,
-  127
+  64,
+  64
  ],
  "anims": {
   "idle": {
@@ -14,7 +10,7 @@
   },
   "walk": {
    "row": 1,
-   "frames": 7
+   "frames": 4
   },
   "talk": {
    "row": 2,
@@ -27,18 +23,38 @@
   "thumbs": {
    "row": 4,
    "frames": 9
+  },
+  "strip": {
+   "row": 5,
+   "frames": 9
+  },
+  "v_idle": {
+   "row": 6,
+   "frames": 5
+  },
+  "v_walk": {
+   "row": 7,
+   "frames": 4
+  },
+  "v_shoot": {
+   "row": 8,
+   "frames": 4
   }
  },
- "mic": [
-  28,
-  44
+ "pivot": [
+  36,
+  62
+ ],
+ "mouth": [
+  27,
+  16
  ],
  "hand_throw": [
-  8,
-  38
+  7,
+  18
  ],
- "shoulder": [
-  60,
-  49
+ "muzzle": [
+  8,
+  41
  ]
 }
