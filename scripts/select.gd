@@ -9,7 +9,9 @@ const LogoText = preload("res://scripts/logo_text.gd")
 ## id del soldado (sprites player_<id>_*.png) y nombre en la placa
 ## Eduardo y Eder: diseños de Eduardo hechos con ChatGPT (sprites de cuerpo entero)
 ## (en el mismo orden que las columnas de assets/sprites/portraits.png, de tools/sprites/portraits.py)
-const SOLDIERS := [["tenienta", "LA TENIENTA"], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
+## El tercer valor marca a los que aún no se pueden elegir (se ven en sepia con PRÓXIMAMENTE y el cursor
+## los salta): Junnie, mientras no tenga sprites.
+const SOLDIERS := [["junnie", "JUNNIE", true], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
 const WIN := Vector2(84, 104)
 const STEP := 92.0
 const Y0 := 52.0
@@ -32,8 +34,9 @@ func _ready() -> void:
 	title.style = "small_steel"
 	title.position = Vector2(240, 12)
 	add_child(title)
+	sel = _first_free()
 	for i in SOLDIERS.size():
-		if SOLDIERS[i][0] == Game.hero:
+		if SOLDIERS[i][0] == Game.hero and not _locked(i):
 			sel = i
 	Game.play_music("menu")
 
@@ -48,11 +51,9 @@ func _process(delta: float) -> void:
 		return
 	countdown -= delta
 	if Input.is_action_just_pressed("left"):
-		sel = (sel - 1 + SOLDIERS.size()) % SOLDIERS.size()
-		Game.sfx("move", -8.0)
+		_move(-1)
 	elif Input.is_action_just_pressed("right"):
-		sel = (sel + 1) % SOLDIERS.size()
-		Game.sfx("move", -8.0)
+		_move(1)
 	elif Game.accept_pressed() or countdown <= 0.0:
 		chosen_t = 0.0
 		Game.sfx("select", -2.0)
@@ -60,6 +61,29 @@ func _process(delta: float) -> void:
 	elif Input.is_action_just_pressed("quit_menu") or Input.is_action_just_pressed("pause"):
 		Game.to_menu()
 	queue_redraw()
+
+
+func _locked(i: int) -> bool:
+	return SOLDIERS[i].size() > 2 and SOLDIERS[i][2]
+
+
+func _first_free() -> int:
+	for i in SOLDIERS.size():
+		if not _locked(i):
+			return i
+	return 0
+
+
+## Mueve el cursor al siguiente soldado que se pueda elegir.
+func _move(step: int) -> void:
+	var i := sel
+	for k in SOLDIERS.size():
+		i = (i + step + SOLDIERS.size()) % SOLDIERS.size()
+		if not _locked(i):
+			break
+	if i != sel:
+		sel = i
+		Game.sfx("move", -8.0)
 
 
 ## x de la primera ventana: las ventanas van centradas en la pantalla.
@@ -113,6 +137,14 @@ func _draw() -> void:
 		# placa con el nombre
 		var nameplate := Rect2(pos + Vector2(0, WIN.y + 4), Vector2(WIN.x, 14))
 		_steel(nameplate, not is_sel)
+		if _locked(i):
+			# aún no se puede elegir: velo oscuro y PRÓXIMAMENTE sobre el retrato
+			draw_rect(dst, Color(0, 0, 0, 0.45))
+			var soon := "PRÓXIMAMENTE"
+			var sw := small_font.get_string_size(soon, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+			var band := Rect2(pos.x + 2, pos.y + WIN.y / 2.0 - 7, WIN.x - 4, 13)
+			draw_rect(band, Color(0.05, 0.04, 0.06, 0.85))
+			draw_string(small_font, Vector2(pos.x + (WIN.x - sw) / 2.0, band.position.y + 10), soon, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(1, 0.8, 0.3))
 		var label: String = SOLDIERS[i][1]
 		var font := PixelFont.font("small") if is_sel else small_font
 		var w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
