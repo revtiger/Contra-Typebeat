@@ -4,10 +4,12 @@ Fuente: dos poses de Eduardo hechas con ChatGPT (tools/sprites/chatgpt/massa/tra
 mirando a la izquierda), reducidas a bases de 128x128 (figura de 120 px, pies en y = 124) en
 tools/sprites/pixellab/massa2/<traje|chaleco>_base.png y animadas con PixelLab (animate_image). Cada tira
 <anim>.png es horizontal, fotogramas de 128x128; el 0 es la base:
-  de traje:   idle (4), walk (8, se gira de perfil en el 4), talk (discurso), throw (saca un fajo del saco
-              y lo lanza), thumbs (pulgar arriba), strip (se quita el saco y agarra el rifle; termina en
-              la pose del chaleco)
+  de traje:   idle (4), walk (8, se gira de perfil en el 4), grenade (saca una granada del cinturón y la
+              lanza), throw (saca un fajo del saco y lo lanza), thumbs (pulgar arriba), strip (se quita el
+              saco y agarra el rifle; termina en la pose del chaleco)
   de chaleco: v_idle (4), v_walk (8), v_shoot (4, con fogonazo)
+  walk2 / v_walk2: ciclos de caminar de 8 pasos animados desde el último fotograma (de perfil) de walk y
+              v_walk (<anim>_perfil_base.png); son los que usa el juego
 Los fotogramas se reducen a la mitad (64x64): Massa mide 60 px.
 
 Salida: assets/sprites/boss_massa.png (una fila por animación), boss_massa_bundle.png (el fajo, de
@@ -31,13 +33,13 @@ FW = FH = 64
 # (animación, tira de origen, fotogramas usados)
 ANIMS = [
 	("idle", "idle", range(0, 5)),
-	("walk", "walk", range(5, 9)),     # los primeros apenas se mueven: el ciclo útil es de perfil
-	("talk", "talk", range(0, 9)),
+	("walk", "walk2", range(1, 9)),
+	("grenade", "grenade", range(0, 9)),
 	("throw", "throw", range(0, 9)),
 	("thumbs", "thumbs", range(0, 9)),
 	("strip", "strip", range(0, 9)),
 	("v_idle", "v_idle", range(0, 5)),
-	("v_walk", "v_walk", range(5, 9)),
+	("v_walk", "v_walk2", range(1, 9)),
 	("v_shoot", "v_shoot", range(1, 5)),
 ]
 
@@ -49,7 +51,7 @@ def nitido(im):
 
 def pies_x(im):
 	a = im.getchannel("A")
-	band = a.crop((0, int(im.height * 0.9), im.width, im.height)).getbbox()
+	band = a.crop((0, im.height - 8, im.width, im.height)).getbbox()
 	return (band[0] + band[2]) / 2
 
 
@@ -58,16 +60,21 @@ def main():
 	cols = max(len(r) for _, _, r in ANIMS)
 	sheet = Image.new("RGBA", (FW * cols, FH * len(ANIMS)), (0, 0, 0, 0))
 	meta = {"frame": [FW, FH], "anims": {}}
+	ref = None
 	for row, (name, src, rng) in enumerate(ANIMS):
-		for col, i in enumerate(rng):
-			fr = strips[src].crop((i * BASE, 0, (i + 1) * BASE, BASE))
-			sheet.alpha_composite(nitido(fr.resize((FW, FH), Image.LANCZOS)), (col * FW, row * FH))
+		frs = [nitido(strips[src].crop((i * BASE, 0, (i + 1) * BASE, BASE)).resize((FW, FH), Image.LANCZOS)) for i in rng]
+		# cada animación se corre en x para que sus pies (de media) caigan donde los de idle: así no da un
+		# salto al pasar de estar quieto a caminar
+		medio = sum(pies_x(f) for f in frs) / len(frs)
+		ref = medio if ref is None else ref
+		dx = round(ref - medio)
+		for col, fr in enumerate(frs):
+			sheet.alpha_composite(fr, (col * FW + dx, row * FH))
 		meta["anims"][name] = {"row": row, "frames": len(rng)}
 	idle = sheet.crop((0, 0, FW, FH))
 	meta["pivot"] = [round(pies_x(idle)), 62]
 	# puntos útiles en píxeles del fotograma (mirando a la izquierda)
-	meta["mouth"] = [27, 16]       # de donde salen las promesas del discurso
-	meta["hand_throw"] = [7, 18]   # mano con el fajo (últimos fotogramas de throw)
+	meta["hand_throw"] = [7, 18]   # mano con el fajo o la granada (último fotograma de throw y grenade)
 	v = sheet.crop((0, meta["anims"]["v_idle"]["row"] * FH, FW, (meta["anims"]["v_idle"]["row"] + 1) * FH))
 	a = v.getchannel("A").load()
 	# boca del rifle: el píxel opaco más a la izquierda entre la cintura y el pecho

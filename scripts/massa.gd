@@ -4,7 +4,7 @@ extends CharacterBody2D
 ##
 ## Dos fases:
 ##   De traje: entra caminando y encadena ataques
-##     - Discurso: habla y lanza "promesas" (bocadillos lentos que ondulan; se pueden reventar a tiros)
+##     - Granada: saca una granada del cinturón y la lanza en arco al jugador
 ##     - Plan Platita: saca un fajo del saco y lo lanza en arco; al caer se abre en billetes que revolotean
 ##     - ¡Pulgar arriba!: guiña y llama a dos militantes (soldados). Durante el gesto está vendido
 ##   A media vida se quita el saco y lo tira, agarra el rifle (invulnerable mientras tanto) y pasa a
@@ -22,14 +22,14 @@ const BOSS_NAME := "SERGIO MASSA"
 const HEIGHT := 60.0
 # fps de cada animación de boss_massa_meta.json y si se repite
 const ANIM_FPS := {
-	"idle": [6, true], "walk": [8, true], "talk": [10, false], "throw": [11, false], "thumbs": [9, false],
-	"strip": [7, false], "v_idle": [6, true], "v_walk": [9, true], "v_shoot": [16, true],
+	"idle": [6, true], "walk": [11, true], "grenade": [11, false], "throw": [11, false], "thumbs": [9, false],
+	"strip": [7, false], "v_idle": [6, true], "v_walk": [13, true], "v_shoot": [16, true],
 }
 
 var main
 var meta: Dictionary
 var body: AnimatedSprite2D
-var mode := "wait"  # wait | enter | idle | walk | speech | throw | thumbs | strip | rifle | shout | dying
+var mode := "wait"  # wait | enter | idle | walk | grenade | throw | thumbs | strip | rifle | shout | dying
 var hp := MAX_HP
 var t := 0.0
 var mode_t := 0.0
@@ -115,13 +115,14 @@ func _physics_process(delta: float) -> void:
 			position.x = move_toward(position.x, target_x, speed * delta)
 			if absf(position.x - target_x) < 0.5:
 				_idle(0.35)
-		"speech":
+		"grenade":
 			_face(p)
 			var f := body.frame
 			if f != last_frame:
 				last_frame = f
-				if f in [2, 4, 6]:
-					_promise(p)
+				if f == 8:
+					main.throw_grenade(_point("hand_throw"), p.position.x + randf_range(-12, 12))
+					Game.sfx("jump", -8.0, 1.2)
 			if not body.is_playing():
 				_idle(0.5)
 		"throw":
@@ -163,11 +164,6 @@ func _physics_process(delta: float) -> void:
 		"dying":
 			_dying(delta)
 			return
-	# balanceo suave al caminar
-	var bob := 0.0
-	if mode == "walk":
-		bob = -absf(sin(t * 9.0)) * 1.0
-	body.position = Vector2(0, bob)
 	body.flip_h = dir > 0
 	var piv: Vector2 = SpriteUtil.v(meta["pivot"])
 	body.offset.x = -(float(meta["frame"][0]) - piv.x) if dir > 0 else -piv.x
@@ -189,7 +185,7 @@ func _idle(time: float) -> void:
 
 ## Siguiente paso del ciclo de ataques (otro ciclo con el chaleco).
 func _next_action(p) -> void:
-	var cycle := ["walk", "speech", "walk", "throw", "thumbs"]
+	var cycle := ["walk", "grenade", "walk", "throw", "thumbs"]
 	if armed:
 		cycle = ["rifle", "walk", "rifle", "shout", "walk", "rifle"]
 	step = (step + 1) % cycle.size()
@@ -201,10 +197,9 @@ func _next_action(p) -> void:
 			target_x = choices[randi() % choices.size()]
 			_set_mode("walk")
 			_play("walk")
-		"speech":
-			_set_mode("speech")
-			_play("talk")
-			Game.sfx("beep", -10.0, 0.6)
+		"grenade":
+			_set_mode("grenade")
+			_play("grenade")
 		"throw":
 			_set_mode("throw")
 			_play("throw")
@@ -229,16 +224,6 @@ func _point(key: String) -> Vector2:
 	if dir > 0:
 		local.x = -local.x
 	return global_position + local
-
-
-func _promise(p) -> void:
-	var s := Shot.new()
-	s.kind = "bubble"
-	s.position = _point("mouth")
-	s.vel = Vector2(dir * 60.0, 0.0)
-	s.target_y = p.position.y - 16.0 + randf_range(-18, 10)
-	main.add_child(s)
-	Game.sfx("type", -6.0, 0.7)
 
 
 func _bundle(p, extra: float) -> void:

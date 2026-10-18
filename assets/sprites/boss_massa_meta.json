@@ -10,9 +10,9 @@
   },
   "walk": {
    "row": 1,
-   "frames": 4
+   "frames": 8
   },
-  "talk": {
+  "grenade": {
    "row": 2,
    "frames": 9
   },
@@ -34,7 +34,7 @@
   },
   "v_walk": {
    "row": 7,
-   "frames": 4
+   "frames": 8
   },
   "v_shoot": {
    "row": 8,
@@ -45,16 +45,12 @@
   36,
   62
  ],
- "mouth": [
-  27,
-  16
- ],
  "hand_throw": [
   7,
   18
  ],
  "muzzle": [
-  8,
+  9,
   41
  ]
 }
