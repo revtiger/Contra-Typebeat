@@ -4,12 +4,12 @@ extends CharacterBody2D
 ##
 ## Dos fases:
 ##   De traje: entra caminando y encadena ataques
-##     - Granada: saca una granada del cinturón y la lanza en arco al jugador
-##     - Plan Platita: saca un fajo del saco y lo lanza en arco; al caer se abre en billetes que revolotean
+##     - Doble granada: como un lanzador de béisbol, lanza una granada con cada mano (una al jugador y otra
+##       un poco por delante o por detrás, para que no baste con quedarse quieto)
 ##     - ¡Pulgar arriba!: guiña y llama a dos militantes (soldados). Durante el gesto está vendido
 ##   A media vida se quita el saco y lo tira, agarra el rifle (invulnerable mientras tanto) y pasa a
 ##   chaleco: ráfagas de rifle apuntadas al jugador, camina más rápido y sigue llamando militantes a gritos.
-## Al perder sale volando dando vueltas (sin gore).
+## Al perder sale volando dando vueltas (sin gore) y se le cae una lluvia de billetes de los bolsillos.
 ## No tiene variable "state" a propósito (la prueba automática lo trata como jefe de suelo).
 
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
@@ -22,14 +22,14 @@ const BOSS_NAME := "SERGIO MASSA"
 const HEIGHT := 60.0
 # fps de cada animación de boss_massa_meta.json y si se repite
 const ANIM_FPS := {
-	"idle": [6, true], "walk": [11, true], "grenade": [11, false], "throw": [11, false], "thumbs": [9, false],
+	"idle": [6, true], "walk": [11, true], "grenade": [12, false], "thumbs": [9, false],
 	"strip": [7, false], "v_idle": [6, true], "v_walk": [13, true], "v_shoot": [16, true],
 }
 
 var main
 var meta: Dictionary
 var body: AnimatedSprite2D
-var mode := "wait"  # wait | enter | idle | walk | grenade | throw | thumbs | strip | rifle | shout | dying
+var mode := "wait"  # wait | enter | idle | walk | grenade | thumbs | strip | rifle | shout | dying
 var hp := MAX_HP
 var t := 0.0
 var mode_t := 0.0
@@ -120,18 +120,13 @@ func _physics_process(delta: float) -> void:
 			var f := body.frame
 			if f != last_frame:
 				last_frame = f
-				if f == 8:
-					main.throw_grenade(_point("hand_throw"), p.position.x + randf_range(-12, 12))
-					Game.sfx("jump", -8.0, 1.2)
-			if not body.is_playing():
-				_idle(0.5)
-		"throw":
-			_face(p)
-			var f := body.frame
-			if f != last_frame:
-				last_frame = f
-				if f == 8:
-					_bundle(p, 0.0)
+				var rel: Array = meta["grenade_release"]
+				var k := rel.find(f)
+				if k >= 0:
+					# la primera al jugador; la segunda (con la otra mano) delante o detrás de él
+					var off := randf_range(-10, 10) if k == 0 else (40.0 if randf() < 0.5 else -40.0)
+					main.throw_grenade(_point("hand_r" if k == 0 else "hand_l"), p.position.x + off)
+					Game.sfx("jump", -8.0, 1.1 + k * 0.2)
 			if not body.is_playing():
 				_idle(0.5)
 		"thumbs":
@@ -185,7 +180,7 @@ func _idle(time: float) -> void:
 
 ## Siguiente paso del ciclo de ataques (otro ciclo con el chaleco).
 func _next_action(p) -> void:
-	var cycle := ["walk", "grenade", "walk", "throw", "thumbs"]
+	var cycle := ["walk", "grenade", "walk", "thumbs"]
 	if armed:
 		cycle = ["rifle", "walk", "rifle", "shout", "walk", "rifle"]
 	step = (step + 1) % cycle.size()
@@ -200,9 +195,6 @@ func _next_action(p) -> void:
 		"grenade":
 			_set_mode("grenade")
 			_play("grenade")
-		"throw":
-			_set_mode("throw")
-			_play("throw")
 		"thumbs":
 			_set_mode("thumbs")
 			_play("thumbs")
@@ -224,21 +216,6 @@ func _point(key: String) -> Vector2:
 	if dir > 0:
 		local.x = -local.x
 	return global_position + local
-
-
-func _bundle(p, extra: float) -> void:
-	var s := Shot.new()
-	s.kind = "bundle"
-	var from := _point("hand_throw")
-	s.position = from
-	var tx: float = p.position.x + randf_range(-20, 20) - extra * dir
-	var vy := -210.0
-	var g := 420.0
-	var drop: float = base_y - from.y
-	var time := (-vy + sqrt(vy * vy + 2.0 * g * drop)) / g
-	s.vel = Vector2((tx - from.x) / time, vy)
-	main.add_child(s)
-	Game.sfx("jump", -8.0, 1.4)
 
 
 func _call_militants(text: String) -> void:
@@ -331,6 +308,9 @@ func _die() -> void:
 	body.stop()
 	velocity = Vector2(-dir * 140.0, -320.0)
 	main.show_banner("¡RECIBIÓ SU MERECIDO!\n" + BOSS_NAME, 1.6)
+	# al recibir el golpe final le revientan los bolsillos: un puñado de billetes de golpe
+	for i in 14:
+		_bill(Vector2(randf_range(-110, 110), randf_range(-260, -120)))
 
 
 func _dying(delta: float) -> void:
@@ -339,16 +319,23 @@ func _dying(delta: float) -> void:
 	position += velocity * delta
 	if int(mode_t * 6.0) != int((mode_t - delta) * 6.0):
 		main.explode(global_position + Vector2(randf_range(-14, 14), randf_range(-HEIGHT, -10)), randf_range(6, 12), false)
-		# billetes que se le caen de los bolsillos
-		var s := Shot.new()
-		s.kind = "flutter"
-		s.harmless = true
-		s.position = global_position + Vector2(0, -HEIGHT / 2.0)
-		s.vel = Vector2(randf_range(-60, 60), randf_range(-120, -40))
-		main.add_child(s)
+		# y mientras vuela se le siguen cayendo
+		for i in 3:
+			_bill(Vector2(randf_range(-70, 70), randf_range(-140, -40)))
 	if mode_t > 1.6:
 		main.stage_clear()
 		queue_free()
+
+
+## Billete que se le cae de los bolsillos (solo decorado, no hace daño).
+func _bill(vel: Vector2) -> void:
+	var s := Shot.new()
+	s.kind = "flutter"
+	s.harmless = true
+	s.position = global_position + Vector2(randf_range(-8, 8), -HEIGHT / 2.0 + randf_range(-8, 8))
+	s.vel = vel
+	# diferido: _die() llega desde la colisión de una bala, cuando Godot no deja crear áreas
+	main.add_child.call_deferred(s)
 
 
 ## Gotas de sudor cuando ya va de chaleco.

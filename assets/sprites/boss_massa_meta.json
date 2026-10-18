@@ -14,30 +14,26 @@
   },
   "grenade": {
    "row": 2,
-   "frames": 9
+   "frames": 17
   },
-  "throw": {
+  "thumbs": {
    "row": 3,
    "frames": 9
   },
-  "thumbs": {
+  "strip": {
    "row": 4,
    "frames": 9
   },
-  "strip": {
-   "row": 5,
-   "frames": 9
-  },
   "v_idle": {
-   "row": 6,
+   "row": 5,
    "frames": 5
   },
   "v_walk": {
-   "row": 7,
+   "row": 6,
    "frames": 8
   },
   "v_shoot": {
-   "row": 8,
+   "row": 7,
    "frames": 4
   }
  },
@@ -45,12 +41,20 @@
   36,
   62
  ],
- "hand_throw": [
-  7,
-  18
- ],
  "muzzle": [
   9,
   41
+ ],
+ "grenade_release": [
+  8,
+  15
+ ],
+ "hand_r": [
+  7,
+  32
+ ],
+ "hand_l": [
+  9,
+  23
  ]
 }
