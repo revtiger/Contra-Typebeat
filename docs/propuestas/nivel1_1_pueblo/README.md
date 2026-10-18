@@ -2,7 +2,7 @@
 
 Autor: Eduardo, con Claude · 11-10-2026 · Estado: **en curso** (rama `eduardo/argentina-graficos`).
 
-**Lo que ya está en el juego (11-10-2026):** la fase de 3000 px está cubierta de casas de punta a punta con 4 tramos: 1 y 2 de Eduardo; 3 = el tramo 2 dado vuelta; 4 = `pueblo_completo.png` sin vecinos, sin el almacén repetido y sin el vagón, con la capilla, la plaza, el segundo almacén y la estación. La pelea con Massa es en la plaza de la capilla, donde termina el pueblo. Todo se arma con `tools/sprites/pueblo.py`. La tabla de abajo es el plan para alargar la fase a 12 tramos.
+**Lo que ya está en el juego (17-10-2026):** la calle se arma **pieza por pieza** con las piezas sueltas de Eduardo (ChatGPT, fondo transparente): 10 edificios (`edificios/`), 10 árboles (`arboles/`) y su valla de madera (`valla.png`) en `tools/sprites/chatgpt/pueblo/`. `tools/sprites/pueblo.py` los pone en fila según `CALLE` (edificios, huecos con valla y árboles detrás) sobre la vereda de adoquines, y corta la calle en trozos de 800 px. Ya no se usan los tramos de escena completa (tramo 1 y 2, el taller B.B. de PixelLab ni el pueblo completo). La 1.1 mide 4879 px y termina en la capilla, con un ombú grande al lado, donde pelea Massa. La tabla de abajo queda como lista de ideas para más edificios.
 
 ## Referencia
 
