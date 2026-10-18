@@ -219,7 +219,7 @@ def _write_casas(casas) -> None:
 	for name, door, wins, k in casas:
 		lines.append(f'\t["{name}", {door}, {wins}, {k}],')
 	lines.append("]")
-	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8")
+	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 	print("pueblo_casas.gd:", len(casas), "edificios")
 
 
