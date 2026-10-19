@@ -94,7 +94,7 @@ def juego():
 		for f in os.listdir(d):
 			os.remove(os.path.join(d, f))
 		for k, i in enumerate(idx):
-			fr = strip.crop((i * w, 0, (i + 1) * w, h)).resize((H.FW, H.FH), Image.LANCZOS)
+			fr = H.lift_blacks(strip.crop((i * w, 0, (i + 1) * w, h))).resize((H.FW, H.FH), Image.LANCZOS)
 			fr = H.clean(fr)
 			# fuera los fogonazos y chispas que PixelLab pinta a veces (el juego dibuja los suyos)
 			px = fr.load()

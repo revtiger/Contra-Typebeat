@@ -110,6 +110,31 @@ LOOSE = {
 }
 
 
+# soldados con ropa negra: el relleno negro se aclara a gris carbón para que se vean las líneas (pliegues,
+# piernas al correr); las líneas, casi negras, se quedan como están
+LIFT_BLACKS = {"junnie"}
+LINE_MAX = 12     # por debajo de este brillo es línea (no se toca)
+LIFT_TOP = 90     # hasta este brillo se aclara
+
+
+def lift_blacks(im):
+	"""Aclara los negros y grises oscuros sin color (ropa, botas, arma) que no son líneas."""
+	im = im.copy()
+	px = im.load()
+	for y in range(im.height):
+		for x in range(im.width):
+			r, g, b, a = px[x, y]
+			if not a:
+				continue
+			hi, lo = max(r, g, b), min(r, g, b)
+			v = (r + g + b) / 3
+			# sin color: el pelo (castaño) tiene más rojo que azul y no se toca
+			if LINE_MAX <= v <= LIFT_TOP and hi - lo <= 8 and r - b <= 4:
+				t = 30 + (v - LINE_MAX) * 1.1
+				px[x, y] = (round(t), round(t + 2), round(t + 10), a)  # carbón azulado
+	return im
+
+
 def alpha_mask(im):
 	return im.getchannel("A").point(lambda v: 255 if v > 100 else 0)
 
@@ -522,6 +547,8 @@ def build(hero):
 		placed[name] = []
 		for (s, r, c) in frames:
 			cell, mz, size, _ = strip_flash(sheets[s][r][c])
+			if hero in LIFT_BLACKS:
+				cell = lift_blacks(cell)
 			b = alpha_mask(cell).getbbox()
 			small = clean(cell.resize((max(1, round(cell.width * scale)), max(1, round(cell.height * scale))), Image.LANCZOS))
 			if name in AIM_ANIMS:
