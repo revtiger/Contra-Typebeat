@@ -1,7 +1,7 @@
 """Retratos de la pantalla ELIGE TU SOLDADO, al estilo de Metal Slug X: cara grande de tres cuartos,
 sombreado de cómic, expresión exagerada. Genera la versión a color (elegido) y en sepia (sin elegir).
 
-Soldados: presi, tenienta (ficticios) y eduardo, eder (diseños de Eduardo).
+Soldados: junnie, eduardo y eder (diseños de Eduardo con ChatGPT).
 Uso:  python tools/sprites/portraits.py  ->  assets/sprites/portraits.png (fila 0 color, fila 1 sepia)
 Si existe tools/sprites/pixellab/portrait_<id>.png (hecho con PixelLab), se usa en vez del dibujado.
 """
@@ -19,15 +19,8 @@ W, H = 72, 96
 INK = (20, 14, 16)
 
 HEROES = {
-    "presi": {"skin": [(150, 88, 60), (206, 138, 96), (236, 176, 128), (252, 214, 172)],
-              "hair": [(16, 14, 18), (44, 40, 46), (80, 74, 86)], "style": "slick",
-              "cloth": [(22, 26, 46), (40, 48, 82), (70, 80, 124)], "mouth": "grin", "extra": "sash",
-              "bg": [(70, 30, 26), (30, 14, 14)]},
-    "tenienta": {"skin": [(160, 94, 66), (214, 148, 106), (242, 186, 140), (255, 222, 186)],
-                 "hair": [(92, 32, 16), (150, 58, 28), (200, 98, 50)], "style": "ponytail",
-                 "cloth": [(52, 60, 32), (82, 94, 52), (116, 130, 76)], "mouth": "smirk", "extra": "bandana",
-                 "bg": [(30, 52, 60), (12, 20, 26)]},
     # diseños de Eduardo (ChatGPT): el retrato sale de tools/sprites/chatgpt/portrait_<id>.png
+    "junnie": {},
     "eduardo": {},
     "eder": {},
 }

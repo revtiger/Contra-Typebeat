@@ -5,6 +5,7 @@ extends CharacterBody2D
 ## - se agacha y avanza agachado; baja de los puentes con Abajo + Saltar
 ## - granadas con botón propio (10 por vida); cuchillo automático si hay un soldado pegado
 ## - armas especiales con munición limitada: al acabarse vuelve la pistola
+## - barrida (ventaja de Junnie): corriendo, Abajo la tira al suelo deslizándose hacia delante
 
 signal died
 
@@ -26,10 +27,17 @@ const START_BOMBS := 10
 ## - hp: golpes que aguanta antes de perder una vida, con barra de vida en el HUD (Eduardo, como un tanque de Metal Slug)
 ## - bombs: granadas al empezar y al reaparecer (Eder)
 ## - dual: la pistola dispara dos balas paralelas (Eder, doble pistola)
+## - slide: barrida (Junnie, 18-10-2026): corriendo, Abajo la hace deslizarse por el suelo SLIDE_T s; va a ras
+##   del suelo (las balas le pasan por encima), derriba a los soldados que toca y no puede disparar. Al
+##   terminar se levanta (o se queda cuerpo a tierra si sigue pulsando Abajo). Saltar la corta.
 const PERKS := {
 	"eduardo": {"hp": 3},
 	"eder": {"bombs": 20, "dual": true},
+	"junnie": {"slide": true},
 }
+const SLIDE_T := 0.45
+const SLIDE_SPEED := 240.0
+const SLIDE_UP_T := 0.22
 const KNIFE_RANGE := 24.0
 
 ## Armas: cadencia en segundos y munición al recogerlas (-1 = infinita).
@@ -84,6 +92,9 @@ const GO_PRONE_T := 0.1
 const PRONE_H := 12.0
 var shot_n := 0
 var shoot_pose_t := 0.0
+var slide_t := 0.0     # barrida en curso (s que quedan)
+var slide_up_t := 0.0  # levantándose de la barrida
+var slide_cd := 0.0
 
 
 func _ready() -> void:
@@ -149,10 +160,19 @@ func _physics_process(delta: float) -> void:
 	else:
 		dir = 0.0
 
+	slide_cd -= delta
+	slide_up_t -= delta
+	if slide_t <= 0.0 and _perk("slide", false) and on_floor and side and not up 			and Input.is_action_just_pressed("down") and slide_cd <= 0.0:
+		_start_slide()
+
 	velocity.x = dir * (CROUCH_SPEED if crouching else SPEED)
+	if slide_t > 0.0:
+		_slide(delta, down)
 	if not on_floor:
 		velocity.y += GRAVITY * delta
 	if Input.is_action_just_pressed("jump") and on_floor:
+		slide_t = 0.0  # saltar corta la barrida
+		slide_up_t = 0.0
 		if down and _standing_on_bridge():
 			drop_t = 0.35
 			collision_mask = 1
@@ -163,7 +183,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -140.0
 
 	var low := PRONE_H if body else CROUCH_H
-	_set_height(low if crouching else (STAND_H if on_floor else JUMP_H))
+	_set_height(low if crouching or slide_t > 0.0 else (STAND_H if on_floor else JUMP_H))
 
 	if up:
 		aim = Vector2(facing, -1).normalized() if side else Vector2.UP
@@ -175,20 +195,52 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	position.x = clampf(position.x, cam_left + 6, cam_left + 480 - 6)
 
-	if Input.is_action_pressed("shoot") and shoot_cd <= 0.0:
+	if Input.is_action_pressed("shoot") and shoot_cd <= 0.0 and slide_t <= 0.0 and slide_up_t <= 0.0:
 		if not _try_knife():
 			_fire()
 	if Input.is_action_just_pressed("grenade") and grenade_cd <= 0.0 and bombs > 0:
 		_throw_grenade()
 
+	if slide_t > 0.0:
+		_slide_kick()
 	if invuln <= 0.0:
 		for b in hurt.get_overlapping_bodies():
-			if b.is_in_group("enemy"):
+			if b.is_in_group("enemy") and not (slide_t > 0.0 and b.get("knifeable") == true):
 				hit()
 				break
 	if position.y > 300:
 		hit(true)
 	queue_redraw()
+
+
+func _start_slide() -> void:
+	slide_t = SLIDE_T
+	slide_up_t = 0.0
+	slide_cd = SLIDE_T + 0.25
+	Game.sfx("knife", -8.0, 0.6)
+
+
+## Barrida: se desliza hacia delante frenando poco a poco; al acabar se levanta o se queda tumbada.
+func _slide(delta: float, down: bool) -> void:
+	slide_t -= delta
+	crouching = false
+	velocity.x = facing * SLIDE_SPEED * (0.35 + 0.65 * slide_t / SLIDE_T)
+	if slide_t <= 0.0:
+		slide_t = 0.0
+		if down:
+			crouching = true
+			prone_t = GO_PRONE_T  # ya está en el suelo: sin la pose de tirarse
+		else:
+			slide_up_t = SLIDE_UP_T
+
+
+## Durante la barrida derriba a los soldados que toca (los que se pueden acuchillar).
+func _slide_kick() -> void:
+	for b in hurt.get_overlapping_bodies():
+		if b.is_in_group("enemy") and b.get("knifeable") == true and b.has_method("take_damage"):
+			b.take_damage(3)
+			Game.sfx("hit", -6.0, 0.8)
+			Juice.shake(1.5)
 
 
 ## Nombre de la dirección de apuntado: fwd, up, down, diag_up o diag_down (filas del torso y bocas del cañón).
@@ -487,7 +539,7 @@ func _body_muzzle() -> Vector2:
 ## Elige la pose: muerte, victoria, cuchillo, granada, cuerpo a tierra, agachado, salto, correr, disparar o quieto.
 func _process_body(delta: float) -> void:
 	shoot_pose_t -= delta
-	prone_t = prone_t + delta if crouching else 0.0
+	prone_t = prone_t + delta if crouching else (prone_t if slide_t > 0.0 else 0.0)
 	body.scale.x = facing
 	var lvl = get_tree().get_first_node_in_group("level")
 	var on_floor := is_on_floor()
@@ -502,6 +554,12 @@ func _process_body(delta: float) -> void:
 	elif throw_t > 0.0:
 		body.animation = "throw"
 		body.frame = clampi(int((1.0 - throw_t / 0.2) * 4.0), 0, 3)
+	elif slide_t > 0.0 and body.sprite_frames.has_animation("slide"):
+		body.animation = "slide"
+		body.frame = clampi(int((1.0 - slide_t / SLIDE_T) * 4.0), 0, 3)
+	elif slide_up_t > 0.0 and on_floor and body.sprite_frames.has_animation("slide_up"):
+		body.animation = "slide_up"
+		body.frame = clampi(int((1.0 - slide_up_t / SLIDE_UP_T) * 4.0), 0, 3)
 	elif crouching:
 		# abajo: se tira al suelo (un instante) y queda cuerpo a tierra; moviéndose, se arrastra
 		if prone_t < GO_PRONE_T and body.sprite_frames.has_animation("go_prone"):
