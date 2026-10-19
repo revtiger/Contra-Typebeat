@@ -94,7 +94,7 @@ def juego():
 		for f in os.listdir(d):
 			os.remove(os.path.join(d, f))
 		for k, i in enumerate(idx):
-			fr = H.lift_blacks(strip.crop((i * w, 0, (i + 1) * w, h))).resize((H.FW, H.FH), Image.LANCZOS)
+			fr = H.lift_hair(H.lift_blacks(strip.crop((i * w, 0, (i + 1) * w, h)))).resize((H.FW, H.FH), Image.BOX)
 			fr = H.clean(fr)
 			# fuera los fogonazos y chispas que PixelLab pinta a veces (el juego dibuja los suyos)
 			px = fr.load()
@@ -104,8 +104,8 @@ def juego():
 					if a and r > 200 and g > 170 and b_ < 140 or a and min(r, g, b_) > 215:
 						px[x, y] = (0, 0, 0, 0)
 			fr = H.keep_largest(fr)
-			# en la paleta de Junnie (to_palette también le pone el contorno de 1 px)
-			fr = H.to_palette(fr, pal)
+			# en la paleta de Junnie; sin contorno extra: PixelLab ya dibuja el suyo
+			fr = H.to_palette(fr, pal, outline=False)
 			fr.save(os.path.join(d, "%s_%02d.png" % (anim, k)))
 		print(anim, len(idx), "fotogramas")
 

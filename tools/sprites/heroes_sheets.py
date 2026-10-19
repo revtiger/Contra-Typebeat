@@ -135,6 +135,33 @@ def lift_blacks(im):
 	return im
 
 
+def lift_hair(im):
+	"""Aclara el relleno del pelo castaño oscuro (manteniendo su color) para que se lean los mechones; las
+	líneas casi negras se quedan como están."""
+	im = im.copy()
+	px = im.load()
+	for y in range(im.height):
+		for x in range(im.width):
+			r, g, b, a = px[x, y]
+			if not a:
+				continue
+			v = (r + g + b) / 3
+			if LINE_MAX <= v <= 75 and r - b >= 6 and r >= g:
+				k = (26 + (v - LINE_MAX) * 1.05) / v
+				px[x, y] = (min(255, round(r * k)), min(255, round(g * k)), min(255, round(b * k)), a)
+	return im
+
+
+def shrink(cell, scale, hero):
+	"""Reduce una pose a la escala del juego. Con ropa negra (LIFT_BLACKS) se aclaran negros y pelo, y se
+	suaviza antes de reducir (mediana + promedio por zonas): quedan manchas de color limpias en vez de ruido."""
+	w, h = max(1, round(cell.width * scale)), max(1, round(cell.height * scale))
+	if hero in LIFT_BLACKS:
+		cell = lift_hair(lift_blacks(cell))
+		return clean(cell.filter(ImageFilter.MedianFilter(5)).resize((w, h), Image.BOX))
+	return clean(cell.resize((w, h), Image.LANCZOS))
+
+
 def alpha_mask(im):
 	return im.getchannel("A").point(lambda v: 255 if v > 100 else 0)
 
@@ -367,11 +394,13 @@ def clean(im):
 	return im
 
 
-def to_palette(im, pal):
+def to_palette(im, pal, outline=True):
 	"""Pasa la pose a la paleta del soldado (sin tramado) y le pone el contorno oscuro de 1 px."""
 	a = im.getchannel("A")
 	q = im.convert("RGB").quantize(palette=pal, dither=Image.Dither.NONE).convert("RGBA")
 	q.putalpha(a)
+	if not outline:
+		return q
 	out = Image.new("RGBA", im.size, (0, 0, 0, 0))
 	out.paste(Image.new("RGBA", im.size, INK), mask=a.filter(ImageFilter.MaxFilter(3)))
 	out.alpha_composite(q)
@@ -547,10 +576,8 @@ def build(hero):
 		placed[name] = []
 		for (s, r, c) in frames:
 			cell, mz, size, _ = strip_flash(sheets[s][r][c])
-			if hero in LIFT_BLACKS:
-				cell = lift_blacks(cell)
 			b = alpha_mask(cell).getbbox()
-			small = clean(cell.resize((max(1, round(cell.width * scale)), max(1, round(cell.height * scale))), Image.LANCZOS))
+			small = shrink(cell, scale, hero)
 			if name in AIM_ANIMS:
 				small = keep_largest(small)
 			if name in WIDE:
