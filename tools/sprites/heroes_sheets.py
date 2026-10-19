@@ -50,7 +50,7 @@ INK = (18, 14, 16, 255)
 FLASH_EDGE = 0.05    # parte mínima del fogonazo que toca el fondo (la piel da 0-0,01; el fuego 0,09 o más)
 
 # poses tumbadas: se centran en el fotograma en lugar de alinear los pies
-WIDE = ("prone", "die")
+WIDE = ("prone", "die", "slide")
 # poses de disparo: se les quita el fogonazo y cualquier chispa suelta
 AIM_ANIMS = ("shoot", "prone", "up", "up_run", "diag_up", "diag_up_run", "diag_down")
 # carreras: se alinean por el torso
@@ -74,6 +74,9 @@ ANIMS = {
 	"diag_up": ([(4, 0, 3), (4, 0, 1)], 1, False),
 	"diag_up_run": ([(4, 1, c) for c in range(4)], 12, True),
 	"diag_down": ([(3, 2, 3), (3, 2, 1)], 1, False),
+	# barrida (ventaja de Junnie: SLIDE en player.gd) y levantarse de ella
+	"slide": ([(4, 2, c) for c in range(4)], 12, False),
+	"slide_up": ([(4, 3, c) for c in range(4)], 14, False),
 }
 # boca del arma de cada dirección: animación de la que sale (la pose con el fogonazo más grande)
 MUZZLE_FROM = {"shoot": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": "diag_down", "prone": "prone"}
@@ -578,7 +581,7 @@ def build(hero):
 			cell, mz, size, _ = strip_flash(sheets[s][r][c])
 			b = alpha_mask(cell).getbbox()
 			small = shrink(cell, scale, hero)
-			if name in AIM_ANIMS:
+			if name in AIM_ANIMS or name in ("slide", "slide_up"):
 				small = keep_largest(small)
 			if name in WIDE:
 				ox = round(FW / 2 - (b[0] + b[2]) / 2 * scale)
