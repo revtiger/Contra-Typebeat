@@ -40,7 +40,7 @@ SRC = os.path.join(HERE, "chatgpt")
 OUT = os.path.join(HERE, "..", "..", "assets", "sprites")
 FRAMES = os.path.join(HERE, "heroes")
 
-HEROES = ["eduardo", "eder"]
+HEROES = ["eduardo", "eder", "junnie"]
 FW, FH = 96, 80       # más alto que antes para que quepa el arma apuntando arriba
 FEET = (40, 76)       # pies (centro de las piernas) dentro del fotograma
 LEGACY = {(80, 60): (30, 58)}  # tamaño viejo de fotograma suelto -> sus pies
@@ -156,6 +156,23 @@ def _split_tallest(big, mask, split):
 	return True
 
 
+def _split_widest(big, mask, split):
+	"""Parte en dos la mancha más ancha (dos poses tumbadas pegadas de lado) por su columna más vacía."""
+	widths = sorted(b[2] - b[0] for b in big)
+	median = widths[len(widths) // 2]
+	b = max(big, key=lambda p: p[2] - p[0])
+	if b[2] - b[0] < median * 1.5:
+		return False
+	lo, hi = b[0] + (b[2] - b[0]) // 3, b[0] + 2 * (b[2] - b[0]) // 3
+	cut = min(range(lo, hi), key=lambda x: sum(1 for y in range(b[1], b[3]) if mask.getpixel((x, y))))
+	big.remove(b)
+	split.append(b)
+	for x0, x1 in ((b[0], cut), (cut, b[2])):
+		bb = mask.crop((x0, b[1], x1, b[3])).getbbox()
+		big.append([x0 + bb[0], b[1] + bb[1], x0 + bb[2], b[1] + bb[3], b[4] // 2])
+	return True
+
+
 def cells(path, rows=4, cols=4):
 	"""Recorta las poses de una hoja: devuelve cells[fila][columna] = imagen RGBA.
 	Las manchas pequeñas (granada en el aire, estela, fogonazo, cuerdas) se unen a la pose más cercana."""
@@ -168,8 +185,16 @@ def cells(path, rows=4, cols=4):
 		# el paracaídas sale como mancha aparte: se queda con la pose de debajo
 		big = big[:n]
 	split = []  # manchas originales que se partieron (no se vuelven a unir)
-	while len(big) < n and _split_tallest(big, mask, split):
-		pass
+	while len(big) < n:
+		# se parte la mancha más desproporcionada: la más alta (poses una encima de otra) o la más ancha
+		# (poses tumbadas pegadas de lado)
+		hs = sorted(q[3] - q[1] for q in big)
+		ws = sorted(q[2] - q[0] for q in big)
+		tall = max(q[3] - q[1] for q in big) / hs[len(hs) // 2]
+		wide = max(q[2] - q[0] for q in big) / ws[len(ws) // 2]
+		first, second = (_split_widest, _split_tallest) if wide > tall else (_split_tallest, _split_widest)
+		if not (first(big, mask, split) or second(big, mask, split)):
+			break
 	if len(big) != n:
 		raise SystemExit("%s: se esperaban %d poses y hay %d" % (path, n, len(big)))
 	for b in found:
@@ -485,7 +510,8 @@ def build(hero):
 	ib = alpha_mask(idle).getbbox()
 	scale = HEIGHT / float(ib[3] - ib[1])
 	loose = {name: loose_frames(hero, name) for name in ANIMS}
-	loose["run"] = None  # la carrera se monta con run_frames (sus piernas vienen de RUN_LEGS)
+	if hero == "eduardo":
+		loose["run"] = None  # heroes/eduardo/run son las piernas (RUN_LEGS) de las carreras de Eduardo y Eder
 	anims = {n: v for n, v in ANIMS.items() if loose[n] or all(s in sheets for s, _, _ in v[0])}
 
 	# 1) cada pose: sin fogonazo, reducida y colocada en su fotograma (aún con todos sus colores)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d3kb82vkmkn8w"
-path="res://.godot/imported/player_tenienta_torso.png-16ba5af7d894e12e888e3e8d2d9f19ad.ctex"
+uid="uid://woujongh84jk"
+path="res://.godot/imported/player_junnie_flash.png-74bd64856b64a27ac725c7667510e93a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_tenienta_torso.png"
-dest_files=["res://.godot/imported/player_tenienta_torso.png-16ba5af7d894e12e888e3e8d2d9f19ad.ctex"]
+source_file="res://assets/sprites/player_junnie_flash.png"
+dest_files=["res://.godot/imported/player_junnie_flash.png-74bd64856b64a27ac725c7667510e93a.ctex"]
 
 [params]
 

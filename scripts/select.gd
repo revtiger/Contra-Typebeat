@@ -9,9 +9,9 @@ const LogoText = preload("res://scripts/logo_text.gd")
 ## id del soldado (sprites player_<id>_*.png) y nombre en la placa
 ## Eduardo y Eder: diseños de Eduardo hechos con ChatGPT (sprites de cuerpo entero)
 ## (en el mismo orden que las columnas de assets/sprites/portraits.png, de tools/sprites/portraits.py)
-## El tercer valor marca a los que aún no se pueden elegir (se ven en sepia con PRÓXIMAMENTE y el cursor
-## los salta): Junnie, mientras no tenga sprites.
-const SOLDIERS := [["junnie", "JUNNIE", true], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
+## Un tercer valor true marca a un soldado que aún no se puede elegir (se ve con PRÓXIMAMENTE y el cursor
+## lo salta), p. ej. mientras no tenga sprites.
+const SOLDIERS := [["junnie", "JUNNIE"], ["eduardo", "EDUARDO"], ["eder", "EDER"]]
 const WIN := Vector2(84, 104)
 const STEP := 92.0
 const Y0 := 52.0

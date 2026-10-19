@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0pmkublx3sbx"
-path="res://.godot/imported/player_tenienta_legs.png-dc1d78f32154283ce13f42ba270850bb.ctex"
+uid="uid://cpte38cecmhne"
+path="res://.godot/imported/player_junnie_body.png-5e29e408e64aedb08abe765f1d88bf62.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/player_tenienta_legs.png"
-dest_files=["res://.godot/imported/player_tenienta_legs.png-dc1d78f32154283ce13f42ba270850bb.ctex"]
+source_file="res://assets/sprites/player_junnie_body.png"
+dest_files=["res://.godot/imported/player_junnie_body.png-5e29e408e64aedb08abe765f1d88bf62.ctex"]
 
 [params]
 
