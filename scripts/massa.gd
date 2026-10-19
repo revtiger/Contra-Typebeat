@@ -8,7 +8,7 @@ extends CharacterBody2D
 ##       un poco por delante o por detrás, para que no baste con quedarse quieto)
 ##     - ¡Pulgar arriba!: guiña y llama a dos militantes (soldados). Durante el gesto está vendido
 ##   A media vida se quita el saco y lo tira, agarra el rifle (invulnerable mientras tanto) y pasa a
-##   chaleco: ráfagas de rifle apuntadas al jugador, camina más rápido y sigue llamando militantes a gritos.
+##   chaleco: ráfagas de rifle rectas desde la punta del cañón, camina más rápido y sigue llamando militantes a gritos.
 ## Al perder sale volando dando vueltas (sin gore) y se le cae una lluvia de billetes de los bolsillos.
 ## No tiene variable "state" a propósito (la prueba automática lo trata como jefe de suelo).
 
@@ -45,6 +45,7 @@ var armed := false  # ya se quitó el saco: chaleco y rifle
 var last_frame := -1
 var shots_left := 0
 var shot_t := 0.0
+var since_shot := 9.0  # tiempo desde el último tiro (fogonazo del fotograma de disparo)
 var sweat: Array = []
 
 
@@ -58,6 +59,9 @@ func _ready() -> void:
 	var anims := {}
 	for n in a:
 		anims[n] = [a[n]["row"], a[n]["frames"], ANIM_FPS[n][0], ANIM_FPS[n][1]]
+	# la doble granada lleva una duración propia por fotograma (más larga al cargar el brazo y al soltar)
+	if meta.has("grenade_durations") and anims.has("grenade"):
+		anims["grenade"].append(meta["grenade_durations"])
 	var fr: Array = meta["frame"]
 	body = SpriteUtil.sprite(SpriteUtil.frames(DIR + "boss_massa.png", fr[0], fr[1], anims), SpriteUtil.v(meta["pivot"]))
 	body.show_behind_parent = true  # el sudor y la vida que dibuja _draw van encima del cuerpo
@@ -120,8 +124,11 @@ func _physics_process(delta: float) -> void:
 			var f := body.frame
 			if f != last_frame:
 				last_frame = f
-				var rel: Array = meta["grenade_release"]
-				var k := rel.find(f)
+				# (los números del meta son float al leer el JSON: se comparan como enteros)
+				var k := -1
+				for i in meta["grenade_release"].size():
+					if int(meta["grenade_release"][i]) == f:
+						k = i
 				if k >= 0:
 					# la primera al jugador; la segunda (con la otra mano) delante o detrás de él
 					var off := randf_range(-10, 10) if k == 0 else (40.0 if randf() < 0.5 else -40.0)
@@ -210,7 +217,10 @@ func _next_action(p) -> void:
 
 ## Punto del fotograma (mirando a la izquierda) en coordenadas del mundo, según hacia dónde mira.
 func _point(key: String) -> Vector2:
-	var m: Vector2 = SpriteUtil.v(meta[key])
+	return _point_v(SpriteUtil.v(meta[key]))
+
+
+func _point_v(m: Vector2) -> Vector2:
 	var piv: Vector2 = SpriteUtil.v(meta["pivot"])
 	var local := m - piv
 	if dir > 0:
@@ -247,27 +257,32 @@ func _jacket() -> void:
 	Game.sfx("jump", -6.0, 0.8)
 
 
-## Ráfagas de rifle: apunta al jugador (con límite) y dispara balas sueltas con fogonazo.
+## Ráfagas de rifle: el rifle del dibujo apunta recto, así que las balas salen rectas desde la punta del
+## cañón (se esquivan saltando o tirándose al suelo). El fotograma sigue al tiro: fogonazo grande, pequeño,
+## mínimo y sin fogonazo, para que el destello coincida con la bala.
 func _rifle(delta: float, p) -> void:
 	_face(p)
 	shot_t -= delta
+	since_shot += delta
+	body.animation = "v_shoot"
+	body.stop()
+	var seq := [1, 0, 2]
+	var fi := int(since_shot / 0.035)
+	body.frame = seq[fi] if fi < seq.size() else 3
 	if shots_left > 0:
 		if shot_t <= 0.0:
 			shots_left -= 1
 			# ráfagas de 4 con una pausa entre ellas
-			shot_t = 0.11 if shots_left % 4 != 0 else 0.6
-			_play("v_shoot")
-			var muzzle := _point("muzzle")
-			var to: Vector2 = p.global_position + Vector2(0, -16) - muzzle
-			var ang := clampf(Vector2(dir, 0).angle_to(to), -0.35, 0.35)
+			shot_t = 0.13 if shots_left % 4 != 0 else 0.6
+			since_shot = 0.0
+			body.frame = 1
+			var muzzle := _point_v(SpriteUtil.v(meta["muzzles_shoot"][1]))
 			var b := Bullet.new()
 			b.from_player = false
-			b.vel = Vector2(dir, 0).rotated(ang) * 150.0
+			b.vel = Vector2(dir * 170.0, 0.0)
 			b.position = muzzle
 			main.add_child(b)
 			Game.sfx("shot", -12.0, 0.8)
-		elif shot_t > 0.2:
-			_play("idle")
 	elif shot_t <= -0.3:
 		_idle(0.4)
 

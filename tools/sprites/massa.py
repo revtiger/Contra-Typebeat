@@ -45,8 +45,12 @@ ANIMS = [
 	("v_walk", [("v_walk2", range(1, 9))]),
 	("v_shoot", [("v_shoot", range(1, 5))]),
 ]
-# fotogramas de "grenade" en los que suelta cada granada (derecha, izquierda)
-GRENADE_RELEASE = [8, 15]
+# fotogramas de "grenade" en los que sale cada granada (derecha, izquierda): con el brazo ya estirado y la mano
+# vacía, para que no se vea la granada dos veces
+GRENADE_RELEASE = [8, 16]
+# duración relativa de cada fotograma de "grenade": rápido en las transiciones, más largo al cargar el brazo
+# (anticipación) y al soltar (impacto), como un lanzador de béisbol
+GRENADE_DURATIONS = [0.5, 0.5, 0.9, 0.9, 0.9, 1, 1, 1.7, 1.4, 1, 0.7, 0.9, 1.1, 0.6, 1.5, 1.2, 1.4, 1, 0.7, 0.7, 0.7, 0.8]
 
 
 def nitido(im):
@@ -58,6 +62,18 @@ def pies_x(im):
 	a = im.getchannel("A")
 	band = a.crop((0, im.height - 8, im.width, im.height)).getbbox()
 	return (band[0] + band[2]) / 2
+
+
+def sin_fogonazo(fr):
+	"""El fotograma sin los píxeles del fogonazo (amarillos y blancos cálidos)."""
+	fr = fr.copy()
+	px = fr.load()
+	for y in range(fr.height):
+		for x in range(fr.width):
+			r, g, b, a = px[x, y]
+			if a and r > 200 and g > 170 and b < 160:
+				px[x, y] = (0, 0, 0, 0)
+	return fr
 
 
 def izquierda(fr, y0, y1):
@@ -88,8 +104,11 @@ def main():
 	idle = sheet.crop((0, 0, FW, FH))
 	meta["pivot"] = [round(pies_x(idle)), 62]
 	# puntos útiles en píxeles del fotograma (mirando a la izquierda)
-	# boca del rifle: el píxel opaco más a la izquierda entre la cintura y el pecho
+	# boca del rifle en cada fotograma de disparo: el píxel opaco más a la izquierda entre la cintura y el pecho,
+	# sin contar el fogonazo dibujado (amarillo)
 	meta["muzzle"] = izquierda(cuadros["v_idle"][0], 30, 50)
+	meta["muzzles_shoot"] = [izquierda(sin_fogonazo(f), 30, 50) for f in cuadros["v_shoot"]]
+	meta["grenade_durations"] = GRENADE_DURATIONS
 	# manos al soltar cada granada: lo más adelantado (a la izquierda) por encima de la cintura
 	meta["grenade_release"] = GRENADE_RELEASE
 	meta["hand_r"] = izquierda(cuadros["grenade"][GRENADE_RELEASE[0]], 0, 45)
