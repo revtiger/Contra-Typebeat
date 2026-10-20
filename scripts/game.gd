@@ -18,6 +18,8 @@ var level := 0
 var hero := "eduardo"
 var record := 0
 var autoplay := false
+## Cinemáticas ya vistas en esta partida (no se repiten al reintentar una fase)
+var seen_cine := {}
 
 var _players: Array[AudioStreamPlayer] = []
 var _next_player := 0
@@ -115,6 +117,7 @@ func start_game(lv := 0) -> void:
 	score = 0
 	lives = START_LIVES
 	level = lv
+	seen_cine = {}
 	_go("res://scenes/select.tscn")
 
 

@@ -45,6 +45,8 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 **Flujo de pantallas:** intro estilo Metal Slug 2 (se salta con cualquier botón) → menú (Jugar, Elegir fase, Controles, Ver intro, Salir) → **ELIGE TU SOLDADO** (estilo Metal Slug X, cuenta atrás de 30) → **mapa mundial** con la ruta y el jefe de la fase → fase → "¡Fase X.Y superada!" (o "¡País liberado!" tras el jefe final) → **mapa** → … → tras la fase 5.3, "¡Apocalipsis detenido!" y el mapa con "¡Mundo salvado!" vuelve al menú. Esc pausa la partida.
 
+**Cinemáticas (19-10-2026, Eduardo):** la primera es la **llegada a la 1.1** (`scripts/cinematica_llegada.gd`): toma aérea del atardecer, un helicóptero cruza, el soldado elegido salta y abre el paracaídas; fundido y corte al pueblo, donde baja en paracaídas, aterriza y empieza la fase. Franjas de cine; se salta con cualquier botón; solo la primera vez en la partida (`Game.seen_cine`). Arte de Eduardo con ChatGPT (cielo y helicóptero de 8 fotogramas, `tools/sprites/cinematica.py`) y poses de paracaídas de la hoja 5 de cada soldado (`player_<id>_para.png`, `heroes_sheets.py`). Irán más cinemáticas para dar inicio al juego.
+
 ## Controles
 
 | Acción | Teclado | Mando |
