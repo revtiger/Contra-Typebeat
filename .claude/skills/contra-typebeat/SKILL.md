@@ -59,3 +59,4 @@ Lee también `CLAUDE.md` (reglas de trabajo) y `docs/diseno.md` (diseño vivo) y
 3. Sprites: editar `tools/sprites/humans.py`, `mecha.py` o `font.py` y ejecutarlos con Python (necesita Pillow); después `godot --headless --path . --import`.
 4. El `.exe` lo genera GitHub Actions en cada push (pestaña Actions; en `main` queda en Releases como `ultima-version`).
 5. Actualizar `docs/diseno.md` en el mismo PR y **actualizar esta skill** cuando cambie el estado o se tome una decisión nueva.
+- **Cinemáticas (19-10-2026):** `scripts/cinematica_llegada.gd` (CanvasLayer que pone `level.gd` con `state = "cine"`; al acabar llama a `level.end_cine(x)`). Solo la primera vez por partida (`Game.seen_cine`, se vacía en `start_game`). La prueba automática no la pone salvo con el argumento `cine`. Arte: `tools/sprites/cinematica.py` (cielo y helicóptero de ChatGPT) y `player_<id>_para.png`.

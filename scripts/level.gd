@@ -3,6 +3,7 @@ extends Node2D
 
 const Levels = preload("res://scripts/levels.gd")
 const Player = preload("res://scripts/player.gd")
+const CineLlegada = preload("res://scripts/cinematica_llegada.gd")
 const Soldier = preload("res://scripts/soldier.gd")
 const Turret = preload("res://scripts/turret.gd")
 const Boss = preload("res://scripts/boss.gd")
@@ -43,7 +44,7 @@ var cam_left := 0.0
 var shake_amt := 0.0
 var lock_left := INF
 var boss_announced := false
-var state := "play"  # play | over | clear
+var state := "play"  # cine | play | over | clear
 var spawn_t := 2.5
 var next_entity := 0
 var hud := Hud.new()
@@ -123,6 +124,38 @@ func _ready() -> void:
 	ui.add_child(hud)
 	hud.banner_text = data["name"] + "\n¡VAMOS!"
 	Game.play_music(data["music"])
+	if _want_cine():
+		_start_cine()
+
+
+## Cinemática de llegada (1.1, el pueblo): la primera vez en la partida. La prueba automática solo la pone con
+## el argumento "cine" (las demás pruebas empiezan jugando).
+func _want_cine() -> bool:
+	if theme != "pueblo" or Game.seen_cine.has("llegada"):
+		return false
+	return not Game.autoplay or "cine" in OS.get_cmdline_user_args()
+
+
+func _start_cine() -> void:
+	Game.seen_cine["llegada"] = true
+	state = "cine"
+	player.visible = false
+	player.process_mode = Node.PROCESS_MODE_DISABLED
+	hud.visible = false
+	hud.banner_text = ""
+	add_child(CineLlegada.new())
+
+
+## La cinemática termina (o se salta): el soldado aparece donde aterrizó y empieza la fase.
+func end_cine(x: float) -> void:
+	state = "play"
+	player.position = Vector2(x, ground_y_at(x))
+	player.visible = true
+	player.process_mode = Node.PROCESS_MODE_INHERIT
+	player.invuln = 1.5
+	hud.visible = true
+	show_banner(data["name"] + "
+¡VAMOS!", 2.5)
 
 
 func _add_block(rect: Rect2, one_way: bool) -> void:
@@ -166,6 +199,9 @@ func _add_slope(g: Array) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if state == "cine":
+		camera.position = Vector2.ZERO
+		return
 	if not player.dead:
 		cam_left = clampf(maxf(cam_left, player.position.x - SCREEN_W * 0.4), 0.0, minf(boss_arena, lock_left))
 	shake_amt = maxf(shake_amt - 18.0 * delta, 0.0)

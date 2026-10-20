@@ -553,6 +553,45 @@ def flash_sheet(hero, sheets, scale):
 	return {"frame": [FLASH_CELL, FLASH_CELL], "anchor": [half, half], "rows": rows}
 
 
+# Paracaídas (cinemática de llegada a la 1.1): hoja 5, filas 0 y 1. 0-3 baja meciéndose, 4 prepara el
+# aterrizaje, 5 toca el suelo, 6 el paracaídas se desinfla, 7 agachado con el paracaídas en el suelo.
+# Fotogramas más altos que el resto para que quepa la tela. Mientras baja (0-5) se alinea por el centro de la
+# tela, que es lo que cuelga y no se mueve de lado; al aterrizar (6-7) la tela cae al lado y se alinea por la
+# bota de atrás, en el mismo sitio que en el fotograma 5.
+PARA_FW, PARA_FH = 96, 120
+PARA_FEET = (40, 116)
+
+
+def para_sheet(hero, sheets, scale, pal):
+	"""player_<id>_para.png: una fila con los 8 fotogramas del paracaídas. Devuelve su meta."""
+	frames = []
+	boot = None
+	for k in range(8):
+		cell = sheets[5][k // 4][k % 4]
+		small = shrink(cell, scale, hero)
+		_drop_specks(small, 40)
+		m = alpha_mask(small)
+		b = m.getbbox()
+		canopy = m.crop((0, b[1], small.width, b[1] + 6)).getbbox()
+		band = m.crop((0, b[3] - 6, small.width, b[3])).getbbox()
+		if k <= 5:
+			ox = PARA_FEET[0] - (canopy[0] + canopy[2]) // 2
+			boot = ox + band[0]
+		else:
+			ox = boot - band[0]
+		frame = Image.new("RGBA", (PARA_FW, PARA_FH), (0, 0, 0, 0))
+		frame.paste(small, (ox, PARA_FEET[1] - b[3]), small)
+		frames.append(to_palette(frame, pal))
+	sheet = Image.new("RGBA", (PARA_FW * len(frames), PARA_FH), (0, 0, 0, 0))
+	for i, f in enumerate(frames):
+		sheet.alpha_composite(f, (i * PARA_FW, 0))
+	sheet.save(os.path.join(OUT, "player_%s_para.png" % hero))
+	# x de los pies en el último fotograma (para colocar al soldado al acabar)
+	last = alpha_mask(frames[-1]).crop((0, PARA_FEET[1] - 6, PARA_FW, PARA_FEET[1] + 1)).getbbox()
+	return {"frame": [PARA_FW, PARA_FH], "feet": list(PARA_FEET), "frames": len(frames), "land": 5,
+		"end_x": last[0] + 8 - PARA_FEET[0]}
+
+
 def loose_frames(hero, anim):
 	"""Fotogramas sueltos de heroes/<id>/<anim>/ en orden, o None si no hay."""
 	paths = sorted(glob.glob(os.path.join(FRAMES, hero, anim, "%s_[0-9][0-9].png" % anim)))
@@ -667,6 +706,8 @@ def build(hero):
 			meta["tips"][name] = [gun_tip(sheet.crop((c * FW, a["row"] * FH, (c + 1) * FW, (a["row"] + 1) * FH)), d)
 				for c in range(a["frames"])]
 	meta["flash"] = flash_sheet(hero, sheets, scale)
+	if 5 in sheets:
+		meta["para"] = para_sheet(hero, sheets, scale, pal)
 	sheet.save(os.path.join(OUT, "player_%s_body.png" % hero))
 	with open(os.path.join(OUT, "player_%s_body_meta.json" % hero), "w", encoding="utf-8", newline="\n") as f:
 		json.dump(meta, f, indent=1)

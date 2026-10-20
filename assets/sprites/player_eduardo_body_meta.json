@@ -438,5 +438,18 @@
    "diag_up": 2,
    "diag_down": 3
   }
+ },
+ "para": {
+  "frame": [
+   96,
+   120
+  ],
+  "feet": [
+   40,
+   116
+  ],
+  "frames": 8,
+  "land": 5,
+  "end_x": -3
  }
 }
