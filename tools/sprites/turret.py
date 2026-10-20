@@ -1,16 +1,12 @@
-"""Nido de ametralladora enemigo: soldado de Argentina agachado tras un búnker de sacos terreros, con una
-ametralladora montada que solo apunta a la izquierda (al frente o en diagonal hacia arriba).
+"""Nido de ametralladora enemigo: soldado de Argentina tras un muro de sacos terreros, con una ametralladora montada
+que solo apunta a la izquierda (al frente o en diagonal hacia arriba). Dibujado por Eduardo con ChatGPT.
 
-Entrada (tools/sprites/pixellab/torreta/):
-  nido.png, arma.png           búnker y ametralladora de PixelLab de la primera torreta (sin soldado)
-  soldado/maqueta_<dir>.png    maqueta 64x64: la pose de apuntar del soldado (soldier_ar.png) tras el búnker
-  soldado/gen1_<i>.png         edit_image de PixelLab sobre las maquetas: el soldado maneja la ametralladora
-                               (0 = al frente, 1 = diagonal arriba; la 2, diagonal abajo, salió horizontal y no
-                               se usa)
+Entrada: tools/sprites/chatgpt/torreta/nido_soldado.png (fondo transparente, mirando a la izquierda): las dos
+         poses lado a lado, a la izquierda al frente y a la derecha en diagonal.
 Salida (assets/sprites/):
-  turret_soldado.png           un fotograma por dirección (frente, arriba), mirando a la izquierda
-  turret_soldado_meta.json     tamaño de fotograma, pies (centro del borde de abajo del búnker) y boca del cañón
-                               de cada dirección
+  turret_soldado.png        un fotograma por dirección (frente, arriba)
+  turret_soldado_meta.json  tamaño de fotograma, pies (centro del borde de abajo de los sacos) y boca del cañón de
+                            cada dirección
 
 Uso: python tools/sprites/turret.py
 """
@@ -20,14 +16,38 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "tools/sprites/pixellab/torreta/soldado"
+SRC = ROOT / "tools/sprites/chatgpt/torreta/nido_soldado.png"
 OUT = ROOT / "assets/sprites"
-FRAMES = ["gen1_0.png", "gen1_1.png"]
+# la cara del soldado sale del mismo tamaño que la de soldier_ar.png (tools/sprites/soldados.py)
+ESCALA = 0.1
+FW, FH = 96, 72
 
 
 def nitido(im):
 	im.putalpha(im.getchannel("A").point(lambda v: 255 if v >= 128 else 0))
 	return im
+
+
+def poses():
+	"""Las dos poses recortadas, cada una alineada por la base de los sacos (fila más baja)."""
+	im = Image.open(SRC).convert("RGBA")
+	a = im.getchannel("A").point(lambda v: 255 if v > 100 else 0)
+	# corte entre las dos poses: la columna vacía más cercana al centro
+	cols = [a.crop((x, 0, x + 1, im.height)).getbbox() is None for x in range(im.width)]
+	mid = min((x for x in range(im.width) if cols[x]), key=lambda x: abs(x - im.width // 2))
+	out = []
+	for box in ((0, 0, mid, im.height), (mid, 0, im.width, im.height)):
+		p = im.crop(box)
+		out.append(p.crop(p.getchannel("A").point(lambda v: 255 if v > 100 else 0).getbbox()))
+	return out
+
+
+def base_sacos(im):
+	"""(x centro, y) de la base de los sacos: la fila opaca más baja y el tramo de sacos de esa zona."""
+	a = im.getchannel("A")
+	bottom = a.getbbox()[3] - 1
+	row = a.crop((0, bottom - 3, im.width, bottom + 1)).getbbox()
+	return (row[0] + row[2]) / 2, bottom
 
 
 def boca(im, diagonal):
@@ -38,22 +58,26 @@ def boca(im, diagonal):
 
 
 def main():
-	frs = [nitido(Image.open(SRC / f).convert("RGBA")) for f in FRAMES]
-	w, h = frs[0].size
-	sheet = Image.new("RGBA", (w * len(frs), h), (0, 0, 0, 0))
-	for i, fr in enumerate(frs):
-		sheet.alpha_composite(fr, (i * w, 0))
-	# pies: centro del búnker, 2 px por encima de su fila más baja (los sacos de abajo se hunden un poco en el
-	# suelo; si no, el nido parece flotar)
-	a = frs[0].getchannel("A")
-	bottom = a.getbbox()[3] - 1
-	row = a.crop((0, bottom - 3, w, bottom + 1)).getbbox()
-	feet = [round((row[0] + row[2]) / 2), bottom - 2]
-	meta = {"frame": [w, h], "feet": feet, "dirs": ["frente", "arriba"],
-		"muzzles": [boca(frs[0], False), boca(frs[1], True)]}
+	frs = []
+	for p in poses():
+		p = nitido(p.resize((round(p.width * ESCALA), round(p.height * ESCALA)), Image.LANCZOS))
+		frs.append(p)
+	# todas con la base de los sacos en el mismo punto del fotograma
+	feet = (FW // 2, FH - 3)
+	sheet = Image.new("RGBA", (FW * len(frs), FH), (0, 0, 0, 0))
+	cuadros = []
+	for i, p in enumerate(frs):
+		cx, by = base_sacos(p)
+		f = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		f.alpha_composite(p, (round(feet[0] - cx), feet[1] - by))
+		cuadros.append(f)
+		sheet.alpha_composite(f, (i * FW, 0))
+	# los sacos de abajo se hunden 2 px en el suelo (si no, el nido parece flotar)
+	meta = {"frame": [FW, FH], "feet": [feet[0], feet[1] - 2], "dirs": ["frente", "arriba"],
+		"muzzles": [boca(cuadros[0], False), boca(cuadros[1], True)]}
 	sheet.save(OUT / "turret_soldado.png")
 	(OUT / "turret_soldado_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8", newline="\n")
-	print("turret_soldado.png", sheet.size, meta)
+	print("turret_soldado.png", sheet.size, [p.size for p in frs], meta)
 
 
 if __name__ == "__main__":

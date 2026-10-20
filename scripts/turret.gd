@@ -1,9 +1,8 @@
 extends StaticBody2D
-## Nido de ametralladora: un soldado agachado tras un búnker de sacos terreros maneja una ametralladora montada.
+## Nido de ametralladora: un soldado agachado tras un muro de sacos terreros maneja una ametralladora montada.
 ## Solo dispara hacia la izquierda (no puede voltearse): al frente o en diagonal hacia arriba, según dónde esté el
 ## jugador. Si el jugador ya le pasó por detrás, deja de disparar. Aguanta varios impactos.
-## Sprites: tools/sprites/turret.py (turret_soldado.png: una columna por dirección; PixelLab sobre el soldado de
-## Argentina y el búnker).
+## Sprites: tools/sprites/turret.py (turret_soldado.png: una columna por dirección; dibujo de Eduardo con ChatGPT).
 
 const Bullet = preload("res://scripts/bullet.gd")
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
@@ -27,12 +26,12 @@ func _ready() -> void:
 	add_to_group("enemy")
 	collision_layer = 4
 	collision_mask = 0
-	# el búnker y el soldado que asoma por encima
+	# los sacos y el soldado que asoma por encima
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(34, 40)
+	r.size = Vector2(60, 46)
 	cs.shape = r
-	cs.position = Vector2(0, -20)
+	cs.position = Vector2(2, -23)
 	add_child(cs)
 
 
@@ -75,7 +74,7 @@ func take_damage(n: int) -> void:
 	Game.sfx("hit", -18.0)
 	if hp <= 0 and not is_queued_for_deletion():
 		main.add_score(500)
-		main.explode(position + Vector2(0, -14), 20)
+		main.explode(position + Vector2(0, -18), 26)
 		queue_free()
 
 
