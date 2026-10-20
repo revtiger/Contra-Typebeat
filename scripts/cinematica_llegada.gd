@@ -36,9 +36,9 @@ var ground_y := 230.0
 var jumped := false
 var hero_pos := Vector2.ZERO
 var hero_vel := Vector2.ZERO
-var heli_pos := Vector2(-230, 62)
+var heli_pos := Vector2(-230, 50)
 var heli_vx := 0.0      # velocidad horizontal (para inclinarlo)
-var heli_tilt := 0.0    # inclinación: morro abajo al acelerar, arriba al frenar
+var heli_tilt := 0.0    # inclinación en grados: morro abajo al acelerar, arriba al frenar
 var bars := 1.0          # 1 = franjas puestas; baja a 0 al acabar
 
 
@@ -90,13 +90,18 @@ func _update_air(delta: float) -> void:
 	var ax := (vx - heli_vx) / maxf(delta, 0.001)
 	heli_vx = vx
 	heli_pos.x = x
-	heli_pos.y = 62.0 + sin(t * 2.2) * 2.5
-	# morro abajo al ir rápido o acelerar, morro arriba al frenar (suavizado)
-	var want := clampf(vx * 0.0011 + ax * 0.0009, -0.16, 0.2)
-	heli_tilt = lerpf(heli_tilt, want, 1.0 - exp(-6.0 * delta))
+	heli_pos.y = 50.0 + sin(t * 1.8) * 2.0
+	# morro abajo al ir rápido o acelerar, morro arriba al frenar (suavizado; en grados, dentro de las
+	# inclinaciones dibujadas en la hoja)
+	var tilts: Array = heli_meta["tilts"]
+	var want := clampf(vx * 0.05 + ax * 0.035, float(tilts[0]), float(tilts[-1]))
+	heli_tilt = lerpf(heli_tilt, want, 1.0 - exp(-4.0 * delta))
 	if t >= JUMP_AT and not jumped:
 		jumped = true
-		var door: Vector2 = SpriteUtil.v(heli_meta["door"])
+		# la puerta, girada con la inclinación alrededor del centro del fotograma
+		var fr: Array = heli_meta["frame"]
+		var half := Vector2(fr[0], fr[1]) / 2.0
+		var door: Vector2 = (SpriteUtil.v(heli_meta["door"]) - half).rotated(deg_to_rad(heli_tilt)) + half
 		hero_pos = heli_pos + door + Vector2(0, 14)  # pies ya por debajo del helicóptero
 		hero_vel = Vector2(30.0, 20.0)
 		Game.sfx("jump", -8.0, 0.8)
@@ -175,15 +180,15 @@ func _draw_air() -> void:
 		else:
 			var sway := int(t * 5.0) % 4
 			_para_frame(sway, hero_pos.round(), 0.75)
-	# helicóptero con el rotor girando (30 fotogramas por segundo)
+	# helicóptero con el rotor girando (30 fotogramas por segundo); la inclinación no se gira aquí (un sprite girado
+	# se ve plano, como de papel): cada fila de la hoja ya viene dibujada con la suya, se elige la más cercana
 	var fr: Array = heli_meta["frame"]
 	var n: int = heli_meta["frames"]
 	var i := int(t * 30.0) % n
-	# inclinado alrededor del centro del helicóptero
-	var center := heli_pos.round() + Vector2(fr[0], fr[1]) / 2.0
-	canvas.draw_set_transform(center, heli_tilt)
-	canvas.draw_texture_rect_region(HELI, Rect2(-Vector2(fr[0], fr[1]) / 2.0, Vector2(fr[0], fr[1])), Rect2(i * fr[0], 0, fr[0], fr[1]))
-	canvas.draw_set_transform(Vector2.ZERO)
+	var tilts: Array = heli_meta["tilts"]
+	var step := float(tilts[1]) - float(tilts[0])
+	var row := clampi(roundi((heli_tilt - float(tilts[0])) / step), 0, tilts.size() - 1)
+	canvas.draw_texture_rect_region(HELI, Rect2(heli_pos.round(), Vector2(fr[0], fr[1])), Rect2(i * fr[0], row * fr[1], fr[0], fr[1]))
 	# título de la fase
 	if t > 0.5 and t < 2.6:
 		var a := clampf(minf(t - 0.5, 2.6 - t) * 3.0, 0.0, 1.0)
