@@ -36,7 +36,9 @@ var ground_y := 230.0
 var jumped := false
 var hero_pos := Vector2.ZERO
 var hero_vel := Vector2.ZERO
-var heli_pos := Vector2(-200, 70)
+var heli_pos := Vector2(-230, 62)
+var heli_vx := 0.0      # velocidad horizontal (para inclinarlo)
+var heli_tilt := 0.0    # inclinación: morro abajo al acelerar, arriba al frenar
 var bars := 1.0          # 1 = franjas puestas; baja a 0 al acabar
 
 
@@ -74,14 +76,24 @@ func _process(delta: float) -> void:
 
 ## Toma aérea: el helicóptero entra frenando, se queda (con un balanceo) y se va acelerando.
 func _update_air(delta: float) -> void:
-	if t < 2.2:
-		var k := t / 2.2
-		heli_pos.x = lerpf(-220.0, 150.0, 1.0 - pow(1.0 - k, 3.0))
-	elif t < 3.3:
-		heli_pos.x = 150.0
+	# recorrido suave (curvas sin saltos de velocidad): entra frenando, flota con un vaivén y sale acelerando
+	var x := 0.0
+	if t < 2.4:
+		var k := t / 2.4
+		x = lerpf(-230.0, 140.0, 1.0 - pow(1.0 - k, 3.0))
+	elif t < 3.4:
+		x = 140.0 + sin((t - 2.4) * PI) * 4.0
 	else:
-		heli_pos.x += (40.0 + (t - 3.3) * 160.0) * delta
-	heli_pos.y = 64.0 + sin(t * 2.4) * 3.0
+		var k := t - 3.4
+		x = 140.0 + 30.0 * k * k + 18.0 * k * k * k
+	var vx := (x - heli_pos.x) / maxf(delta, 0.001)
+	var ax := (vx - heli_vx) / maxf(delta, 0.001)
+	heli_vx = vx
+	heli_pos.x = x
+	heli_pos.y = 62.0 + sin(t * 2.2) * 2.5
+	# morro abajo al ir rápido o acelerar, morro arriba al frenar (suavizado)
+	var want := clampf(vx * 0.0011 + ax * 0.0009, -0.16, 0.2)
+	heli_tilt = lerpf(heli_tilt, want, 1.0 - exp(-6.0 * delta))
 	if t >= JUMP_AT and not jumped:
 		jumped = true
 		var door: Vector2 = SpriteUtil.v(heli_meta["door"])
@@ -163,11 +175,15 @@ func _draw_air() -> void:
 		else:
 			var sway := int(t * 5.0) % 4
 			_para_frame(sway, hero_pos.round(), 0.75)
-	# helicóptero con el rotor girando (24 fotogramas por segundo)
+	# helicóptero con el rotor girando (30 fotogramas por segundo)
 	var fr: Array = heli_meta["frame"]
 	var n: int = heli_meta["frames"]
-	var i := int(t * 24.0) % n
-	canvas.draw_texture_rect_region(HELI, Rect2(heli_pos.round(), Vector2(fr[0], fr[1])), Rect2(i * fr[0], 0, fr[0], fr[1]))
+	var i := int(t * 30.0) % n
+	# inclinado alrededor del centro del helicóptero
+	var center := heli_pos.round() + Vector2(fr[0], fr[1]) / 2.0
+	canvas.draw_set_transform(center, heli_tilt)
+	canvas.draw_texture_rect_region(HELI, Rect2(-Vector2(fr[0], fr[1]) / 2.0, Vector2(fr[0], fr[1])), Rect2(i * fr[0], 0, fr[0], fr[1]))
+	canvas.draw_set_transform(Vector2.ZERO)
 	# título de la fase
 	if t > 0.5 and t < 2.6:
 		var a := clampf(minf(t - 0.5, 2.6 - t) * 3.0, 0.0, 1.0)
