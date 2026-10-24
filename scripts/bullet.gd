@@ -135,9 +135,14 @@ func _draw() -> void:
 			draw_circle(Vector2.ZERO, 3.5, Color(0.25, 0.22, 0.2))
 			draw_circle(Vector2(-signf(vel.x) * 3, 0), 2.0, Color(1, 0.6, 0.1))
 		_:
+			# estela corta detrás de la bala (en la dirección contraria a la que va)
+			var back := -vel.normalized()
+			var c := Color(1, 0.3, 0.2) if from_player else Color(1, 0.55, 0.1)
+			draw_line(back * 2.0, back * 7.0, Color(c.r, c.g, c.b, 0.45), 2.0)
+			draw_line(back * 1.0, back * 4.0, Color(1, 0.9, 0.6, 0.6), 1.0)
 			if from_player:
-				draw_circle(Vector2.ZERO, 2.5, Color(1, 0.3, 0.2))
+				draw_circle(Vector2.ZERO, 2.5, c)
 				draw_circle(Vector2.ZERO, 1.5, Color(1, 1, 0.8))
 			else:
-				draw_circle(Vector2.ZERO, 2.5, Color(1, 0.55, 0.1))
+				draw_circle(Vector2.ZERO, 2.5, c)
 				draw_circle(Vector2.ZERO, 1.2, Color(1, 1, 1))

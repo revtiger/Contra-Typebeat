@@ -12,7 +12,8 @@ tools/sprites/pixellab/massa2/<traje|chaleco>_base.png y animadas con PixelLab (
               (desde la clave: látigo hacia delante; en su fotograma 4 suelta la granada) y pitch2_vuelta
               (desde ese fotograma sin la granada, pitch2_suelta.png, hasta la base). Juntas forman
               "grenade" (23 fotogramas)
-  de chaleco: v_idle (4), v_walk (8), v_shoot (4, con fogonazo)
+  de chaleco: v_idle (4), v_walk (8), v_shoot (4, con fogonazo), v_die2 (8: recibe el golpe, suelta el rifle y
+              cae de espaldas; v_die.png es una tirada descartada en la que caía de cara)
   walk2 / v_walk2: ciclos de caminar de 8 pasos animados desde el último fotograma (de perfil) de walk y
               v_walk (<anim>_perfil_base.png); son los que usa el juego
 Los fotogramas se reducen a la mitad (64x64): Massa mide 60 px.
@@ -44,6 +45,7 @@ ANIMS = [
 	("v_idle", [("v_idle", range(0, 5))]),
 	("v_walk", [("v_walk2", range(1, 9))]),
 	("v_shoot", [("v_shoot", range(1, 5))]),
+	("v_die", [("v_die2", [2, 4, 5, 6, 7, 8])]),
 ]
 # fotogramas de "grenade" en los que sale cada granada (derecha, izquierda): con el brazo ya estirado y la mano
 # vacía, para que no se vea la granada dos veces

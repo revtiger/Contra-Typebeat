@@ -8,8 +8,10 @@ extends CharacterBody2D
 
 const Bullet = preload("res://scripts/bullet.gd")
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
+const Sangre = preload("res://scripts/sangre.gd")
 
 const PANIC_TIME := 0.7
+const THROW_FPS := 14.0  # lanzamiento de granada del soldado de Argentina (prepara, lanza y vuelve)
 const AR_CARAS := 4  # variantes de cara de soldier_ar.png
 
 var mode := "run"
@@ -29,6 +31,13 @@ var spr: AnimatedSprite2D
 ## hoja nueva de Argentina: tiene la muerte en 3 poses ("die") y la boca del fusil de cada pose de apuntar
 var ar := false
 var ar_meta := {}
+## disparo del francotirador: fogonazo en la boca del fusil y culatazo (el sprite retrocede 1 px)
+var fire_t := 0.0
+var fx := Node2D.new()
+## lanzamiento en curso (segundos desde que empezó; < 0 = ninguno) y si ya soltó la granada
+var throw_t := -1.0
+var thrown := false
+var throw_target := 0.0
 
 
 func _ready() -> void:
@@ -44,6 +53,9 @@ func _ready() -> void:
 	add_child(cs)
 	can_panic = randf() < 0.45
 	_setup_sprite()
+	fx.z_index = 1
+	add_child(fx)
+	fx.draw.connect(_draw_fx)
 	if ar:
 		# el soldado de Argentina mide como el héroe: caja más alta para que las balas le den en la cabeza
 		r.size = Vector2(14, 40)
@@ -59,6 +71,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	anim_t += delta
 	flash -= delta
+	fire_t -= delta
 	velocity.y += 900.0 * delta
 	if state == "dead":
 		_dead_process(delta)
@@ -101,6 +114,7 @@ func _physics_process(delta: float) -> void:
 							var m: Array = ar_meta["muzzles"][_aim_idx()]
 							b.position = position + Vector2(m[0] * dir, m[1])
 						get_parent().add_child(b)
+						fire_t = 0.07
 						Game.sfx("shot", -20.0, 0.7)
 				"grenadier":
 					dir = 1 if dx > 0 else -1
@@ -108,10 +122,21 @@ func _physics_process(delta: float) -> void:
 					shoot_t -= delta
 					if shoot_t <= 0.0 and on_screen and not p.dead and absf(dx) < 260.0:
 						shoot_t = randf_range(2.2, 3.2)
-						var hand := Vector2(dir * 6, -24)
 						if ar:
-							hand = Vector2(ar_meta["hand"][0] * dir, ar_meta["hand"][1])
-						main.throw_grenade(position + hand, p.position.x + randf_range(-10, 10))
+							# saca la granada, echa el brazo atrás y la suelta con el brazo adelante
+							throw_t = 0.0
+							thrown = false
+							throw_target = p.position.x + randf_range(-10, 10)
+						else:
+							main.throw_grenade(position + Vector2(dir * 6, -24), p.position.x + randf_range(-10, 10))
+					if throw_t >= 0.0:
+						throw_t += delta
+						var f := int(throw_t * THROW_FPS)
+						if not thrown and f >= int(ar_meta["throw_release"]):
+							thrown = true
+							main.throw_grenade(position + Vector2(ar_meta["hand"][0] * dir, ar_meta["hand"][1]), throw_target)
+						if f >= int(ar_meta["counts"]["throw"]):
+							throw_t = -1.0
 	move_and_slide()
 	if state == "normal" and mode == "run" and is_on_wall() and is_on_floor():
 		velocity.y = -300.0
@@ -148,6 +173,12 @@ func take_damage(n: int) -> void:
 		return
 	hp -= n
 	flash = 0.06
+	# sangre hacia el lado contrario al jugador (de donde viene el golpe)
+	var away := Vector2(signf(position.x - main.player.position.x), 0)
+	if away.x == 0.0:
+		away.x = 1.0
+	var gy: float = main.ground_y_at(position.x) if main.has_method("ground_y_at") else position.y
+	Sangre.salpicar(get_parent(), position + Vector2(0, -24 if ar else -18), away, 14 if hp <= 0 else 6, gy)
 	if hp <= 0:
 		main.add_score(200 if mode != "run" else 100)
 		state = "dead"
@@ -178,11 +209,14 @@ func _setup_sprite() -> void:
 		# moreno, canoso con barba, pelirrojo), pintadas por tools/sprites/soldados.py caras
 		var cara := randi() % (AR_CARAS + 1)
 		var hoja := "res://assets/sprites/soldier_ar.png" if cara == 0 else "res://assets/sprites/soldier_ar_%d.png" % cara
+		var n: Dictionary = ar_meta["counts"]
 		spr = SpriteUtil.sprite(SpriteUtil.frames(hoja, fr[0], fr[1], {
-			"idle": [A["idle"], 1, 1, true], "run": [A["run"], 8, 14, true], "panic": [A["panic"], 2, 6, true],
-			"throw": [A["throw"], 2, 1, false], "aim": [A["aim"], 4, 1, false], "flee": [A["flee"], 8, 18, true],
+			"idle": [A["idle"], n["idle"], 5, true], "run": [A["run"], 8, 14, true], "panic": [A["panic"], n["panic"], 9, true],
+			"throw": [A["throw"], n["throw"], 1, false], "aim": [A["aim"], 4, 1, false], "flee": [A["flee"], 8, 18, true],
 			"die": [A["die"], 3, 1, false]}),
 			SpriteUtil.v(ar_meta["feet"]))
+		# cada soldado respira a su ritmo (no todos a la vez)
+		spr.speed_scale = randf_range(0.8, 1.15)
 		add_child(spr)
 		return
 	var meta := SpriteUtil.meta("res://assets/sprites/soldier_meta.json")
@@ -198,6 +232,9 @@ func _setup_sprite() -> void:
 func _animate() -> void:
 	spr.scale.x = dir
 	spr.modulate = Color(4, 4, 4) if flash > 0.0 else Color.WHITE
+	# culatazo al disparar: 1 px hacia atrás
+	spr.position.x = -dir if fire_t > 0.0 and state == "normal" else 0
+	fx.queue_redraw()
 	match state:
 		"panic":
 			_play("panic")
@@ -220,7 +257,13 @@ func _animate() -> void:
 					spr.animation = "aim"
 					spr.frame = _aim_idx()
 				"grenadier":
-					if shoot_t < 0.5:
+					if ar:
+						if throw_t >= 0.0:
+							spr.animation = "throw"
+							spr.frame = mini(int(throw_t * THROW_FPS), spr.sprite_frames.get_frame_count("throw") - 1)
+						else:
+							_play("idle")
+					elif shoot_t < 0.5:
 						spr.animation = "throw"
 						spr.frame = 0
 					elif shoot_t > 1.9:
@@ -245,3 +288,18 @@ func _aim_idx() -> int:
 func _play(anim: String) -> void:
 	if spr.animation != anim or not spr.is_playing():
 		spr.play(anim)
+
+
+## Fogonazo del francotirador en la boca del fusil (las poses de apuntar no lo traen dibujado).
+func _draw_fx() -> void:
+	if fire_t <= 0.0 or state != "normal" or mode != "sniper":
+		return
+	var m := Vector2(0, -22) + aim * 14
+	if ar:
+		var mz: Array = ar_meta["muzzles"][_aim_idx()]
+		m = Vector2(mz[0] * dir, mz[1])
+	var big := fire_t > 0.035
+	var d := Vector2(absf(aim.x) * dir, aim.y).normalized()
+	fx.draw_circle(m + d * 2.0, 4.5 if big else 3.0, Color(1, 0.6, 0.15))
+	fx.draw_circle(m + d * 3.0, 3.0 if big else 2.0, Color(1, 0.92, 0.45))
+	fx.draw_circle(m + d * 3.0, 1.5, Color(1, 1, 0.9))

@@ -219,7 +219,10 @@ func _physics_process(delta: float) -> void:
 			s.dir = 1 if from_left else -1
 			if not from_left and randf() < 0.15:
 				s.mode = "grenadier"
-			s.position = Vector2(cam_left - 10 if from_left else cam_left + SCREEN_W + 10, 90)
+			var sx: float = cam_left - 10 if from_left else cam_left + SCREEN_W + 10
+			# entra corriendo por el suelo (no cae del cielo); sobre un foso, desde arriba como antes
+			var gy := ground_y_at(sx)
+			s.position = Vector2(sx, gy - 1.0 if gy < 900.0 else 90.0)
 			add_child(s)
 	if boss and cam_left >= boss_arena - 1.0 and state == "play" and not boss_announced:
 		boss_announced = true
