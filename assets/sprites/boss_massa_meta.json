@@ -35,6 +35,10 @@
   "v_shoot": {
    "row": 7,
    "frames": 4
+  },
+  "v_die": {
+   "row": 8,
+   "frames": 6
   }
  },
  "pivot": [

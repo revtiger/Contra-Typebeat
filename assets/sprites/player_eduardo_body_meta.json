@@ -116,8 +116,14 @@
    "fps": 14,
    "loop": false
   },
-  "crawl": {
+  "air_down": {
    "row": 18,
+   "frames": 1,
+   "fps": 1,
+   "loop": false
+  },
+  "crawl": {
+   "row": 19,
    "frames": 4,
    "fps": 8,
    "loop": true
@@ -420,6 +426,12 @@
    [
     7,
     -6
+   ]
+  ],
+  "air_down": [
+   [
+    13,
+    -1
    ]
   ]
  },
