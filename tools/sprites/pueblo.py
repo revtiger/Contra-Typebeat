@@ -81,16 +81,46 @@ VALLA_ALTO = 34
 VALLA_BOX = (102, 106, 1898, 545)
 VALLA_REPITE = (102, 1812)
 
+# Techos y toldos donde se puede caminar (px del edificio ya a escala del juego): el techo, de borde a borde
+# (menos TECHO_MARGEN) a la altura y, sobre las tejas; el toldo de los comercios, de x0 a x1 a la altura y.
+# level.gd los pone como plataformas invisibles que se atraviesan desde abajo: se sube saltando por cajas a los
+# toldos y de ahí a los techos.
+TECHO = {
+	"casa": 23, "almacen": 24, "casa_2_pisos": 17, "panaderia": 18, "casa_garaje": 25, "ferreteria": 18,
+	"galpon": 19, "cafe": 16, "encomiendas": 14,
+}
+TECHO_MARGEN = 6
+TOLDO = {
+	"almacen": (45, 145, 68), "panaderia": (20, 83, 56), "ferreteria": (12, 140, 57), "cafe": (18, 142, 56),
+	"encomiendas": (22, 85, 42),
+}
+
 # La calle de punta a punta: nombre = edificio; número = hueco con valla de ese ancho;
-# (árbol, ancho) = hueco con valla y un árbol detrás. Al final, la capilla con el ombú grande:
-# es la plaza donde pelea Massa (los últimos 480 px).
+# (árbol, ancho) = hueco con valla y un árbol detrás. Por tramos (ver la plantilla "pueblo" de levels.gd):
+#   1. la calle de entrada
+#   2. los techos: comercios juntos (huecos cortos) para ir de techo en techo
+#   3. el canalón, delante de casas
+#   4. la calle final, más difícil
+#   5. la plaza de la capilla con el ombú grande, donde pelea Massa (los últimos 480 px)
 CALLE = [
+	# 1. entrada
 	16, "casa", ("ombu", 60), "almacen", ("cedro", 52), "casa_2_pisos", ("jacaranda", 56), "casa_garaje",
 	("pino", 54), "casa", ("naranjo", 40), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "cafe",
-	("eucalipto", 52), "casa_2_pisos", ("sauce", 54), "encomiendas", ("jacaranda", 56), "casa",
-	("cedro", 52), "casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40),
-	"casa_2_pisos", ("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje",
-	("cedro", 52), "casa", ("jacaranda", 56), "casa_2_pisos", ("ombu_grande", 130), "capilla", ("sauce", 70), 60,
+	("eucalipto", 52), "casa_2_pisos", ("sauce", 54), "encomiendas",
+	# 2. techos
+	("jacaranda", 56), "almacen", 24, "panaderia", 20, "ferreteria", 24, "cafe", 20, "encomiendas", 24, "casa",
+	20, "almacen", 24, "cafe", ("ombu", 60),
+	# 3. canalón
+	"casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40), "casa_2_pisos",
+	("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje", ("cedro", 52), "casa",
+	("jacaranda", 56),
+	# 4. calle final
+	"casa_2_pisos", ("sauce", 54), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "casa", ("pino", 54),
+	"galpon", ("eucalipto", 52), "cafe", ("naranjo", 40), "casa_garaje", ("cedro", 52), "casa_2_pisos",
+	("jacaranda", 56), "encomiendas", ("ombu", 60), "casa", ("alamo", 40), "almacen", ("pino", 54), "casa_garaje",
+	("naranjo", 40), "casa", ("cedro", 52), "casa_2_pisos", ("eucalipto", 52), "panaderia", ("ombu", 60), "cafe",
+	# 5. plaza de la capilla
+	("ombu_grande", 130), "capilla", ("sauce", 70), 60,
 ]
 TROZO = 800
 
@@ -197,7 +227,10 @@ def build_calle() -> None:
 			vs = VECINO.get(name, [-1])
 			k = vs[turno.get(name, 0) % len(vs)]
 			turno[name] = turno.get(name, 0) + 1
-			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k))
+			techo = [x + TECHO_MARGEN, x + im.width - TECHO_MARGEN, top + TECHO[name]] if name in TECHO else []
+			t = TOLDO.get(name)
+			toldo = [x + t[0], x + t[1], top + t[2]] if t else []
+			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k, techo, toldo))
 		x += pw
 	_write_casas(casas)
 	# 4) se corta en trozos para el juego
@@ -213,11 +246,12 @@ def _write_casas(casas) -> None:
 		"extends RefCounted",
 		"## Generado por tools/sprites/pueblo.py: no editar a mano.",
 		"## Edificios de la calle del pueblo (1.1) en coordenadas del mundo:",
-		"## [nombre, puerta [x0, y0, x1, y1], ventanas [[x0, y0, x1, y1], ...], vecino (fila de vecinos.png, -1 nadie)]",
+		"## [nombre, puerta [x0, y0, x1, y1], ventanas [[x0, y0, x1, y1], ...], vecino (fila de vecinos.png, -1 nadie),",
+		"##  techo [x0, x1, y] y toldo [x0, x1, y] donde se puede caminar ([] si no hay)]",
 		"const CASAS := [",
 	]
-	for name, door, wins, k in casas:
-		lines.append(f'\t["{name}", {door}, {wins}, {k}],')
+	for name, door, wins, k, techo, toldo in casas:
+		lines.append(f'\t["{name}", {door}, {wins}, {k}, {techo}, {toldo}],')
 	lines.append("]")
 	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 	print("pueblo_casas.gd:", len(casas), "edificios")

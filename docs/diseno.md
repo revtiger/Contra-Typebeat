@@ -198,3 +198,11 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 - **Massa:** al morir ya no gira como una tarjeta. Recibe el golpe, suelta el rifle y cae de espaldas (`v_die`, PixelLab), salpica sangre y se queda tirado mientras le revientan los bolsillos.
 - **Balas** con una estela corta detrás.
 
+**1.1 más larga, con techos y canalón (25-10-2026, Eduardo):** la calle del pueblo pasa de 4879 a 9408 px y se juega en cinco tramos cada vez más difíciles:
+1. **Entrada:** la calle de siempre.
+2. **Techos:** fila de comercios juntos. Con cajas de madera (`scripts/caja.gd`, PixelLab) se sube a los toldos y de ahí a los techos, que se recorren saltando de uno a otro. Hay francotiradores arriba y granaderos abajo. Los techos y toldos de todos los edificios son salientes invisibles que se atraviesan desde abajo; `tools/sprites/pueblo.py` los exporta en `scripts/pueblo_casas.gd`.
+3. **Canalón:** canal de desagüe seco 28 px más abajo que la calle, con pared de concreto, barro con charcos (`tools/sprites/canal.py`), cajas para cubrirse, un nido, minas y tiradores dentro y en los techos.
+4. **Calle final:** tanque comunista, más nidos y granaderos, tiradores en los techos.
+5. **Plaza de la capilla:** Massa.
+
+El reloj vuelve a 60 al empezar los tramos 2, 3 y 4 (entidad `tiempo`). La prueba automática admite hasta 14000 fotogramas.

@@ -24,6 +24,8 @@ const Terrain = preload("res://scripts/terrain.gd")
 const Background = preload("res://scripts/background.gd")
 const Explosion = preload("res://scripts/explosion.gd")
 const Civilian = preload("res://scripts/civilian.gd")
+const Caja = preload("res://scripts/caja.gd")
+const PuebloCasas = preload("res://scripts/pueblo_casas.gd")
 
 const SCREEN_W := 480.0
 const SCREEN_H := 270.0
@@ -108,6 +110,12 @@ func _ready() -> void:
 			_add_block(Rect2(g[0], g[2], g[1] - g[0], 320 - g[2]), false)
 	for p in data["platforms"]:
 		_add_block(Rect2(p[0], p[2], p[1], 8), true)
+	if theme == "pueblo":
+		# techos y toldos de los edificios: se camina por encima (el dibujo ya está en la calle de fondo)
+		for c in PuebloCasas.CASAS:
+			for r in [c[4], c[5]]:
+				if r.size() == 3:
+					_add_ledge(r[0], r[1], r[2])
 
 	player = Player.new()
 	player.position = Vector2(60, 200)
@@ -175,6 +183,22 @@ func _add_block(rect: Rect2, one_way: bool) -> void:
 	vis.one_way = one_way
 	vis.theme = theme
 	body.add_child(vis)
+	add_child(body)
+
+
+## Saliente invisible que se atraviesa desde abajo (techos y toldos del pueblo, que ya están dibujados en el fondo).
+func _add_ledge(x0: float, x1: float, y: float) -> void:
+	var body := StaticBody2D.new()
+	body.collision_layer = 8
+	body.collision_mask = 0
+	body.position = Vector2(x0, y)
+	var cs := CollisionShape2D.new()
+	var sh := RectangleShape2D.new()
+	sh.size = Vector2(x1 - x0, 6)
+	cs.shape = sh
+	cs.position = sh.size / 2
+	cs.one_way_collision = true
+	body.add_child(cs)
 	add_child(body)
 
 
@@ -292,6 +316,14 @@ func _spawn_entities() -> void:
 			"door":
 				n = Door.new()
 				n.number = e[3]
+			"caja":
+				n = Caja.new()
+				if e.size() > 3:
+					n.alto = e[3]
+			"tiempo":
+				# control a mitad de fase: el reloj vuelve a 60
+				reset_time()
+				continue
 			"capsule":
 				n = Pickup.new()
 				n.weapon = e[3]

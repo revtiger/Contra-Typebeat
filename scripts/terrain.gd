@@ -12,6 +12,10 @@ const LEDGE_DEPTH := 22.0
 var theme := "jungle"
 
 const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
+## Canalón de la 1.1 (tools/sprites/canal.py): pared de concreto del fondo y barro con charcos
+const CANAL_PARED := preload("res://assets/sprites/canal_pared.png")
+const CANAL_FONDO := preload("res://assets/sprites/canal_fondo.png")
+const CALLE_Y := 230.0  # altura de la calle del pueblo: los tramos más bajos son el canal
 ## Suelos de PixelLab de la 1.2 y la 1.3 (tools/sprites/argentina.py): tira que se repite y color de relleno debajo
 const STRIPS := {
 	"quebrada": [preload("res://assets/sprites/ground_quebrada.png"), Color(0.16, 0.06, 0.08)],
@@ -80,6 +84,9 @@ func _draw() -> void:
 ## Pueblo de la pampa: calle de adoquines con tierra y pasto (tira de ground_pueblo.png, sacada de
 ## las ilustraciones). El pueblo no tiene tablones ni fosos.
 func _draw_pueblo() -> void:
+	if global_position.y > CALLE_Y + 4.0:
+		_draw_canal()
+		return
 	var tw := float(PUEBLO_GROUND.get_width())
 	var th := float(PUEBLO_GROUND.get_height())
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.17, 0.11, 0.07))
@@ -210,3 +217,32 @@ func _draw_slope_plain() -> void:
 	var body := Color(0.72, 0.45, 0.28) if theme == "desert" else Color(0.36, 0.25, 0.16)
 	draw_colored_polygon(PackedVector2Array([Vector2(0, top0), Vector2(size.x, top1), Vector2(size.x, size.y), Vector2(0, size.y)]), body)
 	draw_line(Vector2(0, top0), Vector2(size.x, top1), body.lightened(0.35), 4)
+
+
+## Canal de desagüe seco: por encima del tramo (de la calle hasta el fondo) se ve la pared de concreto del otro lado
+## del canal; el tramo en sí es el fondo de barro con charcos. A los lados, la cara de concreto de la calle.
+func _draw_canal() -> void:
+	var depth := global_position.y - CALLE_Y
+	_tile_x(CANAL_PARED, -depth, depth)
+	draw_rect(Rect2(0, 0, size.x, size.y), Color(0.14, 0.1, 0.09))
+	_tile_x(CANAL_FONDO, 0.0, float(CANAL_FONDO.get_height()))
+	# caras de concreto de los bordes y su sombra en el fondo
+	var cara := Color(0.36, 0.33, 0.33)
+	var sombra := Color(0, 0, 0, 0.35)
+	draw_rect(Rect2(0, -depth, 4, depth), cara)
+	draw_rect(Rect2(0, -depth, 1, depth), Color(0.2, 0.17, 0.18))
+	draw_rect(Rect2(4, -depth, 6, depth + 6), sombra)
+	draw_rect(Rect2(size.x - 4, -depth, 4, depth), cara)
+	draw_rect(Rect2(size.x - 1, -depth, 1, depth), Color(0.2, 0.17, 0.18))
+	draw_rect(Rect2(size.x - 10, -depth, 6, depth + 6), sombra)
+
+
+## Tira que se repite en horizontal alineada con la x del mundo, de y a y + h.
+func _tile_x(tex: Texture2D, y: float, h: float) -> void:
+	var tw := float(tex.get_width())
+	var x := -fposmod(global_position.x, tw)
+	while x < size.x:
+		var sx := maxf(0.0, -x)
+		var w := minf(tw - sx, size.x - maxf(x, 0.0))
+		draw_texture_rect_region(tex, Rect2(maxf(x, 0.0), y, w, h), Rect2(sx, 0, w, h))
+		x += tw
