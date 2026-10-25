@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxyoh3ov4n4n5"
-path="res://.godot/imported/canal_pared.png-c27ca4f8cf05527d97efc56aba924990.ctex"
+uid="uid://co0ji73s0ljnn"
+path="res://.godot/imported/terraza_arco.png-ef0413a2e1424134eef7b8b0861e9ee2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/canal_pared.png"
-dest_files=["res://.godot/imported/canal_pared.png-c27ca4f8cf05527d97efc56aba924990.ctex"]
+source_file="res://assets/sprites/terraza_arco.png"
+dest_files=["res://.godot/imported/terraza_arco.png-ef0413a2e1424134eef7b8b0861e9ee2.ctex"]
 
 [params]
 

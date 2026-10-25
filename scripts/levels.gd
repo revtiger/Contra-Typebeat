@@ -112,13 +112,18 @@ const TEMPLATES := {
 	#   1. entrada (0-2130): calle, nidos y francotiradores sueltos
 	#   2. techos (2130-3650): comercios juntos; con cajas se sube a los toldos y de ahí a los techos (level.gd pone
 	#      techos y toldos como salientes invisibles, de scripts/pueblo_casas.gd); francotiradores arriba
-	#   3. canalón (3900-5400): canal de desagüe seco 28 px más abajo que la calle, con cajas para cubrirse
+	#   3. canal (3880-5400): la calle sube por una rampa a una terraza de piedra con baranda (y un escalón más alto
+	#      en medio); por debajo corre el canal con agua y arcos de desagüe, solo de decorado (referencia de
+	#      Eduardo: tools/sprites/chatgpt/pueblo/canal/referencia_canal.png); al final otra rampa baja a la calle
 	#   4. calle final (5550-8950): tanque, más nidos y granaderos, tiradores en los techos
 	#   5. plaza de la capilla: Massa
 	# "tiempo" vuelve a poner el reloj en 60 al empezar los tramos 2, 3 y 4.
 	"pueblo": {
 		"end": 9408,
-		"ground": [[0, 3900, 230], [3900, 5400, 258], [5400, 9408, 230]],
+		"ground": [
+			[0, 3880, 230], [3880, 3960, 230, 190], [3960, 4480, 190], [4480, 4530, 190, 168], [4530, 4900, 168],
+			[4900, 4950, 168, 190], [4950, 5320, 190], [5320, 5400, 190, 230], [5400, 9408, 230],
+		],
 		"platforms": [],
 		"entities": [
 			# 1. entrada
@@ -131,11 +136,12 @@ const TEMPLATES := {
 			["sniper", 2800, 90], ["barrel", 2900, 230], ["barrel", 2914, 230], ["grenadier", 3050, 230],
 			["sniper", 3150, 110], ["turret", 3300, 230], ["caja", 3290, 230], ["sniper", 3500, 90],
 			["grenadier", 3560, 230],
-			# 3. canalón: se baja al canal; tiradores en los techos y en el fondo, un nido y minas
-			["tiempo", 3880, 230], ["sniper", 4050, 258], ["mine", 4150, 258], ["sniper", 4250, 110],
-			["caja", 4300, 258], ["capsule", 4400, 60, "H"], ["turret", 4480, 258], ["sniper", 4620, 258],
-			["sniper", 4700, 110], ["caja", 4800, 258, 2], ["grenadier", 4900, 258], ["mine", 5000, 258],
-			["sniper", 5100, 258], ["sniper", 5150, 91], ["caja", 5330, 258],
+			# 3. terraza del canal: se sube por la rampa; tiradores en la terraza y en los techos, un nido arriba del
+			# escalón y minas
+			["tiempo", 3860, 230], ["sniper", 4050, 190], ["mine", 4150, 190], ["sniper", 4250, 110],
+			["caja", 4320, 190], ["capsule", 4400, 60, "H"], ["caja", 4560, 168], ["turret", 4650, 168],
+			["sniper", 4700, 110], ["grenadier", 4850, 168], ["mine", 5000, 190], ["sniper", 5100, 190],
+			["sniper", 5150, 91], ["grenadier", 5250, 190],
 			# 4. calle final, la más difícil
 			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],
 			["grenadier", 5900, 230], ["sniper", 6000, 101], ["capsule", 6200, 60, "R"],

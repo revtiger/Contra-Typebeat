@@ -12,10 +12,15 @@ const LEDGE_DEPTH := 22.0
 var theme := "jungle"
 
 const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
-## Canalón de la 1.1 (tools/sprites/canal.py): pared de concreto del fondo y barro con charcos
-const CANAL_PARED := preload("res://assets/sprites/canal_pared.png")
-const CANAL_FONDO := preload("res://assets/sprites/canal_fondo.png")
-const CALLE_Y := 230.0  # altura de la calle del pueblo: los tramos más bajos son el canal
+## Terraza del canal de la 1.1 (tools/sprites/terraza.py, referencia de Eduardo): los tramos de la calle más altos
+## que ella son una terraza de piedra con baranda; abajo corre el canal (solo decorado) con arcos de desagüe.
+const TERRAZA_MURO := preload("res://assets/sprites/terraza_muro.png")
+const TERRAZA_PIEDRA := preload("res://assets/sprites/terraza_piedra.png")
+const TERRAZA_ARCO := preload("res://assets/sprites/terraza_arco.png")
+const TERRAZA_BARANDA := preload("res://assets/sprites/terraza_baranda.png")
+const CALLE_Y := 230.0  # altura de la calle del pueblo
+const AGUA_Y := 258.0   # nivel del agua del canal (y del mundo)
+const ARCO_CADA := 300.0  # un arco de desagüe cada tantos px (alineados con la x del mundo)
 ## Suelos de PixelLab de la 1.2 y la 1.3 (tools/sprites/argentina.py): tira que se repite y color de relleno debajo
 const STRIPS := {
 	"quebrada": [preload("res://assets/sprites/ground_quebrada.png"), Color(0.16, 0.06, 0.08)],
@@ -23,7 +28,21 @@ const STRIPS := {
 }
 
 
+func _ready() -> void:
+	# las rampas de la terraza rellenan un polígono con la piedra repetida
+	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+
+
+func _process(_delta: float) -> void:
+	# el agua del canal brilla y se mueve
+	if theme == "pueblo" and (top0 != top1 or global_position.y < CALLE_Y - 4.0):
+		queue_redraw()
+
+
 func _draw() -> void:
+	if top0 != top1 and theme == "pueblo":
+		_draw_rampa()
+		return
 	if top0 != top1 and not STRIPS.has(theme):
 		_draw_slope_plain()
 		return
@@ -84,8 +103,8 @@ func _draw() -> void:
 ## Pueblo de la pampa: calle de adoquines con tierra y pasto (tira de ground_pueblo.png, sacada de
 ## las ilustraciones). El pueblo no tiene tablones ni fosos.
 func _draw_pueblo() -> void:
-	if global_position.y > CALLE_Y + 4.0:
-		_draw_canal()
+	if global_position.y < CALLE_Y - 4.0:
+		_draw_terraza()
 		return
 	var tw := float(PUEBLO_GROUND.get_width())
 	var th := float(PUEBLO_GROUND.get_height())
@@ -219,22 +238,64 @@ func _draw_slope_plain() -> void:
 	draw_line(Vector2(0, top0), Vector2(size.x, top1), body.lightened(0.35), 4)
 
 
-## Canal de desagüe seco: por encima del tramo (de la calle hasta el fondo) se ve la pared de concreto del otro lado
-## del canal; el tramo en sí es el fondo de barro con charcos. A los lados, la cara de concreto de la calle.
-func _draw_canal() -> void:
-	var depth := global_position.y - CALLE_Y
-	_tile_x(CANAL_PARED, -depth, depth)
-	draw_rect(Rect2(0, 0, size.x, size.y), Color(0.14, 0.1, 0.09))
-	_tile_x(CANAL_FONDO, 0.0, float(CANAL_FONDO.get_height()))
-	# caras de concreto de los bordes y su sombra en el fondo
-	var cara := Color(0.36, 0.33, 0.33)
-	var sombra := Color(0, 0, 0, 0.35)
-	draw_rect(Rect2(0, -depth, 4, depth), cara)
-	draw_rect(Rect2(0, -depth, 1, depth), Color(0.2, 0.17, 0.18))
-	draw_rect(Rect2(4, -depth, 6, depth + 6), sombra)
-	draw_rect(Rect2(size.x - 4, -depth, 4, depth), cara)
-	draw_rect(Rect2(size.x - 1, -depth, 1, depth), Color(0.2, 0.17, 0.18))
-	draw_rect(Rect2(size.x - 10, -depth, 6, depth + 6), sombra)
+## Terraza: baranda detrás del paseo, muro de piedra (con un arco de desagüe cada ARCO_CADA px) y el agua del canal.
+func _draw_terraza() -> void:
+	var h := AGUA_Y - global_position.y  # alto del muro hasta el agua
+	var bh := float(TERRAZA_BARANDA.get_height())
+	_tile_x(TERRAZA_BARANDA, -bh + 3.0, bh)
+	var mh := float(TERRAZA_MURO.get_height())
+	_tile_x(TERRAZA_MURO, 0.0, minf(mh, h))
+	var y := mh
+	var ph := float(TERRAZA_PIEDRA.get_height())
+	while y < h:
+		_tile_x(TERRAZA_PIEDRA, y, minf(ph, h - y))
+		y += ph
+	# arcos de desagüe con el chorro cayendo al agua
+	var aw := float(TERRAZA_ARCO.get_width())
+	var ah := float(TERRAZA_ARCO.get_height())
+	var x := ARCO_CADA - fposmod(global_position.x, ARCO_CADA) - ARCO_CADA
+	while x < size.x:
+		if x >= 0.0 and x + aw <= size.x:
+			draw_texture(TERRAZA_ARCO, Vector2(x, h + 4.0 - ah))
+		x += ARCO_CADA
+	_draw_agua(0.0, size.x, h)
+
+
+## Rampa empedrada entre la calle y la terraza: piedra bajo la cuesta, borde de adoquines y el agua.
+func _draw_rampa() -> void:
+	var w := size.x
+	var gx := global_position.x
+	var tw := float(TERRAZA_PIEDRA.get_width())
+	var th := float(TERRAZA_PIEDRA.get_height())
+	var pts := PackedVector2Array([Vector2(0, top0), Vector2(w, top1), Vector2(w, AGUA_Y), Vector2(0, AGUA_Y)])
+	var uvs := PackedVector2Array()
+	for p in pts:
+		uvs.append(Vector2((p.x + gx) / tw, (p.y - minf(top0, top1)) / th))
+	draw_polygon(pts, PackedColorArray([Color.WHITE]), uvs, TERRAZA_PIEDRA)
+	# borde de adoquines de la cuesta
+	draw_line(Vector2(0, top0 + 1), Vector2(w, top1 + 1), Color(0.86, 0.76, 0.58), 3.0)
+	draw_line(Vector2(0, top0 + 3), Vector2(w, top1 + 3), Color(0.32, 0.25, 0.2), 1.0)
+	for k in range(0, int(w), 9):
+		var t := float(k) / w
+		var y := lerpf(top0, top1, t)
+		draw_line(Vector2(k, y), Vector2(k, y + 2), Color(0.55, 0.45, 0.35), 1.0)
+	_draw_agua(0.0, w, AGUA_Y - global_position.y)
+
+
+## Agua del canal (decorado): franja verdeazulada con brillos que se mueven, de y a la parte de abajo del bloque.
+func _draw_agua(x0: float, x1: float, y: float) -> void:
+	draw_rect(Rect2(x0, y, x1 - x0, size.y - y), Color(0.16, 0.38, 0.4))
+	draw_rect(Rect2(x0, y, x1 - x0, 2), Color(0.42, 0.7, 0.68))
+	draw_rect(Rect2(x0, y + 2, x1 - x0, 1), Color(0.24, 0.5, 0.52))
+	var t := Time.get_ticks_msec() / 1000.0
+	var gx := global_position.x
+	for k in range(int(x0), int(x1), 7):
+		var wx := k + gx
+		var s := sin(wx * 0.37 + t * 2.4) + sin(wx * 0.11 - t * 1.3)
+		if s > 1.1:
+			draw_rect(Rect2(k, y + 4 + fposmod(wx * 0.5, 6.0), 4, 1), Color(0.78, 0.92, 0.86, 0.8))
+		elif s < -1.3:
+			draw_rect(Rect2(k, y + 6 + fposmod(wx * 0.3, 5.0), 3, 1), Color(0.95, 0.66, 0.45, 0.6))
 
 
 ## Tira que se repite en horizontal alineada con la x del mundo, de y a y + h.

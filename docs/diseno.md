@@ -201,7 +201,7 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 **1.1 más larga, con techos y canalón (25-10-2026, Eduardo):** la calle del pueblo pasa de 4879 a 9408 px y se juega en cinco tramos cada vez más difíciles:
 1. **Entrada:** la calle de siempre.
 2. **Techos:** fila de comercios juntos. Con cajas de madera (`scripts/caja.gd`, PixelLab) se sube a los toldos y de ahí a los techos, que se recorren saltando de uno a otro. Hay francotiradores arriba y granaderos abajo. Los techos y toldos de todos los edificios son salientes invisibles que se atraviesan desde abajo; `tools/sprites/pueblo.py` los exporta en `scripts/pueblo_casas.gd`.
-3. **Canalón:** canal de desagüe seco 28 px más abajo que la calle, con pared de concreto, barro con charcos (`tools/sprites/canal.py`), cajas para cubrirse, un nido, minas y tiradores dentro y en los techos.
+3. **Terraza del canal** (según la referencia de Eduardo, `tools/sprites/chatgpt/pueblo/canal/referencia_canal.png`): la calle sube por una rampa empedrada a una terraza de piedra con baranda, con un escalón más alto en medio, y vuelve a bajar. Por debajo corre el canal con agua y arcos de desagüe, solo de decorado: no se puede caer al agua. Arte de PixelLab con la referencia como guía de estilo (`tools/sprites/terraza.py`). Hay cajas, un nido, minas y tiradores en la terraza y en los techos.
 4. **Calle final:** tanque comunista, más nidos y granaderos, tiradores en los techos.
 5. **Plaza de la capilla:** Massa.
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6xadnnf2jql5"
-path="res://.godot/imported/canal_fondo.png-d8b2bc8d1eb8cc5b7b4ddcb5ea64c20b.ctex"
+uid="uid://8oppctuy6xm"
+path="res://.godot/imported/terraza_piedra.png-946430af428ba4ace4f582ed6f550034.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/canal_fondo.png"
-dest_files=["res://.godot/imported/canal_fondo.png-d8b2bc8d1eb8cc5b7b4ddcb5ea64c20b.ctex"]
+source_file="res://assets/sprites/terraza_piedra.png"
+dest_files=["res://.godot/imported/terraza_piedra.png-946430af428ba4ace4f582ed6f550034.ctex"]
 
 [params]
 
