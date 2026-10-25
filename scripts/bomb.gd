@@ -38,7 +38,7 @@ func _physics_process(delta: float) -> void:
 		vel.y += 380.0 * delta
 		position += vel * delta
 		if position.y >= ground_y - 3.0:
-			main.blast(Vector2(position.x, ground_y - 4.0), 26.0, true)
+			main.blast(Vector2(position.x, ground_y - 4.0), 26.0, true, 5, false)  # no daña a los suyos
 			queue_free()
 			return
 	queue_redraw()

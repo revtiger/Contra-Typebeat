@@ -220,7 +220,8 @@ func _physics_process(delta: float) -> void:
 		_slide_kick()
 	if invuln <= 0.0:
 		for b in hurt.get_overlapping_bodies():
-			if b.is_in_group("enemy") and not (slide_t > 0.0 and b.get("knifeable") == true):
+			# los sacos del nido de ametralladora no hacen daño al tocarlos (touch_damage = false)
+			if b.is_in_group("enemy") and b.get("touch_damage") != false and not (slide_t > 0.0 and b.get("knifeable") == true):
 				hit()
 				break
 	if position.y > 300:
@@ -294,8 +295,13 @@ func _try_knife() -> bool:
 		if n.get("knifeable") != true:
 			continue
 		var dx: float = (n.position.x - position.x) * facing
-		if dx > -4.0 and dx < KNIFE_RANGE and absf(n.position.y - position.y) < 20.0:
-			n.take_damage(3)
+		# knife_reach: alcance extra de los enemigos anchos (el soldado del nido está detrás de los sacos)
+		var reach: float = KNIFE_RANGE + float(n.get("knife_reach") if n.get("knife_reach") != null else 0.0)
+		if dx > -4.0 and dx < reach and absf(n.position.y - position.y) < 20.0:
+			if n.has_method("knifed"):
+				n.knifed()  # el soldado del nido muere de una puñalada
+			else:
+				n.take_damage(3)
 			knife_t = 0.18
 			shoot_cd = 0.25
 			Game.sfx("knife", -6.0)

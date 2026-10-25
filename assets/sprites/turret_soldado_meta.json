@@ -20,5 +20,11 @@
    17,
    14
   ]
- ]
+ ],
+ "rows": {
+  "intacto": 0,
+  "danado": 1,
+  "destrozado": 2,
+  "vacio": 3
+ }
 }
