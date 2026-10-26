@@ -8,6 +8,7 @@ const Soldier = preload("res://scripts/soldier.gd")
 const Turret = preload("res://scripts/turret.gd")
 const Boss = preload("res://scripts/boss.gd")
 const Heli = preload("res://scripts/heli.gd")
+const Helicoptero = preload("res://scripts/helicoptero.gd")
 const Tank = preload("res://scripts/tank.gd")
 const Barrel = preload("res://scripts/barrel.gd")
 const Mine = preload("res://scripts/mine.gd")
@@ -315,6 +316,8 @@ func _spawn_entities() -> void:
 			"miniboss":
 				n = Miniboss.new()
 				n.kind = e[3]
+			"helicoptero":
+				n = Helicoptero.new()  # se pone solo a la derecha de la pantalla, arriba
 			"jet":
 				n = Jet.new()
 				pos = Vector2(cam_left + SCREEN_W + 40, cam_y + 26)

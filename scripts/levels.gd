@@ -138,11 +138,12 @@ const TEMPLATES := {
 			["sniper", 2800, 90], ["barrel", 2900, 230], ["barrel", 2914, 230], ["grenadier", 3050, 230],
 			["sniper", 3150, 110], ["turret", 3300, 230], ["caja", 3290, 230], ["sniper", 3500, 90],
 			["grenadier", 3560, 230],
-			# 3. canal: se baja por la rampa al paseo; soldados, nidos y minas en el paseo y aviones que bombardean
-			# desde arriba (la cápsula entra a la altura de la cámara)
-			["tiempo", 3860, 230], ["sniper", 4120, 340], ["mine", 4200, 340], ["turret", 4380, 340],
-			["capsule", 4400, 60, "H"], ["jet", 4500, 0], ["grenadier", 4560, 340], ["barrel", 4660, 340],
-			["barrel", 4674, 340], ["sniper", 4760, 340], ["turret", 4900, 340], ["jet", 4950, 0],
+			# 3. canal: se baja por la rampa al paseo; soldados, nidos y minas en el paseo y, desde arriba,
+			# helicópteros que disparan y un avión que bombardea (la cápsula entra a la altura de la cámara)
+			["tiempo", 3860, 230], ["sniper", 4120, 340], ["mine", 4200, 340], ["helicoptero", 4250, 0],
+			["turret", 4380, 340], ["capsule", 4400, 60, "H"], ["grenadier", 4560, 340], ["barrel", 4660, 340],
+			["barrel", 4674, 340], ["sniper", 4760, 340], ["helicoptero", 4800, 0], ["turret", 4900, 340],
+			["jet", 4950, 0],
 			["grenadier", 5000, 340], ["mine", 5080, 340], ["sniper", 5180, 340],
 			# 4. calle final, la más difícil
 			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],
