@@ -26,11 +26,14 @@ const Explosion = preload("res://scripts/explosion.gd")
 const Civilian = preload("res://scripts/civilian.gd")
 const Caja = preload("res://scripts/caja.gd")
 const PuebloCasas = preload("res://scripts/pueblo_casas.gd")
+const Canal = preload("res://scripts/canal.gd")
 
 const SCREEN_W := 480.0
 const SCREEN_H := 270.0
 const START_TIME := 60
 const TIME_TICK := 4.0  # como en Metal Slug: TIME baja 1 cada 4 s
+const CALLE_Y := 230.0  # altura normal del suelo: con el jugador ahí la cámara está arriba del todo
+const FONDO := 440.0    # borde de abajo de los bloques de suelo (más abajo de lo que llega a ver la cámara)
 
 var data: Dictionary
 var theme := "jungle"
@@ -43,6 +46,10 @@ var player
 var boss
 var camera := Camera2D.new()
 var cam_left := 0.0
+## La cámara baja con el suelo (el canal de la 1.1): el jugador se ve siempre a la misma altura de la pantalla.
+## cam_y_max = cuánto puede bajar (0 en las fases donde no se mueve en vertical).
+var cam_y := 0.0
+var cam_y_max := 0.0
 var shake_amt := 0.0
 var lock_left := INF
 var boss_announced := false
@@ -63,6 +70,7 @@ func _ready() -> void:
 	country = data.get("country", "mx")
 	ground = data["ground"]
 	level_end = data["end"]
+	cam_y_max = data.get("cam_y_max", 0.0)
 	boss_arena = level_end - SCREEN_W
 	entities = data["entities"].duplicate()
 	entities.sort_custom(func(a, b): return a[1] < b[1])
@@ -107,15 +115,21 @@ func _ready() -> void:
 		if g.size() > 3 and g[3] != g[2]:
 			_add_slope(g)
 		else:
-			_add_block(Rect2(g[0], g[2], g[1] - g[0], 320 - g[2]), false)
+			_add_block(Rect2(g[0], g[2], g[1] - g[0], FONDO - g[2]), false)
 	for p in data["platforms"]:
 		_add_block(Rect2(p[0], p[2], p[1], 8), true)
 	if theme == "pueblo":
-		# techos y toldos de los edificios: se camina por encima (el dibujo ya está en la calle de fondo)
+		# techos y toldos de los edificios: se camina por encima (el dibujo ya está en la calle de fondo); en el
+		# canal no, porque ahí las casas se alejan
 		for c in PuebloCasas.CASAS:
 			for r in [c[4], c[5]]:
-				if r.size() == 3:
+				if r.size() == 3 and (r[1] < PuebloCasas.CANAL[0] or r[0] > PuebloCasas.CANAL[1]):
 					_add_ledge(r[0], r[1], r[2])
+		var canal := Canal.new()
+		canal.x0 = PuebloCasas.CANAL[0]
+		canal.x1 = PuebloCasas.CANAL[1]
+		canal.bajo = CALLE_Y + cam_y_max
+		add_child(canal)
 
 	player = Player.new()
 	player.position = Vector2(60, 200)
@@ -211,10 +225,10 @@ func _add_slope(g: Array) -> void:
 	body.collision_mask = 0
 	body.position = Vector2(g[0], 0)
 	var cp := CollisionPolygon2D.new()
-	cp.polygon = PackedVector2Array([Vector2(0, g[2]), Vector2(w, g[3]), Vector2(w, 320), Vector2(0, 320)])
+	cp.polygon = PackedVector2Array([Vector2(0, g[2]), Vector2(w, g[3]), Vector2(w, FONDO), Vector2(0, FONDO)])
 	body.add_child(cp)
 	var vis := Terrain.new()
-	vis.size = Vector2(w, 320)
+	vis.size = Vector2(w, FONDO)
 	vis.top0 = g[2]
 	vis.top1 = g[3]
 	vis.theme = theme
@@ -228,10 +242,17 @@ func _physics_process(delta: float) -> void:
 		return
 	if not player.dead:
 		cam_left = clampf(maxf(cam_left, player.position.x - SCREEN_W * 0.4), 0.0, minf(boss_arena, lock_left))
+		# en vertical sigue al suelo que hay bajo el jugador (no a sus saltos): al bajar la rampa del canal la
+		# pantalla baja con él y al subir la otra vuelve a su sitio
+		var want := clampf(ground_y_at(player.position.x) - CALLE_Y, 0.0, cam_y_max)
+		cam_y = lerpf(cam_y, want, 1.0 - exp(-10.0 * delta))
+		if absf(cam_y - want) < 0.3:
+			cam_y = want
 	shake_amt = maxf(shake_amt - 18.0 * delta, 0.0)
-	camera.position = Vector2(roundf(cam_left), 0)
+	camera.position = Vector2(roundf(cam_left), roundf(cam_y))
 	camera.offset = Vector2(randf_range(-1, 1), randf_range(-1, 1)).round() * shake_amt
 	player.cam_left = cam_left
+	player.cam_y = cam_y
 
 	_spawn_entities()
 	if state == "play" and cam_left < boss_arena - 150:
@@ -246,7 +267,7 @@ func _physics_process(delta: float) -> void:
 			var sx: float = cam_left - 10 if from_left else cam_left + SCREEN_W + 10
 			# entra corriendo por el suelo (no cae del cielo); sobre un foso, desde arriba como antes
 			var gy := ground_y_at(sx)
-			s.position = Vector2(sx, gy - 1.0 if gy < 900.0 else 90.0)
+			s.position = Vector2(sx, gy - 1.0 if gy < 900.0 else cam_y + 90.0)
 			add_child(s)
 	if boss and cam_left >= boss_arena - 1.0 and state == "play" and not boss_announced:
 		boss_announced = true
@@ -296,7 +317,7 @@ func _spawn_entities() -> void:
 				n.kind = e[3]
 			"jet":
 				n = Jet.new()
-				pos = Vector2(cam_left + SCREEN_W + 40, 26)
+				pos = Vector2(cam_left + SCREEN_W + 40, cam_y + 26)
 			"boss":
 				var kind: String = e[3]
 				if kind == "pol:massa":
@@ -327,7 +348,7 @@ func _spawn_entities() -> void:
 			"capsule":
 				n = Pickup.new()
 				n.weapon = e[3]
-				pos = Vector2(cam_left - 10, e[2])
+				pos = Vector2(cam_left - 10, cam_y + e[2])
 		n.position = pos
 		add_child(n)
 
@@ -450,7 +471,7 @@ func _on_player_died() -> void:
 		Game.stop_music()
 		hud.banner_text = "GAME OVER\nPuntos: %d\n\nEnter: reintentar   Q: menú" % Game.score
 		return
-	player.respawn(Vector2(safe_x(cam_left + 50), 20))
+	player.respawn(Vector2(safe_x(cam_left + 50), cam_y + 20))
 	reset_time()
 
 

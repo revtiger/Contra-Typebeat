@@ -48,3 +48,8 @@ const CASAS := [
 	["cafe", [8862, 154, 8886, 204], [[8824, 153, 8851, 178], [8900, 153, 8926, 178]], 3, [8802, 8947, 90], [8814, 8938, 130]],
 	["capilla", [9159, 144, 9202, 207], [[9117, 148, 9135, 172], [9225, 148, 9243, 172]], 7, [], []],
 ]
+## Canal (tramo 3): x donde empieza la rampa que baja y donde termina la que sube
+const CANAL := [3890, 5400]
+## pueblo_lejos.png: la calle desde la x LEJOS_X a escala LEJOS_ESCALA
+const LEJOS_X := 3300
+const LEJOS_ESCALA := 0.8

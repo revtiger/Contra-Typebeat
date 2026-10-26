@@ -49,7 +49,7 @@ func _physics_process(delta: float) -> void:
 		if position.y >= gy and position.y - vel.y * delta <= gy + 1:
 			position.y = gy
 			vel = Vector2.ZERO
-		if position.y > 320 or position.x < main.cam_left - 40:
+		if position.y > main.cam_y + 320 or position.x < main.cam_left - 40:
 			queue_free()
 	queue_redraw()
 

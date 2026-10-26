@@ -14,8 +14,11 @@ Salida:
   assets/sprites/bg_pueblo.png        cielo y pampa, 270 px de alto (se mueve muy despacio)
   assets/sprites/pueblo_tramo_NN.png  la calle cortada en trozos de TROZO px (el juego los pone en fila)
   assets/sprites/ground_pueblo.png    tira de adoquines y tierra que se repite en el suelo
+  assets/sprites/pueblo_lejos.png     la calle de LEJOS_X a escala LEJOS_ESCALA: las casas vistas desde el paseo del
+                                      canal, cuando la cámara ya bajó (background.gd la pone en lugar de los trozos)
   scripts/pueblo_casas.gd             puerta, ventanas y vecino de cada edificio en coordenadas del mundo
-                                      (civilian.gd: los vecinos pasean frente a su puerta, entran y se asoman)
+                                      (civilian.gd: los vecinos pasean frente a su puerta, entran y se asoman), y
+                                      dónde está el canal y la calle lejana
 
 Uso: python tools/sprites/pueblo.py  (imprime el largo de la calle: es el "end" de la plantilla
 "pueblo" en scripts/levels.gd)
@@ -123,6 +126,12 @@ CALLE = [
 	("ombu_grande", 130), "capilla", ("sauce", 70), 60,
 ]
 TROZO = 800
+# Canal (tramo 3): de CANAL[0] a CANAL[1] la calle baja por una rampa a un paseo junto al agua y la cámara baja con
+# el soldado; las casas se alejan (más chicas, detrás de la baranda de la terraza). LEJOS_X: trozo de la calle que se
+# dibuja a escala LEJOS_ESCALA (múltiplo de 5 para que LEJOS_X * 0.8 sea entero).
+CANAL = (3890, 5400)
+LEJOS_ESCALA = 0.8
+LEJOS_X = (3300, 6000)
 
 
 def load(name: str) -> Image.Image:
@@ -233,6 +242,12 @@ def build_calle() -> None:
 			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k, techo, toldo))
 		x += pw
 	_write_casas(casas)
+	# la calle lejana (el pixel art se reduce aquí, con buen filtro, y no en el juego)
+	x0, x1 = LEJOS_X
+	lejos = out.crop((x0, 0, x1, H))
+	lejos = nitido(lejos.resize((round(lejos.width * LEJOS_ESCALA), round(H * LEJOS_ESCALA)), Image.LANCZOS))
+	lejos.save(OUT / "pueblo_lejos.png")
+	print("pueblo_lejos.png", lejos.size)
 	# 4) se corta en trozos para el juego
 	for old in OUT.glob("pueblo_tramo_*.png"):
 		old.unlink()
@@ -253,6 +268,11 @@ def _write_casas(casas) -> None:
 	for name, door, wins, k, techo, toldo in casas:
 		lines.append(f'\t["{name}", {door}, {wins}, {k}, {techo}, {toldo}],')
 	lines.append("]")
+	lines.append("## Canal (tramo 3): x donde empieza la rampa que baja y donde termina la que sube")
+	lines.append(f"const CANAL := [{CANAL[0]}, {CANAL[1]}]")
+	lines.append("## pueblo_lejos.png: la calle desde la x LEJOS_X a escala LEJOS_ESCALA")
+	lines.append(f"const LEJOS_X := {LEJOS_X[0]}")
+	lines.append(f"const LEJOS_ESCALA := {LEJOS_ESCALA}")
 	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 	print("pueblo_casas.gd:", len(casas), "edificios")
 

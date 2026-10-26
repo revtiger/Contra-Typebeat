@@ -1,6 +1,6 @@
-"""Terraza del canal de la 1.1 (pueblo de la pampa), según la referencia de Eduardo
-(tools/sprites/chatgpt/pueblo/canal/referencia_canal.png): la calle sube por una rampa a una terraza de piedra con
-baranda; por debajo corre el canal con agua (solo decorado) y arcos de desagüe en el muro.
+"""Canal de la 1.1 (pueblo de la pampa), según la referencia de Eduardo
+(tools/sprites/chatgpt/pueblo/canal/referencia_canal.png): la calle baja por una rampa a un paseo junto al agua;
+detrás, la terraza con baranda y el muro de piedra con arcos de desagüe.
 
 Fuente (PixelLab, create_image_pro con estilo_canal.png, recorte de la referencia, como guía de estilo; cuatro
 candidatos de cada uno en tools/sprites/pixellab/pueblo_extra/, se usa el 0):
@@ -12,7 +12,7 @@ Salida (assets/sprites/):
   terraza_arco.png     arco de desagüe con sus bordes fundidos con el muro
   terraza_baranda.png  baranda de pilar a pilar (se repite)
   terraza_piedra.png   el muro sin el borde de adoquines (relleno de las rampas y de los muros más altos)
-terrain.gd los dibuja en los tramos de la calle más altos que ella (la terraza) y en las rampas.
+canal.gd dibuja la baranda, el muro y los arcos; terrain.gd, el frente del paseo y las rampas.
 
 Uso: python tools/sprites/terraza.py
 """
