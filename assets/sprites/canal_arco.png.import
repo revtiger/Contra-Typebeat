@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8gcpafs4qry2"
-path="res://.godot/imported/terraza_muro.png-f729a212f64aed2c5e042c3c61b6c060.ctex"
+uid="uid://b35v1ru68grip"
+path="res://.godot/imported/canal_arco.png-fde44f864fab627efde641fbf806e4ca.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/terraza_muro.png"
-dest_files=["res://.godot/imported/terraza_muro.png-f729a212f64aed2c5e042c3c61b6c060.ctex"]
+source_file="res://assets/sprites/canal_arco.png"
+dest_files=["res://.godot/imported/canal_arco.png-fde44f864fab627efde641fbf806e4ca.ctex"]
 
 [params]
 

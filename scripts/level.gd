@@ -112,11 +112,14 @@ func _ready() -> void:
 		bg.main = self
 		add_child(bg)
 
+	# las cuestas después de los tramos llanos: su dibujo puede pasarse por encima del tramo de al lado (el pilar de
+	# la esquina de las rampas del canal)
+	for g in ground:
+		if not (g.size() > 3 and g[3] != g[2]):
+			_add_block(Rect2(g[0], g[2], g[1] - g[0], FONDO - g[2]), false)
 	for g in ground:
 		if g.size() > 3 and g[3] != g[2]:
 			_add_slope(g)
-		else:
-			_add_block(Rect2(g[0], g[2], g[1] - g[0], FONDO - g[2]), false)
 	for p in data["platforms"]:
 		_add_block(Rect2(p[0], p[2], p[1], 8), true)
 	if theme == "pueblo":

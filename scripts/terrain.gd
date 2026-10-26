@@ -12,15 +12,16 @@ const LEDGE_DEPTH := 22.0
 var theme := "jungle"
 
 const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
-## Canal de la 1.1 (tools/sprites/terraza.py, referencia de Eduardo): los tramos más bajos que la calle son el paseo
-## junto al agua (borde de adoquines y muro de piedra) y las rampas que bajan a él son de piedra. El muro del fondo,
-## el agua y la baranda los dibuja canal.gd.
-const TERRAZA_MURO := preload("res://assets/sprites/terraza_muro.png")
-const TERRAZA_PIEDRA := preload("res://assets/sprites/terraza_piedra.png")
+## Canal de la 1.1 (kit de piezas de ChatGPT, tools/sprites/canal_kit.py): los tramos más bajos que la calle son el
+## paseo junto al agua (borde de piedra y muro hasta abajo) y las cuestas son la rampa del kit (la que sube, en
+## espejo). El muro del fondo, el agua, el piso y la baranda los dibuja canal.gd.
+const SpriteUtil = preload("res://scripts/sprite_util.gd")
+const CANAL_PIEDRA := preload("res://assets/sprites/canal_piedra.png")
+const CANAL_BORDE := preload("res://assets/sprites/canal_borde.png")
+const CANAL_RAMPA := preload("res://assets/sprites/canal_rampa.png")
 const CALLE_Y := 230.0  # altura de la calle del pueblo
-## el paseo está más cerca que el muro del fondo: un poco más oscuro y cálido
-const PASEO_TINTE := Color(0.8, 0.74, 0.68)
-const PISO := 18.0  # alto del piso del paseo que se ve por encima de los pies (como en canal.gd)
+## la piedra de más abajo, un poco más oscura
+const PASEO_TINTE := Color(0.85, 0.82, 0.78)
 const RELLENO := Color(0.17, 0.12, 0.09)  # detrás de la piedra (sus bordes tienen huecos)
 ## piedra bajo la calle: más oscura y marrón, como la tierra de la tira
 const CALLE_PIEDRA := Color(0.62, 0.5, 0.42)
@@ -30,10 +31,6 @@ const STRIPS := {
 	"baires": [preload("res://assets/sprites/ground_baires.png"), Color(0.08, 0.05, 0.1)],
 }
 
-
-func _ready() -> void:
-	# las rampas del canal rellenan un polígono con la piedra repetida
-	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
 
 func _draw() -> void:
@@ -108,9 +105,9 @@ func _draw_pueblo() -> void:
 	# debajo de la tira, piedra (solo se ve junto al canal, cuando la cámara baja)
 	draw_rect(Rect2(Vector2.ZERO, size), RELLENO)
 	var y := th - 6.0
-	var ph := float(TERRAZA_PIEDRA.get_height())
+	var ph := float(CANAL_PIEDRA.get_height())
 	while y < size.y:
-		_tile_x(TERRAZA_PIEDRA, y, minf(ph, size.y - y), CALLE_PIEDRA)
+		_tile_x(CANAL_PIEDRA, y, minf(ph, size.y - y), CALLE_PIEDRA)
 		y += ph
 	# la tira se alinea con la x del mundo para que no se note el corte entre bloques
 	var x := -fposmod(global_position.x, tw)
@@ -241,69 +238,48 @@ func _draw_slope_plain() -> void:
 	draw_line(Vector2(0, top0), Vector2(size.x, top1), body.lightened(0.35), 4)
 
 
-## Paseo del canal: borde de adoquines (donde se camina) y muro de piedra hasta abajo.
+## Paseo del canal: el borde de piedra (arriba se pisa) y el muro hasta abajo.
 func _draw_paseo() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), RELLENO)
-	var mh := float(TERRAZA_MURO.get_height())
-	_tile_x(TERRAZA_MURO, -3.0, minf(mh, size.y), PASEO_TINTE)
-	var y := mh - 3.0
-	var ph := float(TERRAZA_PIEDRA.get_height())
-	while y < size.y:
-		_tile_x(TERRAZA_PIEDRA, y, minf(ph, size.y - y), PASEO_TINTE)
-		y += ph
+	var bh := float(CANAL_BORDE.get_height())
+	_tile_x(CANAL_BORDE, 0.0, bh)
+	_fill_piedra(0.0, size.x, bh - 1.0)
 
 
-## Rampa empedrada entre la calle y el paseo del canal: piedra bajo la cuesta, borde de adoquines y, por encima de
-## la cuesta, el piso de adoquines que se ensancha de nada (arriba, junto a la calle) a PISO (abajo, junto al paseo).
+## Rampa del kit entre la calle y el paseo: el sprite baja de izquierda a derecha (la que sube va en espejo) con el
+## pilar de la esquina, que queda sobre la calle; debajo, piedra hasta abajo. La cuesta de la colisión (levels.gd)
+## sigue el remate de la rampa: de rampa_inicio a rampa_fin del meta.
 func _draw_rampa() -> void:
-	var w := size.x
-	var gx := global_position.x
-	var tw := float(TERRAZA_PIEDRA.get_width())
-	var th := float(TERRAZA_PIEDRA.get_height())
-	var pts := PackedVector2Array([Vector2(0, top0), Vector2(w, top1), Vector2(w, size.y), Vector2(0, size.y)])
-	var uvs := PackedVector2Array()
-	for p in pts:
-		uvs.append(Vector2((p.x + gx) / tw, (p.y - minf(top0, top1)) / th))
-	draw_colored_polygon(pts, RELLENO)
-	draw_polygon(pts, PackedColorArray([PASEO_TINTE]), uvs, TERRAZA_PIEDRA)
-	_draw_piso_rampa()
-	# borde de adoquines de la cuesta: bloques de 9 px con junta oscura
-	draw_line(Vector2(0, top0 + 2), Vector2(w, top1 + 2), Color(0.8, 0.7, 0.53), 5.0)
-	draw_line(Vector2(0, top0), Vector2(w, top1), Color(0.93, 0.85, 0.68), 1.0)
-	draw_line(Vector2(0, top0 + 5), Vector2(w, top1 + 5), Color(0.3, 0.23, 0.18), 1.0)
-	for k in range(0, int(w), 9):
-		var y := lerpf(top0, top1, float(k) / w)
-		draw_line(Vector2(k, y), Vector2(k, y + 4), Color(0.5, 0.41, 0.31), 1.0)
+	var meta := SpriteUtil.meta("res://assets/sprites/canal_meta.json")
+	var ini := SpriteUtil.v(meta["rampa_inicio"])
+	var w := float(CANAL_RAMPA.get_width())
+	var h := float(CANAL_RAMPA.get_height())
+	var baja := top0 < top1
+	# esquina de arriba a la izquierda del sprite (sin espejar) en coordenadas locales
+	var at := Vector2(-ini.x, top0 - ini.y) if baja else Vector2(size.x - (w - ini.x), top1 - ini.y)
+	_fill_piedra(at.x, at.x + w, at.y + h - 2.0)
+	if baja:
+		draw_texture(CANAL_RAMPA, at)
+	else:
+		draw_set_transform(Vector2(at.x + w, at.y), 0.0, Vector2(-1, 1))
+		draw_texture(CANAL_RAMPA, Vector2.ZERO)
+		draw_set_transform(Vector2.ZERO)
 
 
-## Piso de la rampa: columnas de adoquines que siguen la cuesta (se ven como escalones bajos).
-func _draw_piso_rampa() -> void:
-	var w := size.x
-	var bajo_izq := top0 > top1  # la parte de abajo (el paseo) está a la izquierda: rampa que sube
-	var x := 0.0
-	var col := 0
-	while x < w:
-		var cw := minf(6.0, w - x)
-		var t := (x + cw * 0.5) / w
-		var y := roundf(lerpf(top0, top1, t))
-		var h := roundf(PISO * (1.0 - t if bajo_izq else t))
-		if h >= 1.0:
-			draw_rect(Rect2(x, y - h, cw, h), Color(0.36, 0.29, 0.23))
-			var yy := y - h + 1.0
-			var fila := 0
-			while yy < y:
-				var k := (int((x + global_position.x) / 6.0) * 7 + fila * 13) % 5
-				var tono := 0.06 * float(k) / 4.0
-				var c := Color(0.64 + tono, 0.55 + tono, 0.42 + tono * 0.8)
-				var rh := minf(3.0 + fila, y - yy)
-				draw_rect(Rect2(x + 1.0, yy, cw - 1.0, maxf(1.0, rh - 1.0)), c)
-				draw_rect(Rect2(x + 1.0, yy, cw - 1.0, 1), c.lightened(0.18))
-				yy += rh
-				fila += 1
-			# borde de arriba del piso, contra el muro
-			draw_rect(Rect2(x, y - h - 1.0, cw, 1), Color(0.28, 0.22, 0.17))
-		x += cw
-		col += 1
+## Piedra del muro (sin remate) de x0 a x1 (locales), de y hasta abajo, alineada con la x del mundo.
+func _fill_piedra(x0: float, x1: float, y: float) -> void:
+	draw_rect(Rect2(x0, y, x1 - x0, size.y - y), RELLENO)
+	var tw := float(CANAL_PIEDRA.get_width())
+	var ph := float(CANAL_PIEDRA.get_height())
+	while y < size.y:
+		var x := x0 - fposmod(global_position.x + x0, tw)
+		while x < x1:
+			var a := maxf(x, x0)
+			var b := minf(x + tw, x1)
+			var hh := minf(ph, size.y - y)
+			draw_texture_rect_region(CANAL_PIEDRA, Rect2(a, y, b - a, hh), Rect2(a - x, 0, b - a, hh), PASEO_TINTE)
+			x += tw
+		y += ph
 
 
 ## Tira que se repite en horizontal alineada con la x del mundo, de y a y + h.

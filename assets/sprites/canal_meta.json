@@ -1,0 +1,16 @@
+{
+ "escala": 0.45,
+ "muro_h": 76,
+ "piso": 13,
+ "baja": 107,
+ "rampa_largo": 416,
+ "rampa_inicio": [
+  106,
+  10
+ ],
+ "rampa_fin": [
+  522,
+  117
+ ],
+ "arco_agua": 82
+}

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chuhl1fi2ibr"
-path="res://.godot/imported/terraza_baranda.png-8c886af99f3e136a79c04c4b2a5f2d06.ctex"
+uid="uid://dinf0dox1wqws"
+path="res://.godot/imported/canal_piso.png-805a6d02517bd73e59893a2078e52aa2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/terraza_baranda.png"
-dest_files=["res://.godot/imported/terraza_baranda.png-8c886af99f3e136a79c04c4b2a5f2d06.ctex"]
+source_file="res://assets/sprites/canal_piso.png"
+dest_files=["res://.godot/imported/canal_piso.png-805a6d02517bd73e59893a2078e52aa2.ctex"]
 
 [params]
 

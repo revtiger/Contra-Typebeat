@@ -122,9 +122,10 @@ const TEMPLATES := {
 	# "tiempo" vuelve a poner el reloj en 60 al empezar los tramos 2, 3 y 4.
 	"pueblo": {
 		"end": 9408,
-		"cam_y_max": 110,
+		# el canal baja lo que baja la rampa del kit (canal_meta.json: "baja" 107 en "rampa_largo" 416 px)
+		"cam_y_max": 107,
 		"ground": [
-			[0, 3890, 230], [3890, 4050, 230, 340], [4050, 5250, 340], [5250, 5400, 340, 230], [5400, 9408, 230],
+			[0, 3890, 230], [3890, 4306, 230, 337], [4306, 4984, 337], [4984, 5400, 337, 230], [5400, 9408, 230],
 		],
 		"platforms": [],
 		"entities": [
@@ -140,11 +141,10 @@ const TEMPLATES := {
 			["grenadier", 3560, 230],
 			# 3. canal: se baja por la rampa al paseo; soldados, nidos y minas en el paseo y, desde arriba,
 			# helicópteros que disparan y un avión que bombardea (la cápsula entra a la altura de la cámara)
-			["tiempo", 3860, 230], ["sniper", 4120, 340], ["mine", 4200, 340], ["helicoptero", 4250, 0],
-			["turret", 4380, 340], ["capsule", 4400, 60, "H"], ["grenadier", 4560, 340], ["barrel", 4660, 340],
-			["barrel", 4674, 340], ["sniper", 4760, 340], ["helicoptero", 4800, 0], ["turret", 4900, 340],
-			["jet", 4950, 0],
-			["grenadier", 5000, 340], ["mine", 5080, 340], ["sniper", 5180, 340],
+			["tiempo", 3860, 230], ["sniper", 4140, 293], ["helicoptero", 4250, 0], ["mine", 4340, 337],
+			["capsule", 4400, 60, "H"], ["turret", 4420, 337], ["grenadier", 4560, 337], ["barrel", 4660, 337],
+			["barrel", 4674, 337], ["sniper", 4760, 337], ["helicoptero", 4800, 0], ["turret", 4880, 337],
+			["mine", 4950, 337], ["jet", 4950, 0], ["grenadier", 5050, 320], ["sniper", 5200, 280],
 			# 4. calle final, la más difícil
 			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],
 			["grenadier", 5900, 230], ["sniper", 6000, 101], ["capsule", 6200, 60, "R"],

@@ -132,11 +132,17 @@ func _fly(delta: float, p) -> void:
 		lado_t = LADO_CADA + randf_range(-1.0, 1.0)
 		lado = -lado
 	var want := Vector2(p.position.x + lado * SEPARACION, main.cam_y + ALTURA + altura_extra + sin(t * 1.6) * 4.0)
-	# no se encima con otro helicóptero
+	var lo: float = main.cam_left + 70.0
+	var hi: float = main.cam_left + 420.0
+	want.x = clampf(want.x, lo, hi)
+	# no se encima con otro helicóptero: manda el que llegó antes y este se pone a su lado (del lado que quepa)
 	for h in get_tree().get_nodes_in_group("helicoptero"):
-		if h != self and absf(h.position.x - want.x) < APARTE:
-			want.x = h.position.x + APARTE * (1.0 if want.x >= h.position.x else -1.0)
-	want.x = clampf(want.x, main.cam_left + 70.0, main.cam_left + 420.0)
+		if h != self and h.get_instance_id() < get_instance_id() and absf(h.position.x - want.x) < APARTE:
+			var s := 1.0 if want.x >= h.position.x else -1.0
+			want.x = h.position.x + APARTE * s
+			if want.x < lo or want.x > hi:
+				want.x = h.position.x - APARTE * s
+			want.x = clampf(want.x, lo, hi)
 	vel = vel.lerp((want - position) * 1.6, 2.2 * delta).limit_length(110.0)
 	position += vel * delta
 
