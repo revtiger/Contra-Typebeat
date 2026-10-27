@@ -12,5 +12,10 @@
   522,
   117
  ],
- "arco_agua": 82
+ "arco_agua": 82,
+ "arco_frames": 8,
+ "arco_chorro": [
+  75,
+  77
+ ]
 }

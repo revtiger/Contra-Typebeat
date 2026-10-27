@@ -141,9 +141,10 @@ const TEMPLATES := {
 			["grenadier", 3560, 230],
 			# 3. canal: se baja por la rampa al paseo; soldados, nidos y minas en el paseo y, desde arriba,
 			# helicópteros que disparan y un avión que bombardea (la cápsula entra a la altura de la cámara)
+			# (los nidos, entre los arcos de desagüe de canal.gd: 4346, 4569 y 4792, de 152 px, para no taparlos)
 			["tiempo", 3860, 230], ["sniper", 4140, 293], ["helicoptero", 4250, 0], ["mine", 4340, 337],
-			["capsule", 4400, 60, "H"], ["turret", 4420, 337], ["grenadier", 4560, 337], ["barrel", 4660, 337],
-			["barrel", 4674, 337], ["sniper", 4760, 337], ["helicoptero", 4800, 0], ["turret", 4880, 337],
+			["capsule", 4400, 60, "H"], ["turret", 4533, 337], ["grenadier", 4620, 337], ["barrel", 4660, 337],
+			["barrel", 4674, 337], ["turret", 4756, 337], ["helicoptero", 4800, 0], ["sniper", 4860, 337],
 			["mine", 4950, 337], ["jet", 4950, 0], ["grenadier", 5050, 320], ["sniper", 5200, 280],
 			# 4. calle final, la más difícil
 			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],

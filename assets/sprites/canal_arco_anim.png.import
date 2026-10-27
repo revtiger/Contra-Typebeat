@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b35v1ru68grip"
-path="res://.godot/imported/canal_arco.png-fde44f864fab627efde641fbf806e4ca.ctex"
+uid="uid://bh3hv8j1xer16"
+path="res://.godot/imported/canal_arco_anim.png-a734bab3675b1397de496041283ddea4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/canal_arco.png"
-dest_files=["res://.godot/imported/canal_arco.png-fde44f864fab627efde641fbf806e4ca.ctex"]
+source_file="res://assets/sprites/canal_arco_anim.png"
+dest_files=["res://.godot/imported/canal_arco_anim.png-a734bab3675b1397de496041283ddea4.ctex"]
 
 [params]
 

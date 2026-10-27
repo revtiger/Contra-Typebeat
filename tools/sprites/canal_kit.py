@@ -7,7 +7,10 @@ baranda (en el kit es más alta que un soldado) y el arco (se encaja en el alto 
 Salida (assets/sprites/):
   canal_muro.png     muro con remate arriba, recortado a MURO_H; se repite en horizontal sin corte
   canal_piedra.png   el muro sin el remate: relleno de abajo del paseo y de las rampas
-  canal_arco.png     arco de desagüe con reja y cascada, con los bordes fundidos con el muro
+  canal_arco_anim.png  arco de desagüe con reja y cascada (bordes fundidos con el muro) en ARCO_FRAMES fotogramas
+                     en fila: franjas claras y oscuras que bajan por el chorro, espuma que burbujea y
+                     gotas que saltan en la base; por debajo del muro solo quedan el chorro y la espuma (el agua del
+                     canal la dibuja canal.gd, que se mueve)
   canal_baranda.png  baranda de pilar a pilar (se repite)
   canal_piso.png     franja del piso de adoquines del paseo que se ve por encima de los pies (PISO px)
   canal_borde.png    borde de piedra del paseo, donde se pisa
@@ -41,6 +44,8 @@ BORDE_SRC = (100, 569, 1430, 607)      # borde de piedra del paseo (arriba se pi
 RAMPA = (40, 630, 1236, 982)           # pilar de la esquina, rampa y el comienzo del paseo
 RAMPA_INICIO = (275, 653)              # donde empieza a bajar la rampa (arriba del remate)
 RAMPA_FIN = (1200, 889)                # donde llega al paseo
+ARCO_FRAMES = 8
+CHORRO_PERIODO = 16                    # px entre franjas del chorro; cada fotograma bajan 2 px (16 / 8)
 
 
 def sin_fondo(im):
@@ -107,6 +112,61 @@ def con_bordes(pieza, muro):
 	return pieza
 
 
+def es_agua(c):
+	"""Píxel de agua (celeste) o de espuma (casi blanco)."""
+	r, g, b, a = c
+	return a > 0 and ((b > r + 40 and g > r + 25) or (r > 165 and g > 195 and b > 195))
+
+
+def arco_animado(arco):
+	"""Fotogramas del arco con el chorro en movimiento. Devuelve (tira, [x centro del chorro, y de la base])."""
+	w, h = arco.size
+	px = arco.load()
+	# el chorro: agua dentro del hueco del arco, por encima del agua del canal
+	# (su ancho sale de las filas de arriba, donde no hay agua del canal ni espuma)
+	xs = [x for y in range(MURO_H - 8) for x in range(w) if es_agua(px[x, y])]
+	x0, x1 = min(xs), max(xs)
+	chorro = [(x, y) for y in range(MURO_H + 2) for x in range(x0, x1 + 1) if es_agua(px[x, y])]
+	base = max(y for _, y in chorro)
+	cx = (x0 + x1) / 2.0
+	# fase de cada columna (se ve como hilos de agua que caen a destiempo)
+	fase = {x: (x * 7 + (x * x) % 5) % CHORRO_PERIODO for x in range(x0, x1 + 1)}
+	frames = []
+	for f in range(ARCO_FRAMES):
+		im = arco.copy()
+		q = im.load()
+		# por debajo del muro solo queda lo del chorro (el agua del canal se dibuja aparte)
+		for y in range(MURO_H, h):
+			for x in range(w):
+				if not (x0 - 4 <= x <= x1 + 4 and es_agua(px[x, y]) and px[x, y][0] > 150):
+					q[x, y] = (0, 0, 0, 0)
+				elif (x * 13 + y * 7 + f * 5) % 7 < 2:
+					# la espuma burbujea: en cada fotograma se apagan píxeles distintos
+					q[x, y] = (0, 0, 0, 0)
+		for x, y in chorro:
+			r, g, b, a = px[x, y]
+			v = (y - f * (CHORRO_PERIODO // ARCO_FRAMES) - fase[x]) % CHORRO_PERIODO
+			if v < 3:
+				k = 0.4
+				q[x, y] = (round(r + (255 - r) * k), round(g + (255 - g) * k), round(b + (255 - b) * k), a)
+			elif 8 <= v < 11:
+				q[x, y] = (round(r * 0.78), round(g * 0.82), round(b * 0.85), a)
+		# gotas que saltan de la base del chorro: cada una sube y cae en una parábola, a destiempo
+		for i in range(7):
+			t = ((f + i * 3) % ARCO_FRAMES) / ARCO_FRAMES
+			lado = -1 if i % 2 else 1
+			dx = lado * (2 + (i * 5) % 9) * t
+			x = round(cx + lado * (x1 - x0) * 0.35 + dx)
+			y = round(base - 7 * t * (1 - t) * 4 + t * 2)
+			if 0 <= x < w and 0 <= y < h:
+				q[x, y] = (235, 250, 250, 255)
+		frames.append(im)
+	tira = Image.new("RGBA", (w * ARCO_FRAMES, h), (0, 0, 0, 0))
+	for i, im in enumerate(frames):
+		tira.alpha_composite(im, (i * w, 0))
+	return tira, [round(cx), base]
+
+
 def main():
 	kit = sin_fondo(Image.open(SRC))
 	muro_full = escala(kit.crop(MURO), S)
@@ -119,7 +179,8 @@ def main():
 	ah = ARCO[3] - ARCO[1]
 	arco = escala(kit.crop((ARCO[0], ARCO[1], ARCO[2], ARCO[3] + 30)), 0.4, (MURO_H + 6) / ah)
 	arco = con_bordes(arco, muro)
-	arco.save(OUT / "canal_arco.png")
+	tira, chorro = arco_animado(arco)
+	tira.save(OUT / "canal_arco_anim.png")
 	bar = kit.crop(BARANDA)
 	bar = escala(bar, BARANDA_H / bar.height)
 	bar.save(OUT / "canal_baranda.png")
@@ -140,9 +201,11 @@ def main():
 		"rampa_inicio": ini,                 # en px de canal_rampa.png
 		"rampa_fin": fin,
 		"arco_agua": MURO_H + 6,
+		"arco_frames": ARCO_FRAMES,
+		"arco_chorro": chorro,                # x del centro del chorro e y de su base (px del arco)
 	}
 	(OUT / "canal_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8", newline="\n")
-	print({n: Image.open(OUT / f"canal_{n}.png").size for n in ["muro", "piedra", "arco", "baranda", "piso", "borde", "rampa"]})
+	print({n: Image.open(OUT / f"canal_{n}.png").size for n in ["muro", "piedra", "arco_anim", "baranda", "piso", "borde", "rampa"]})
 	print(meta)
 
 
