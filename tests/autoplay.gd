@@ -2,7 +2,7 @@ extends Node
 ## Prueba automática: juega sola y guarda capturas. La añade Game cuando se arranca con "autoplay".
 ##
 ## Uso:
-##   godot --path . -- autoplay out=<carpeta> [level=0..14] [boss] [scene=intro] [campaign]
+##   godot --path . -- autoplay out=<carpeta> [level=0..14] [boss] [scene=intro] [campaign] [cine]
 ## - level: fase a jugar (índice en levels.gd: 0 = fase 1.1, 3 = 2.1, ... 14 = 5.3)
 ## - boss: empieza justo antes del jefe
 ## - scene=intro: no juega; solo captura la intro y el menú
@@ -113,6 +113,13 @@ func _physics_process(_delta: float) -> void:
 		level_frame = 0
 	level_frame += 1
 	var p = lvl.player
+	if lvl.state == "cine":
+		# cinemática (con el argumento cine): mirar sin tocar nada
+		for act in ["right", "left", "shoot", "jump", "down", "up"]:
+			Input.action_release(act)
+		if level_frame % shot_every == 0:
+			_shot("cine")
+		return
 	if level_frame == 3 and boss:
 		p.position = Vector2(lvl.boss_arena - 60, 150)
 		lvl.cam_left = lvl.boss_arena - 300
