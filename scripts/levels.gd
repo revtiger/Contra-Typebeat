@@ -111,32 +111,80 @@ const TEMPLATES := {
 			["sniper", 2300, 230], ["barrel", 2380, 230],
 		],
 	},
-	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
-	# Más larga que las demás ("end" = largo de la calle que imprime tools/sprites/pueblo.py); la capilla al final.
-	# Desde el 25-10-2026 la calle va a escala 1.2 (ESCALA en pueblo.py): un 20 % más larga, y las x de los
-	# enemigos se multiplicaron por 1.2 para que cada uno siga delante del mismo edificio.
-	# Fase alargada a 31 pantallas (14880 px; 26-10-2026: antes 15000, 31,25 pantallas) para trabajar la
-	# jugabilidad: el arte de la calle llega hasta 5856 px; de ahí al final solo hay suelo (se ve en el greybox).
-	# Massa sigue al final.
+	# Pueblo de la pampa (1.1): calle llana del largo de la calle que imprime tools/sprites/pueblo.py ("end"), en
+	# cinco tramos que se ponen cada vez más difíciles (pedido de Eduardo, 25-10-2026):
+	#   1. entrada (0-2130): calle, nidos y francotiradores sueltos
+	#   2. techos (2130-3650): comercios juntos; con cajas se sube a los toldos y de ahí a los techos (level.gd pone
+	#      techos y toldos como salientes invisibles, de scripts/pueblo_casas.gd); francotiradores arriba
+	#   3. canal (3890-5400, CANAL de pueblo_casas.gd): la calle baja por una rampa a un paseo junto al agua y la
+	#      cámara baja con el soldado (cam_y_max), que se sigue viendo a la misma altura de la pantalla; las casas se
+	#      alejan detrás de la terraza con baranda y el muro con arcos de desagüe (canal.gd; referencia de Eduardo:
+	#      tools/sprites/chatgpt/pueblo/canal/referencia_canal.png). Abajo, soldados y nidos; desde arriba, aviones.
+	#      Al final otra rampa sube a la calle y la cámara vuelve a su altura
+	#   4. calle final (5550-8950): tanque, más nidos y granaderos, tiradores en los techos
+	#   5. plaza de la capilla: Massa
+	# "tiempo" vuelve a poner el reloj en 60 al empezar los tramos 2, 3 y 4.
+	# Largo: 31 escenas (14880 px, ARQUITECTURA.md ARQ-42; 26-10-2026: antes 9408, el largo de la calle). El arte de
+	# la calle llega a 9408 px; de ahí al final solo hay suelo y Massa sigue en la última escena.
+	# "greybox": el mundo del greybox (F1 en modo test; level.gd lo usa en vez de lo de arriba): calle llana con
+	# los edificios generados (edificios.gd), sus plataformas y jump hitbox, el barrio de azoteas y el MUSEO con
+	# interior. Sin canal, techos ni cajas, que son del escenario del juego. Sus x vienen de la calle a escala 1.2
+	# (25-10-2026), de antes de fusionar la 1.1 de Eduardo.
 	"pueblo": {
 		"end": 31 * SCREEN_W,
-		"buildings": 7,  # semilla de los edificios del greybox (scripts/edificios.gd); otra semilla, otra ciudad
-		# edificio grande con otra ruta dentro: Arriba en la puerta entra al interior (INTERIORES), que sale a la
-		# calle en "salida" (atajo de ~3200 px a cambio de un tramo corto y difícil)
-		"big": {"x": 7008, "w": 720, "pisos": 5, "nombre": "MUSEO", "interior": "museo", "salida": 10208},
-		"ground": [[0, 31 * SCREEN_W, 230]],
+		# el canal baja lo que baja la rampa del kit (canal_meta.json: "baja" 107 en "rampa_largo" 416 px)
+		"cam_y_max": 107,
+		"ground": [
+			[0, 3890, 230], [3890, 4306, 230, 337], [4306, 4984, 337], [4984, 5400, 337, 230], [5400, 31 * SCREEN_W, 230],
+		],
 		"platforms": [],
 		"entities": [
-			["sniper", 408, 230], ["turret", 840, 230], ["capsule", 1080, 60, "H"], ["sniper", 1356, 230],
-			["grenadier", 1416, 230], ["turret", 1584, 230], ["sniper", 1800, 230], ["sniper", 1944, 230],
-			["capsule", 2040, 60, "B"], ["turret", 2160, 230], ["grenadier", 2460, 230], ["sniper", 2580, 230],
-			["turret", 2760, 230], ["capsule", 2760, 60, "S"], ["grenadier", 2880, 230],
-			# comercios y casas nuevas (tramos 4 y 5)
-			["sniper", 3180, 230], ["tank", 3480, 230, "comunista"], ["capsule", 3540, 60, "R"],
-			["grenadier", 3780, 230], ["turret", 4020, 230], ["sniper", 4200, 230], ["capsule", 4380, 60, "H"],
-			["grenadier", 4560, 230], ["sniper", 4740, 230], ["turret", 4920, 230], ["grenadier", 5100, 230],
-			["sniper", 5256, 230],
+			# 1. entrada
+			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
+			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
+			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230],
+			# 2. techos: cajas para subir al toldo del almacén; tiradores en los techos y granaderos abajo
+			["tiempo", 2130, 230], ["caja", 2205, 230], ["caja", 2229, 230, 2],
+			["grenadier", 2350, 230], ["sniper", 2450, 106], ["capsule", 2600, 40, "S"], ["grenadier", 2700, 230],
+			["sniper", 2800, 90], ["barrel", 2900, 230], ["barrel", 2914, 230], ["grenadier", 3050, 230],
+			["sniper", 3150, 110], ["turret", 3300, 230], ["caja", 3290, 230], ["sniper", 3500, 90],
+			["grenadier", 3560, 230],
+			# 3. canal: se baja por la rampa al paseo; soldados, nidos y minas en el paseo y, desde arriba,
+			# helicópteros que disparan y un avión que bombardea (la cápsula entra a la altura de la cámara)
+			# (los nidos, entre los arcos de desagüe de canal.gd: 4346, 4569 y 4792, de 152 px, para no taparlos)
+			["tiempo", 3860, 230], ["sniper", 4140, 293], ["helicoptero", 4250, 0], ["mine", 4340, 337],
+			["capsule", 4400, 60, "H"], ["turret", 4533, 337], ["grenadier", 4620, 337], ["barrel", 4660, 337],
+			["barrel", 4674, 337], ["turret", 4756, 337], ["helicoptero", 4800, 0], ["sniper", 4860, 337],
+			["mine", 4950, 337], ["jet", 4950, 0], ["grenadier", 5050, 320], ["sniper", 5200, 280],
+			# 4. calle final, la más difícil
+			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],
+			["grenadier", 5900, 230], ["sniper", 6000, 101], ["capsule", 6200, 60, "R"],
+			["tank", 6300, 230, "comunista"], ["turret", 6550, 230], ["sniper", 6650, 90], ["grenadier", 6700, 230],
+			["grenadier", 6850, 230], ["turret", 7000, 230], ["sniper", 7150, 59], ["caja", 7265, 230],
+			["grenadier", 7400, 230], ["mine", 7500, 230], ["sniper", 7600, 230], ["turret", 7850, 230],
+			["grenadier", 8000, 230], ["sniper", 8200, 110], ["capsule", 8300, 60, "H"], ["grenadier", 8450, 230],
+			["turret", 8600, 230], ["sniper", 8750, 230],
 		],
+		"greybox": {
+			"buildings": 7,  # semilla de los edificios (scripts/edificios.gd); otra semilla, otra ciudad
+			# edificio grande con otra ruta dentro: Arriba en la puerta entra al interior (INTERIORES), que sale a la
+			# calle en "salida" (atajo de ~3200 px a cambio de un tramo corto y difícil)
+			"big": {"x": 7008, "w": 720, "pisos": 5, "nombre": "MUSEO", "interior": "museo", "salida": 10208},
+			"cam_y_max": 0,
+			"ground": [[0, 31 * SCREEN_W, 230]],
+			"platforms": [],
+			"entities": [
+				["sniper", 408, 230], ["turret", 840, 230], ["capsule", 1080, 60, "H"], ["sniper", 1356, 230],
+				["grenadier", 1416, 230], ["turret", 1584, 230], ["sniper", 1800, 230], ["sniper", 1944, 230],
+				["capsule", 2040, 60, "B"], ["turret", 2160, 230], ["grenadier", 2460, 230], ["sniper", 2580, 230],
+				["turret", 2760, 230], ["capsule", 2760, 60, "S"], ["grenadier", 2880, 230],
+				# comercios y casas nuevas (tramos 4 y 5)
+				["sniper", 3180, 230], ["tank", 3480, 230, "comunista"], ["capsule", 3540, 60, "R"],
+				["grenadier", 3780, 230], ["turret", 4020, 230], ["sniper", 4200, 230], ["capsule", 4380, 60, "H"],
+				["grenadier", 4560, 230], ["sniper", 4740, 230], ["turret", 4920, 230], ["grenadier", 5100, 230],
+				["sniper", 5256, 230],
+			],
+		},
 	},
 	"jungle": {
 		"ground": [[0, 900, 230], [948, 1500, 230], [1500, 1900, 200], [1948, 2400, 230], [2448, END, 230]],
@@ -254,22 +302,13 @@ static func _build() -> Array:
 			var tpl: Dictionary = TEMPLATES[ph[1]]
 			var boss_id: String = ph[2]
 			var end: int = tpl.get("end", END)
-			var entities: Array = _vary(tpl["entities"], zi + pi)
 			var role := "final" if pi == 2 else "mini"
 			var boss_name := ""
 			if boss_id.begins_with("door:"):
 				role = "door"
-				entities.append(["door", end - 80, 230, int(boss_id.substr(5))])
 			else:
 				boss_name = preload("res://scripts/politician.gd").POLS[boss_id]["name"]
-				entities.append(["boss", end - 110, 230, "pol:" + boss_id])
-			if ph[1] == "pueblo":
-				var casas: Array = preload("res://scripts/pueblo_casas.gd").CASAS
-				for hi in casas.size():
-					if casas[hi][3] >= 0:
-						entities.append(["vecino", (casas[hi][1][0] + casas[hi][1][2]) / 2, 210, hi])
-				entities.sort_custom(func(a, b): return a[1] < b[1])
-			out.append({
+			var fase := {
 				"phase": "%d.%d" % [zi + 1, pi + 1],
 				"zone": z["zone"],
 				"freed": z.get("freed", "LIBERADO"),
@@ -284,10 +323,37 @@ static func _build() -> Array:
 				"ground": tpl["ground"],
 				"buildings": tpl.get("buildings", -1),
 				"big": tpl.get("big", {}),
+				"cam_y_max": tpl.get("cam_y_max", 0.0),
 				"platforms": tpl["platforms"],
-				"entities": entities,
-			})
+				"entities": _entities(tpl["entities"], zi + pi, end, boss_id, ph[1]),
+			}
+			# mundo del greybox (level.gd lo mezcla encima de la fase con F1 en modo test)
+			if tpl.has("greybox"):
+				var g: Dictionary = tpl["greybox"].duplicate()
+				g["entities"] = _entities(g["entities"], zi + pi, end, boss_id, ph[1])
+				fase["greybox"] = g
+			out.append(fase)
 	return out
+
+
+## Entidades de una fase: las de la plantilla con variación, el jefe (o la puerta) al final y, en el pueblo, un
+## vecino por casa.
+static func _entities(src: Array, v: int, end: int, boss_id: String, plantilla: String) -> Array:
+	var entities: Array = _vary(src, v)
+	if boss_id.begins_with("door:"):
+		entities.append(["door", end - 80, 230, int(boss_id.substr(5))])
+	else:
+		entities.append(["boss", end - 110, 230, "pol:" + boss_id])
+	if plantilla == "pueblo":
+		var casas: Array = preload("res://scripts/pueblo_casas.gd").CASAS
+		var canal: Array = preload("res://scripts/pueblo_casas.gd").CANAL
+		for hi in casas.size():
+			var door_x: float = (casas[hi][1][0] + casas[hi][1][2]) / 2.0
+			# en el canal las casas se alejan: ahí no pasean vecinos
+			if casas[hi][3] >= 0 and (door_x < canal[0] - 250 or door_x > canal[1] + 250):
+				entities.append(["vecino", (casas[hi][1][0] + casas[hi][1][2]) / 2, 210, hi])
+		entities.sort_custom(func(a, b): return a[1] < b[1])
+	return entities
 
 
 ## Variación para que dos fases con la misma plantilla no sean idénticas:

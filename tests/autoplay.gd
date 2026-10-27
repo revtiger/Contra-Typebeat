@@ -218,7 +218,8 @@ func _physics_process(_delta: float) -> void:
 		elif level_frame % 60 == 5:
 			Input.action_release("restart")
 		return
-	if lvl.state == "clear" or level_frame > 9000 or (max_frames > 0 and level_frame >= max_frames):
+	# (la 1.1 mide casi el doble desde el 25-10-2026: hasta 14000 fotogramas)
+	if lvl.state == "clear" or level_frame > 14000 or (max_frames > 0 and level_frame >= max_frames):
 		_shot("final")
 		print("FIN: estado=%s puntos=%d frames=%d" % [lvl.state, Game.score, level_frame])
 		get_tree().quit()

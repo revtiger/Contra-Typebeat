@@ -21,9 +21,11 @@ var autoplay := false
 ## Modo test (scripts/modo_test.gd): teclas F1-F5 y sin enemigos que salgan solos. Se activa con el .exe de
 ## test (preset "Windows Test", etiqueta "test") o abriendo el juego con: godot --path . -- test
 var test := OS.has_feature("test") or "test" in OS.get_cmdline_user_args()
-## Greybox (scripts/greybox.gd): la fase se ve con bloques grises etiquetados. Empieza activo en modo test
-## (F1 lo cambia); en producción siempre se ve el arte.
-var greybox := test
+## Greybox (scripts/greybox.gd): la fase se ve con bloques grises etiquetados, con su propio mundo (los datos
+## "greybox" de levels.gd) y las teclas del modo test. Solo en modo test, con F1 (26-10-2026: antes empezaba
+## activo); sin F1, y siempre en producción, se juega el escenario con su arte y sin comandos. Para empezar ya en el
+## greybox: godot --path . -- test greybox
+var greybox := test and "greybox" in OS.get_cmdline_user_args()
 ## Cinemáticas ya vistas en esta partida (no se repiten al reintentar una fase)
 var seen_cine := {}
 ## Ruta dentro de la fase (edificios grandes con interior, zona.gd): {"interior": id, "salida": x} mientras se

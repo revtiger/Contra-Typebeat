@@ -1,10 +1,13 @@
 extends CanvasLayer
 ## Modo test (Game.test): teclas de desarrollo dentro de la fase y una línea de ayuda abajo.
+## Sin F1 se ve el juego tal cual (el escenario con su arte, enemigos normales, sin ayuda ni teclas: para trabajar
+## el arte sin ver comandos). F1 cambia al mundo del greybox (level.cambiar_mundo) y solo ahí se ven la ayuda y
+## funcionan las demás teclas.
 ##   F1 greybox o arte   F2 soldado por la derecha   F3 jefe de la fase aquí mismo
 ##   F4 cápsula voladora con un arma al azar   F5 inmortal (sí / no)   F6 turbo: corre a 400 px/s (sí / no)
 ##   F7 granadero   F8 francotirador   F9 emboscadas de azotea (sí / no; empiezan apagadas en test)
 ## F2 (al azar), F7 y F8 sacan un soldado que entra por la derecha, se planta y ataca.
-## En modo test no salen enemigos solos: solo los de estas teclas (TEST_SKIP en level.gd).
+## En el greybox no salen enemigos solos: solo los de estas teclas (TEST_SKIP en level.gd).
 ## Se abre con el .exe de test o con: godot --path . -- test
 
 const PixelFont = preload("res://scripts/pixel_font.gd")
@@ -28,9 +31,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo or level.state != "play":
 		return
+	if key.physical_keycode == KEY_F1:
+		level.cambiar_mundo()
+		get_viewport().set_input_as_handled()
+		return
+	if not Game.greybox:
+		return  # en el juego (sin F1) no hay más teclas de test
 	match key.physical_keycode:
-		KEY_F1:
-			Game.greybox = not Game.greybox
 		KEY_F2:
 			level.test_spawn_enemy()
 		KEY_F3:
@@ -57,6 +64,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Dos líneas de ayuda encima de la leyenda del greybox.
 func _draw_ayuda() -> void:
+	if not Game.greybox:
+		return
 	var h := PixelFont.size("white")
 	var y := 270.0 - 3.0 * h - 10.0
 	var p = level.player

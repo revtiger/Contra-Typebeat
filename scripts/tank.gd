@@ -77,7 +77,7 @@ func _physics_process(delta: float) -> void:
 			burst_left -= 1
 			burst_t = BURST_GAP
 			_shoot()
-	if position.x < main.cam_left - 80 or position.y > 320:
+	if position.x < main.cam_left - 80 or position.y > main.cam_y + 320:
 		queue_free()
 	queue_redraw()
 

@@ -1,7 +1,7 @@
 extends Node2D
 ## Greybox (modo bloques): dibuja la fase con bloques grises etiquetados por encima del arte, para probar
-## medidas y jugabilidad sin depender del pixel art. Activo por defecto en desarrollo (Game.greybox); F1 cambia
-## al arte. Solo cambia lo que se ve: las colisiones y las reglas son las mismas.
+## medidas y jugabilidad sin depender del pixel art. Solo en modo test, con F1 (Game.greybox): la fase se recarga
+## con su mundo del greybox (datos "greybox" de levels.gd; si no tiene, la misma fase) y aquí se ven sus cajas.
 ## - Escenario: siluetas de edificios, árboles y valla (pueblo: PIEZAS de scripts/pueblo_casas.gd, generado
 ##   por tools/sprites/pueblo.py), con puertas y ventanas; cuadrícula de 16 px contada desde el suelo.
 ## - Terreno: suelo, cuestas y plataformas de levels.gd, con su altura.
@@ -63,7 +63,7 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	var left: float = level.cam_left
-	var top: float = level.cam_top
+	var top: float = level.cam_y
 	draw_rect(Rect2(left - 8, top - 8, W + 16, H + 16), C_FONDO)
 	if not level.buildings.is_empty():
 		_draw_edificios(left, top)

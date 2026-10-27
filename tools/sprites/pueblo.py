@@ -14,8 +14,11 @@ Salida:
   assets/sprites/bg_pueblo.png        cielo y pampa, 270 px de alto (se mueve muy despacio)
   assets/sprites/pueblo_tramo_NN.png  la calle cortada en trozos de TROZO px (el juego los pone en fila)
   assets/sprites/ground_pueblo.png    tira de adoquines y tierra que se repite en el suelo
+  assets/sprites/pueblo_lejos.png     la calle de LEJOS_X a escala LEJOS_ESCALA: las casas vistas desde el paseo del
+                                      canal, cuando la cámara ya bajó (background.gd la pone en lugar de los trozos)
   scripts/pueblo_casas.gd             puerta, ventanas y vecino de cada edificio en coordenadas del mundo
-                                      (civilian.gd: los vecinos pasean frente a su puerta, entran y se asoman)
+                                      (civilian.gd: los vecinos pasean frente a su puerta, entran y se asoman), y
+                                      dónde está el canal y la calle lejana
 
 Uso: python tools/sprites/pueblo.py  (imprime el largo de la calle: es el "end" de la plantilla
 "pueblo" en scripts/levels.gd)
@@ -65,11 +68,6 @@ VECINO = {
 	"encomiendas": [5], "casa": [6, 8, 9, 11], "capilla": [7], "casa_2_pisos": [9, 3, 11, 8], "galpon": [10],
 }
 
-## Escala de la calle (edificios, árboles, valla y huecos). 1 = la original de Eduardo; 1.2 (25-10-2026) los
-## acerca un poco (se probó 2 y se redujo un 40 %); los más altos pueden quedar cortados por arriba de la
-## pantalla. Las medidas de PUERTA, ZONAS, ARBOLES, VALLA_ALTO y los huecos de CALLE están a escala 1 y se
-## multiplican por ESCALA (redondeando a px enteros).
-ESCALA = 1.2
 PUERTA = 52
 PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
 BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
@@ -86,18 +84,54 @@ VALLA_ALTO = 34
 VALLA_BOX = (102, 106, 1898, 545)
 VALLA_REPITE = (102, 1812)
 
+# Techos y toldos donde se puede caminar (px del edificio ya a escala del juego): el techo, de borde a borde
+# (menos TECHO_MARGEN) a la altura y, sobre las tejas; el toldo de los comercios, de x0 a x1 a la altura y.
+# level.gd los pone como plataformas invisibles que se atraviesan desde abajo: se sube saltando por cajas a los
+# toldos y de ahí a los techos.
+TECHO = {
+	"casa": 23, "almacen": 24, "casa_2_pisos": 17, "panaderia": 18, "casa_garaje": 25, "ferreteria": 18,
+	"galpon": 19, "cafe": 16, "encomiendas": 14,
+}
+TECHO_MARGEN = 6
+TOLDO = {
+	"almacen": (45, 145, 68), "panaderia": (20, 83, 56), "ferreteria": (12, 140, 57), "cafe": (18, 142, 56),
+	"encomiendas": (22, 85, 42),
+}
+
 # La calle de punta a punta: nombre = edificio; número = hueco con valla de ese ancho;
-# (árbol, ancho) = hueco con valla y un árbol detrás. Al final, la capilla con el ombú grande:
-# es la plaza donde pelea Massa (los últimos 480 px).
+# (árbol, ancho) = hueco con valla y un árbol detrás. Por tramos (ver la plantilla "pueblo" de levels.gd):
+#   1. la calle de entrada
+#   2. los techos: comercios juntos (huecos cortos) para ir de techo en techo
+#   3. el canalón, delante de casas
+#   4. la calle final, más difícil
+#   5. la plaza de la capilla con el ombú grande, donde pelea Massa (los últimos 480 px)
 CALLE = [
+	# 1. entrada
 	16, "casa", ("ombu", 60), "almacen", ("cedro", 52), "casa_2_pisos", ("jacaranda", 56), "casa_garaje",
 	("pino", 54), "casa", ("naranjo", 40), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "cafe",
-	("eucalipto", 52), "casa_2_pisos", ("sauce", 54), "encomiendas", ("jacaranda", 56), "casa",
-	("cedro", 52), "casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40),
-	"casa_2_pisos", ("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje",
-	("cedro", 52), "casa", ("jacaranda", 56), "casa_2_pisos", ("ombu_grande", 130), "capilla", ("sauce", 70), 60,
+	("eucalipto", 52), "casa_2_pisos", ("sauce", 54), "encomiendas",
+	# 2. techos
+	("jacaranda", 56), "almacen", 24, "panaderia", 20, "ferreteria", 24, "cafe", 20, "encomiendas", 24, "casa",
+	20, "almacen", 24, "cafe", ("ombu", 60),
+	# 3. canalón
+	"casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40), "casa_2_pisos",
+	("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje", ("cedro", 52), "casa",
+	("jacaranda", 56),
+	# 4. calle final
+	"casa_2_pisos", ("sauce", 54), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "casa", ("pino", 54),
+	"galpon", ("eucalipto", 52), "cafe", ("naranjo", 40), "casa_garaje", ("cedro", 52), "casa_2_pisos",
+	("jacaranda", 56), "encomiendas", ("ombu", 60), "casa", ("alamo", 40), "almacen", ("pino", 54), "casa_garaje",
+	("naranjo", 40), "casa", ("cedro", 52), "casa_2_pisos", ("eucalipto", 52), "panaderia", ("ombu", 60), "cafe",
+	# 5. plaza de la capilla
+	("ombu_grande", 130), "capilla", ("sauce", 70), 60,
 ]
 TROZO = 800
+# Canal (tramo 3): de CANAL[0] a CANAL[1] la calle baja por una rampa a un paseo junto al agua y la cámara baja con
+# el soldado; las casas se alejan (más chicas, detrás de la baranda de la terraza). LEJOS_X: trozo de la calle que se
+# dibuja a escala LEJOS_ESCALA (múltiplo de 5 para que LEJOS_X * 0.8 sea entero).
+CANAL = (3890, 5400)
+LEJOS_ESCALA = 0.8
+LEJOS_X = (3300, 6000)
 
 
 def load(name: str) -> Image.Image:
@@ -125,45 +159,34 @@ def build_sky() -> None:
 	print("bg_pueblo.png", sky.size)
 
 
-VALLA_H = round(VALLA_ALTO * ESCALA)
-
-
-def pegar(out: Image.Image, im: Image.Image, x: int, y: int) -> None:
-	"""alpha_composite que recorta lo que se sale por arriba (los edificios altos con ESCALA > 1)."""
-	if y < 0:
-		im = im.crop((0, -y, im.width, im.height))
-		y = 0
-	out.alpha_composite(im, (x, y))
-
-
 def edificio(name: str) -> Image.Image:
 	im = opaco(Image.open(SRC / "edificios" / f"{name}.png").convert("RGBA"))
-	s = PUERTA_GRANDE.get(name, PUERTA) * ESCALA / EDIFICIOS[name]
+	s = PUERTA_GRANDE.get(name, PUERTA) / EDIFICIOS[name]
 	return nitido(im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS))
 
 
 def arbol(name: str) -> Image.Image:
 	im = opaco(Image.open(SRC / "arboles" / f"{name}.png").convert("RGBA"))
-	h = round(ARBOLES[name] * ESCALA)
-	return nitido(im.resize((round(im.width * h / im.height), h), Image.LANCZOS))
+	s = ARBOLES[name] / im.height
+	return nitido(im.resize((round(im.width * s), ARBOLES[name]), Image.LANCZOS))
 
 
 def valla_piezas() -> tuple:
 	"""(tramo que se repite, poste derecho) a la escala del juego."""
 	src = Image.open(SRC / "valla.png").convert("RGBA")
 	x0, y0, x1, y1 = VALLA_BOX
-	s = VALLA_H / (y1 - y0)
+	s = VALLA_ALTO / (y1 - y0)
 	def esc(box):
 		im = src.crop(box)
-		return nitido(im.resize((max(1, round(im.width * s)), VALLA_H), Image.LANCZOS))
+		return nitido(im.resize((max(1, round(im.width * s)), VALLA_ALTO), Image.LANCZOS))
 	return esc((VALLA_REPITE[0], y0, VALLA_REPITE[1], y1)), esc((VALLA_REPITE[1], y0, x1, y1))
 
 
 def valla(w: int, rep: Image.Image, poste: Image.Image) -> Image.Image:
-	out = Image.new("RGBA", (w, VALLA_H), (0, 0, 0, 0))
+	out = Image.new("RGBA", (w, VALLA_ALTO), (0, 0, 0, 0))
 	x = 0
 	while x < w:
-		out.alpha_composite(rep.crop((0, 0, min(rep.width, w - x), VALLA_H)), (x, 0))
+		out.alpha_composite(rep.crop((0, 0, min(rep.width, w - x), VALLA_ALTO)), (x, 0))
 		x += rep.width
 	out.alpha_composite(poste, (max(0, w - poste.width), 0))
 	return out
@@ -176,9 +199,9 @@ def build_calle() -> None:
 	parts = []
 	for p in CALLE:
 		if isinstance(p, int):
-			parts.append(("hueco", round(p * ESCALA), None, ""))
+			parts.append(("hueco", p, None, ""))
 		elif isinstance(p, tuple):
-			parts.append(("hueco", round(p[1] * ESCALA), arbol(p[0]), p[0]))
+			parts.append(("hueco", p[1], arbol(p[0]), p[0]))
 		else:
 			im = edificio(p)
 			parts.append(("edificio", im.width, im, p))
@@ -191,7 +214,7 @@ def build_calle() -> None:
 	for kind, pw, im, nombre in parts:
 		if kind == "hueco" and im is not None:
 			ax, ay = x + pw // 2 - im.width // 2, BASE + 2 - im.height
-			pegar(out, im, ax, ay)
+			out.alpha_composite(im, (ax, ay))
 			piezas.append(("arbol", nombre, [ax, ay, ax + im.width, ay + im.height]))
 		x += pw
 	# 2) la vereda y los adoquines
@@ -205,23 +228,32 @@ def build_calle() -> None:
 	ni = 0
 	for kind, pw, im, nombre in parts:
 		if kind == "hueco":
-			pegar(out, valla(pw, rep, poste), x, BASE + 1 - VALLA_H)
-			piezas.append(("valla", "", [x, BASE + 1 - VALLA_H, x + pw, BASE + 1]))
+			out.alpha_composite(valla(pw, rep, poste), (x, BASE + 1 - VALLA_ALTO))
+			piezas.append(("valla", "", [x, BASE + 1 - VALLA_ALTO, x + pw, BASE + 1]))
 		else:
-			pegar(out, im, x, BASE - im.height)
+			out.alpha_composite(im, (x, BASE - im.height))
 			piezas.append(("edificio", nombre, [x, BASE - im.height, x + im.width, BASE]))
 			name = names[ni]
 			ni += 1
 			top = BASE - im.height
 			z = ZONAS[name]
 			def mundo(r):
-				return [x + round(r[0] * ESCALA), top + round(r[1] * ESCALA), x + round(r[2] * ESCALA), top + round(r[3] * ESCALA)]
+				return [x + r[0], top + r[1], x + r[2], top + r[3]]
 			vs = VECINO.get(name, [-1])
 			k = vs[turno.get(name, 0) % len(vs)]
 			turno[name] = turno.get(name, 0) + 1
-			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k))
+			techo = [x + TECHO_MARGEN, x + im.width - TECHO_MARGEN, top + TECHO[name]] if name in TECHO else []
+			t = TOLDO.get(name)
+			toldo = [x + t[0], x + t[1], top + t[2]] if t else []
+			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k, techo, toldo))
 		x += pw
 	_write_casas(casas, piezas)
+	# la calle lejana (el pixel art se reduce aquí, con buen filtro, y no en el juego)
+	x0, x1 = LEJOS_X
+	lejos = out.crop((x0, 0, x1, H))
+	lejos = nitido(lejos.resize((round(lejos.width * LEJOS_ESCALA), round(H * LEJOS_ESCALA)), Image.LANCZOS))
+	lejos.save(OUT / "pueblo_lejos.png")
+	print("pueblo_lejos.png", lejos.size)
 	# 4) se corta en trozos para el juego
 	for old in OUT.glob("pueblo_tramo_*.png"):
 		old.unlink()
@@ -235,16 +267,22 @@ def _write_casas(casas, piezas) -> None:
 		"extends RefCounted",
 		"## Generado por tools/sprites/pueblo.py: no editar a mano.",
 		"## Edificios de la calle del pueblo (1.1) en coordenadas del mundo:",
-		"## [nombre, puerta [x0, y0, x1, y1], ventanas [[x0, y0, x1, y1], ...], vecino (fila de vecinos.png, -1 nadie)]",
+		"## [nombre, puerta [x0, y0, x1, y1], ventanas [[x0, y0, x1, y1], ...], vecino (fila de vecinos.png, -1 nadie),",
+		"##  techo [x0, x1, y] y toldo [x0, x1, y] donde se puede caminar ([] si no hay)]",
 		"const CASAS := [",
 	]
-	for name, door, wins, k in casas:
-		lines.append(f'\t["{name}", {door}, {wins}, {k}],')
+	for name, door, wins, k, techo, toldo in casas:
+		lines.append(f'\t["{name}", {door}, {wins}, {k}, {techo}, {toldo}],')
 	lines.append("]")
+	lines.append("## Canal (tramo 3): x donde empieza la rampa que baja y donde termina la que sube")
+	lines.append(f"const CANAL := [{CANAL[0]}, {CANAL[1]}]")
+	lines.append("## pueblo_lejos.png: la calle desde la x LEJOS_X a escala LEJOS_ESCALA")
+	lines.append(f"const LEJOS_X := {LEJOS_X[0]}")
+	lines.append(f"const LEJOS_ESCALA := {LEJOS_ESCALA}")
 	lines.append("## Piezas de la calle (para el greybox): [tipo (edificio, arbol, valla), nombre, [x0, y0, x1, y1]]")
 	lines.append("const PIEZAS := [")
 	for tipo, nombre, r in piezas:
-		lines.append(f'\t["{tipo}", "{nombre}", {r}],')
+		lines.append(f'	["{tipo}", "{nombre}", {r}],')
 	lines.append("]")
 	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 	print("pueblo_casas.gd:", len(casas), "edificios")

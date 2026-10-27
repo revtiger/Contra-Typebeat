@@ -104,6 +104,7 @@ var throw_t := 0.0
 var flash_t := 0.0
 var anim_t := 0.0
 var cam_left := 0.0
+var cam_y := 0.0  # la cámara baja en el canal de la 1.1 (level.gd)
 
 var shape := RectangleShape2D.new()
 var col := CollisionShape2D.new()
@@ -286,10 +287,10 @@ func _physics_process(delta: float) -> void:
 			if b.is_in_group("enemy") and b.get("touch_damage") != false and not (slide_t > 0.0 and b.get("knifeable") == true):
 				hit()
 				break
-	if position.y > 300:
+	if position.y > cam_y + 300:
 		if god:
 			var lvl = get_tree().get_first_node_in_group("level")
-			position = Vector2(lvl.safe_x(cam_left + 50), 20)
+			position = Vector2(lvl.safe_x(cam_left + 50), cam_y + 20)
 			velocity = Vector2.ZERO
 		else:
 			hit(true)

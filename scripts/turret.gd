@@ -72,7 +72,7 @@ func _physics_process(delta: float) -> void:
 		# en diagonal si está claramente por encima; si no, al frente
 		dir = 1 if to.y / -to.x < -0.45 else 0
 	var on_screen: bool = position.x > main.cam_left + 10 and position.x < main.cam_left + 470 \
-		and position.y - 20.0 < main.cam_top + 270.0  # con la cámara arriba (azoteas) no dispara sin verse
+		and position.y - 20.0 < main.cam_y + 270.0  # con la cámara arriba (azoteas) no dispara sin verse
 	shoot_t -= delta
 	if shoot_t <= 0.0 and on_screen and ahead and not p.dead:
 		shoot_t = 1.5

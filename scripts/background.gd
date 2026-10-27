@@ -7,7 +7,9 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Base secreta (ONU): sky, vault (muro con emblemas y pantallas), machines (servidores y carteles), abyss.
 ## Pueblo de la pampa (1.1): pueblo (cielo del atardecer y pampa de Eduardo, bg_pueblo.png), casas (tramos del
 ## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo) y aves (bandadas lejanas que
-## cruzan el cielo aleteando, aves.png de tools/sprites/aves.py). Sin fosos.
+## cruzan el cielo aleteando, aves.png de tools/sprites/aves.py). Sin fosos. En el canal la cámara baja (level.gd,
+## cam_y) y las casas se alejan: se achican hasta LEJOS_ESCALA, se corren más despacio y quedan detrás de la baranda
+## de la terraza (canal.gd); ya abajo del todo se dibuja pueblo_lejos.png, reducida con buen filtro.
 ## country (ar, mx, us, de, un) elige la bandera que ondea y los lemas de los carteles.
 ## Con screen_scroll = true el fondo se desplaza solo (menú e intro, sin cámara).
 
@@ -32,6 +34,15 @@ const WIDTH := 5400.0
 const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
 const PUEBLO_TRAMOS := 32  # máximo de trozos que se buscan (se para en el primero que no existe)
 const AVES_TEX := preload("res://assets/sprites/aves.png")
+const PuebloCasas = preload("res://scripts/pueblo_casas.gd")
+const LEJOS_TEX := preload("res://assets/sprites/pueblo_lejos.png")
+const CASAS_BASE := 207.0  # y donde apoyan los edificios en los trozos de la calle (BASE de pueblo.py)
+## con la cámara abajo del todo, la base de las casas queda tantos px por encima del borde de la terraza (detrás de
+## la baranda, con un poco de la vereda a la vista)
+const CASAS_ATRAS := 22.0
+## tinte de las casas lejanas (un poco de bruma)
+const BRUMA := Color(0.86, 0.87, 0.96)
+var lejos := false
 ## Orden de los fotogramas al aletear (0 alas arriba … 4 alas abajo); el 2 es el planeo.
 const AVES_ALETEO := [0, 1, 2, 3, 4, 3, 2, 1]
 ## Bandadas: [x, y, velocidad (px/s, + a la derecha), tamaño (0 lejana, 1 cerca), posiciones de cada ave]
@@ -69,9 +80,14 @@ func _process(delta: float) -> void:
 		_process_aves(delta)
 		return
 	if kind == "pueblo":
-		# el cielo avanza muy despacio: justo lo necesario para que su final llegue a la arena del jefe
+		# el cielo avanza muy despacio: justo lo necesario para que su final llegue a la arena del jefe; en vertical
+		# no se mueve (está muy lejos)
 		var span: float = maxf(1.0, main.boss_arena)
 		position.x = main.cam_left - main.cam_left * (PUEBLO_TEX.get_width() - 480.0) / span
+		position.y = roundf(main.cam_y)
+		return
+	if kind == "casas":
+		_process_casas()
 		return
 	if kind == "panorama" and PANORAMAS.has(theme):
 		var tex: Texture2D = PANORAMAS[theme][0]
@@ -255,6 +271,9 @@ func _draw() -> void:
 					draw_texture_rect_region(AVES_TEX, Rect2(p.round() - Vector2(cw, ch) / 2.0, Vector2(cw, ch)),
 						Rect2(frame * cw, 8 if big else 0, cw, ch))
 		"casas":
+			if lejos:
+				draw_texture(LEJOS_TEX, Vector2(roundf(PuebloCasas.LEJOS_X * PuebloCasas.LEJOS_ESCALA), 0))
+				return
 			var x := 0.0
 			for tex in _tramos():
 				draw_texture(tex, Vector2(x, 0))
@@ -270,6 +289,33 @@ func _draw() -> void:
 				PackedColorArray([Color(0.45, 0.25, 0.15), Color(0.45, 0.25, 0.15), Color(0.08, 0.04, 0.03), Color(0.08, 0.04, 0.03)]))
 
 
+## Casas: con la cámara arriba, en su sitio (a la velocidad del suelo). Al bajar al canal (f de 0 a 1) se achican
+## hacia LEJOS_ESCALA alrededor del centro de la pantalla (así también se corren más despacio, como algo lejano), suben
+## hasta quedar detrás de la terraza y toman un poco de bruma. Abajo del todo se dibuja pueblo_lejos.png en lugar de
+## los trozos escalados (el pixel art reducido en el juego titila al moverse).
+func _process_casas() -> void:
+	var f := 0.0
+	if main.cam_y_max > 0.0:
+		f = clampf(main.cam_bajada / main.cam_y_max, 0.0, 1.0)
+	# solo la bajada del canal (cam_bajada), no la subida de la cámara al saltar: las casas están en el mundo
+	var cam := Vector2(roundf(main.cam_left), roundf(main.cam_bajada))
+	var s := lerpf(1.0, PuebloCasas.LEJOS_ESCALA, f)
+	# base de las casas en la pantalla: de CASAS_BASE (en su sitio) a detrás del borde de la terraza
+	var base_abajo: float = main.CALLE_Y - main.cam_y_max - CASAS_ATRAS
+	var base := lerpf(CASAS_BASE, base_abajo, f)
+	# el punto del mundo que está en el centro de la pantalla no se mueve al achicar
+	var pivot := cam.x + 240.0
+	position = Vector2(pivot * (1.0 - s), cam.y + base - CASAS_BASE * s)
+	var ahora := f >= 0.999
+	if ahora:
+		position = position.round()
+	scale = Vector2.ONE if ahora else Vector2(s, s)
+	modulate = Color.WHITE.lerp(BRUMA, f)
+	if ahora != lejos:
+		lejos = ahora
+		queue_redraw()
+
+
 ## Aves: se mueven en coordenadas de pantalla (la capa sigue a la cámara), con un poco de parallax, y al
 ## salir por un lado vuelven a entrar por el otro a otra altura.
 func _process_aves(delta: float) -> void:
@@ -280,7 +326,7 @@ func _process_aves(delta: float) -> void:
 		last_cam = main.cam_left
 	var dcam: float = main.cam_left - last_cam
 	last_cam = main.cam_left
-	position.x = main.cam_left
+	position = Vector2(main.cam_left, roundf(main.cam_y))
 	for f in aves:
 		f["x"] += f["vx"] * delta - dcam * AVES_PARALLAX[f["size"]]
 		if f["x"] < -70.0:

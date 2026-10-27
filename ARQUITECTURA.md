@@ -128,7 +128,7 @@ Pendientes: decidir 3 o 4 capas; si la nieve que cae (`snowfall`, hoy en `z 3`) 
 
 ### Greybox (modo test)
 
-En **modo test** la fase se ve con bloques grises etiquetados en vez del arte (`scripts/greybox.gd`). **F1** cambia entre los dos. Es una capa opaca en `z 50`, por encima del mundo y por debajo del HUD; en producción siempre se ve el arte.
+En **modo test**, **F1** cambia entre el juego y el greybox (`scripts/greybox.gd`), recargando la fase en la misma x. Sin F1 se ve el juego tal cual, sin ayuda ni teclas de test. El greybox es un **mundo aparte**: si la plantilla tiene datos `"greybox"` (`levels.gd`), se juega con ellos. Lo que se prueba ahí (edificios generados, jump hitbox, azoteas, museo en la 1.1) no aparece en el escenario del juego hasta pasarlo a sus datos, y el escenario del juego (canal, techos, cajas) no aparece en el greybox. Es una capa opaca en `z 50`, por encima del mundo y por debajo del HUD; en producción siempre se ve el arte.
 
 - **Escenario en grises**, de lejos (oscuro) a cerca (claro): edificios con su número, tipo y pisos, ventanas, puertas y flechas "SIGUE ARRIBA"; vereda, suelo y plataformas con su altura. Cuadrícula de 16 px contada desde el suelo (y = 230).
 - **Personajes y objetos:** su caja de colisión real con el borde del color de su capa, su nombre y su medida.
@@ -168,7 +168,7 @@ Una **escena** es una pantalla de juego: **480 px** de ancho (`SCREEN_W`).
 | Demás fases (plantillas sin `"end"` propio, `END`) | 7 | 3 360 | Provisional (26-10-2026: antes 3 000, 6,25 escenas; se alargó para no meter enemigos en la arena del jefe) |
 | Interior del MUSEO | 3 | 1 440 | Provisional (26-10-2026: antes 1 500) |
 
-Pendiente ⚠: el arte de la calle de la 1.1 llega a **5 856 px (12,2 escenas)**; el resto de la fase solo tiene suelo, para trabajar en greybox. Para que cuadre en escenas enteras habría que dejarlo en 12 escenas (5 760 px, recortando 96 px) o en 13 (6 240 px, añadiendo 384 px). Es un cambio de arte (ARQ-30) y lo decide el equipo.
+Pendiente ⚠: el arte de la calle de la 1.1 (Eduardo) llega a **9 408 px (19,6 escenas)**, y la plaza de la capilla, que era la arena de Massa, queda a mitad de la fase; de ahí al final solo hay suelo y Massa pelea en la última escena. Para cuadrar en escenas enteras y volver a juntar la capilla con Massa habría que completar el arte hasta 31 escenas (o mover la plaza al final). Es un cambio de arte (ARQ-30) y lo deciden el equipo y Eduardo.
 
 ---
 

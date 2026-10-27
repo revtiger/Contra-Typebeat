@@ -100,7 +100,7 @@ func _physics_process(delta: float) -> void:
 			state = "normal"
 			spr.visible = true
 			collision_layer = 4
-			position.y = main.cam_top - 30.0
+			position.y = main.cam_y - 30.0
 			velocity = Vector2(0, 120)
 			shoot_t = 0.0
 		fx.queue_redraw()
@@ -114,7 +114,7 @@ func _physics_process(delta: float) -> void:
 	var dx: float = p.position.x - position.x
 	# en pantalla también en vertical: con la cámara arriba (azoteas) los de la calle no disparan sin verse
 	var on_screen: bool = position.x > main.cam_left and position.x < main.cam_left + 480 \
-		and position.y > main.cam_top and position.y - 20.0 < main.cam_top + 270.0
+		and position.y > main.cam_y and position.y - 20.0 < main.cam_y + 270.0
 	match state:
 		"enter":
 			velocity.x = dir * speed
@@ -202,7 +202,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if state == "normal" and mode == "run" and is_on_wall() and is_on_floor():
 		velocity.y = -300.0
-	if position.y > 320 or position.x < main.cam_left - 60 or position.x > main.cam_left + 560:
+	if position.y > main.cam_y + 320 or position.x < main.cam_left - 60 or position.x > main.cam_left + 560:
 		queue_free()
 	_animate()
 

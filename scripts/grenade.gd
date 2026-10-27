@@ -27,7 +27,7 @@ func _physics_process(delta: float) -> void:
 	if main.touches_terrain(position + Vector2(0, 3), vel.y < 0.0):
 		_explode()
 		return
-	if position.y > 300.0:
+	if position.y > main.cam_y + 300.0:
 		queue_free()
 	queue_redraw()
 

@@ -54,7 +54,7 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Balas del héroe | pistola 360, H 420, L 560, S 340 px/s | 320, 380, 520, 300 |
 | Balas enemigas | francotirador 180, nido 150, Massa 210 px/s | 120, 110, 170 |
 | Granadas (héroe y enemigas) | ×1,25 de velocidad con el mismo arco; explotan solo al tocar el Terreno, sin rebote | rebotaban |
-| Largo de la 1.1 | 14880 px (31 pantallas exactas, 26-10-2026) | 15000 (31,25), antes 4879 |
+| Largo de la 1.1 | 14880 px (31 escenas exactas, 26-10-2026) | 9408 (calle de Eduardo) / 15000 (greybox), antes 4879 |
 
 Unidad para diseñar niveles: la **pantalla** (480 px) y casillas de 16 px contadas desde el suelo. Referencia: el héroe mide 48 px (≈1,75 m) y un piso, 80 px.
 
@@ -146,7 +146,7 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 | Fase | Escenario | Jefe |
 |---|---|---|
-| 1.1 | Argentina: Pueblo de la pampa al atardecer, 14880 px (31 pantallas exactas; desde el 25-10-2026 se alargó y el 26-10-2026 se ajustó desde 15000, para trabajar la jugabilidad en greybox: el arte de la calle llega a 5856 px y el resto es solo suelo), calle a escala 1.2 desde el 25-10-2026: edificios, árboles y valla un 20 % más grandes para que se sientan más cercanos; `ESCALA` en `pueblo.py`), calle llana armada pieza por pieza con los edificios, árboles y valla de Eduardo, aves en el cielo (`tools/sprites/pueblo.py`, `aves.py`) | Minijefe Sergio Massa, frente a la capilla |
+| 1.1 | Argentina: Pueblo de la pampa al atardecer, 14880 px (31 escenas exactas, 26-10-2026; el arte de la calle de Eduardo llega a 9408 px y el resto es solo suelo), con los cinco tramos de Eduardo (entrada, techos, canal, calle final, plaza; ver más abajo). Su mundo del greybox (F1 en modo test) es otro: calle llana con edificios generados, jump hitbox, azoteas y el museo, con las x de la calle a escala 1.2 (25-10-2026; la escala 1.2 no se aplicó al arte de Eduardo). Calle armada pieza por pieza con los edificios, árboles y valla de Eduardo, aves en el cielo (`tools/sprites/pueblo.py`, `aves.py`) | Minijefe Sergio Massa, frente a la capilla |
 | 1.2 | Argentina: Quebrada de Humahuaca (desierto) | Minijefa Cristina Kirchner |
 | 1.3 | Argentina: Buenos Aires, Casa Rosada (ciudad) | **Javier Milei** |
 | 2.1 | México: Selva del Sureste | Minijefe AMLO |
@@ -237,3 +237,11 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 - **Massa:** al morir ya no gira como una tarjeta. Recibe el golpe, suelta el rifle y cae de espaldas (`v_die`, PixelLab), salpica sangre y se queda tirado mientras le revientan los bolsillos.
 - **Balas** con una estela corta detrás.
 
+**1.1 más larga, con techos y canalón (25-10-2026, Eduardo):** la calle del pueblo pasa de 4879 a 9408 px (desde el 26-10-2026 la fase mide 31 escenas, 14880 px: tras la calle solo hay suelo hasta Massa) y se juega en cinco tramos cada vez más difíciles:
+1. **Entrada:** la calle de siempre.
+2. **Techos:** fila de comercios juntos. Con cajas de madera (`scripts/caja.gd`, PixelLab) se sube a los toldos y de ahí a los techos, que se recorren saltando de uno a otro. Hay francotiradores arriba y granaderos abajo. Los techos y toldos de todos los edificios son salientes invisibles que se atraviesan desde abajo; `tools/sprites/pueblo.py` los exporta en `scripts/pueblo_casas.gd`.
+3. **Bajada al canal** (según la referencia de Eduardo, `tools/sprites/chatgpt/pueblo/canal/referencia_canal.png`; rehecho el 25-10-2026 a pedido suyo): la calle baja por una rampa recta de piedra, larga y suave, a un paseo junto al agua, 107 px más abajo (piezas de ChatGPT: muro, arco con cascada, baranda, paseo y rampa; `tools/sprites/canal_kit.py`). La cámara baja con el soldado, que se sigue viendo del mismo tamaño y a la misma altura de la pantalla. Las casas se alejan: se achican al 80 %, se corren más despacio, toman un poco de bruma y quedan detrás de la terraza con baranda (si se corta algún techo arriba, vale). Detrás del paseo hay un muro con arcos de desagüe que echan agua al canal (solo decorado: no se puede caer). Una flecha que parpadea avisa que hay que bajar. Abajo hay soldados, nidos, minas y barriles; desde arriba, helicópteros que disparan ráfagas hacia abajo (`scripts/helicoptero.gd`: hoja de giro de 5 posiciones de ChatGPT, con el piloto como nuestros soldados; para apuntar gira pasando por las posiciones, las aspas las dibuja el juego, y al morir cae girando) y un avión que bombardea. Al final otra rampa sube a la calle y la cámara vuelve a su altura. En los techos de ese tramo no se camina y no hay vecinos.
+4. **Calle final:** tanque comunista, más nidos y granaderos, tiradores en los techos.
+5. **Plaza de la capilla:** Massa.
+
+El reloj vuelve a 60 al empezar los tramos 2, 3 y 4 (entidad `tiempo`). La prueba automática admite hasta 14000 fotogramas.
