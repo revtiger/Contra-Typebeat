@@ -15,7 +15,7 @@ var score := 0
 var lives := START_LIVES
 var level := 0
 ## Soldado elegido en ELIGE TU SOLDADO (sprites player_<hero>_*.png)
-var hero := "presi"
+var hero := "eduardo"
 var record := 0
 var autoplay := false
 

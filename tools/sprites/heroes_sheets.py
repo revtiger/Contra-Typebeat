@@ -40,7 +40,7 @@ SRC = os.path.join(HERE, "chatgpt")
 OUT = os.path.join(HERE, "..", "..", "assets", "sprites")
 FRAMES = os.path.join(HERE, "heroes")
 
-HEROES = ["eduardo", "eder"]
+HEROES = ["eduardo", "eder", "junnie"]
 FW, FH = 96, 80       # más alto que antes para que quepa el arma apuntando arriba
 FEET = (40, 76)       # pies (centro de las piernas) dentro del fotograma
 LEGACY = {(80, 60): (30, 58)}  # tamaño viejo de fotograma suelto -> sus pies
@@ -50,7 +50,7 @@ INK = (18, 14, 16, 255)
 FLASH_EDGE = 0.05    # parte mínima del fogonazo que toca el fondo (la piel da 0-0,01; el fuego 0,09 o más)
 
 # poses tumbadas: se centran en el fotograma en lugar de alinear los pies
-WIDE = ("prone", "die")
+WIDE = ("prone", "die", "slide")
 # poses de disparo: se les quita el fogonazo y cualquier chispa suelta
 AIM_ANIMS = ("shoot", "prone", "up", "up_run", "diag_up", "diag_up_run", "diag_down")
 # carreras: se alinean por el torso
@@ -74,6 +74,9 @@ ANIMS = {
 	"diag_up": ([(4, 0, 3), (4, 0, 1)], 1, False),
 	"diag_up_run": ([(4, 1, c) for c in range(4)], 12, True),
 	"diag_down": ([(3, 2, 3), (3, 2, 1)], 1, False),
+	# barrida (ventaja de Junnie: SLIDE en player.gd) y levantarse de ella
+	"slide": ([(4, 2, c) for c in range(4)], 12, False),
+	"slide_up": ([(4, 3, c) for c in range(4)], 14, False),
 }
 # boca del arma de cada dirección: animación de la que sale (la pose con el fogonazo más grande)
 MUZZLE_FROM = {"shoot": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": "diag_down", "prone": "prone"}
@@ -108,6 +111,58 @@ LOOSE = {
 	# 0,77 s, algo más pausado que a 16 (0,63 s, sin patinar); a cambio la bota apoyada patina ~1,5 px por fotograma.
 	"run": (13, [1] * 10),
 }
+
+
+# soldados con ropa negra: el relleno negro se aclara a gris carbón para que se vean las líneas (pliegues,
+# piernas al correr); las líneas, casi negras, se quedan como están
+LIFT_BLACKS = {"junnie"}
+LINE_MAX = 12     # por debajo de este brillo es línea (no se toca)
+LIFT_TOP = 90     # hasta este brillo se aclara
+
+
+def lift_blacks(im):
+	"""Aclara los negros y grises oscuros sin color (ropa, botas, arma) que no son líneas."""
+	im = im.copy()
+	px = im.load()
+	for y in range(im.height):
+		for x in range(im.width):
+			r, g, b, a = px[x, y]
+			if not a:
+				continue
+			hi, lo = max(r, g, b), min(r, g, b)
+			v = (r + g + b) / 3
+			# sin color: el pelo (castaño) tiene más rojo que azul y no se toca
+			if LINE_MAX <= v <= LIFT_TOP and hi - lo <= 8 and r - b <= 4:
+				t = 30 + (v - LINE_MAX) * 1.1
+				px[x, y] = (round(t), round(t + 2), round(t + 10), a)  # carbón azulado
+	return im
+
+
+def lift_hair(im):
+	"""Aclara el relleno del pelo castaño oscuro (manteniendo su color) para que se lean los mechones; las
+	líneas casi negras se quedan como están."""
+	im = im.copy()
+	px = im.load()
+	for y in range(im.height):
+		for x in range(im.width):
+			r, g, b, a = px[x, y]
+			if not a:
+				continue
+			v = (r + g + b) / 3
+			if LINE_MAX <= v <= 75 and r - b >= 6 and r >= g:
+				k = (26 + (v - LINE_MAX) * 1.05) / v
+				px[x, y] = (min(255, round(r * k)), min(255, round(g * k)), min(255, round(b * k)), a)
+	return im
+
+
+def shrink(cell, scale, hero):
+	"""Reduce una pose a la escala del juego. Con ropa negra (LIFT_BLACKS) se aclaran negros y pelo, y se
+	suaviza antes de reducir (mediana + promedio por zonas): quedan manchas de color limpias en vez de ruido."""
+	w, h = max(1, round(cell.width * scale)), max(1, round(cell.height * scale))
+	if hero in LIFT_BLACKS:
+		cell = lift_hair(lift_blacks(cell))
+		return clean(cell.filter(ImageFilter.MedianFilter(5)).resize((w, h), Image.BOX))
+	return clean(cell.resize((w, h), Image.LANCZOS))
 
 
 def alpha_mask(im):
@@ -156,6 +211,23 @@ def _split_tallest(big, mask, split):
 	return True
 
 
+def _split_widest(big, mask, split):
+	"""Parte en dos la mancha más ancha (dos poses tumbadas pegadas de lado) por su columna más vacía."""
+	widths = sorted(b[2] - b[0] for b in big)
+	median = widths[len(widths) // 2]
+	b = max(big, key=lambda p: p[2] - p[0])
+	if b[2] - b[0] < median * 1.5:
+		return False
+	lo, hi = b[0] + (b[2] - b[0]) // 3, b[0] + 2 * (b[2] - b[0]) // 3
+	cut = min(range(lo, hi), key=lambda x: sum(1 for y in range(b[1], b[3]) if mask.getpixel((x, y))))
+	big.remove(b)
+	split.append(b)
+	for x0, x1 in ((b[0], cut), (cut, b[2])):
+		bb = mask.crop((x0, b[1], x1, b[3])).getbbox()
+		big.append([x0 + bb[0], b[1] + bb[1], x0 + bb[2], b[1] + bb[3], b[4] // 2])
+	return True
+
+
 def cells(path, rows=4, cols=4):
 	"""Recorta las poses de una hoja: devuelve cells[fila][columna] = imagen RGBA.
 	Las manchas pequeñas (granada en el aire, estela, fogonazo, cuerdas) se unen a la pose más cercana."""
@@ -168,8 +240,16 @@ def cells(path, rows=4, cols=4):
 		# el paracaídas sale como mancha aparte: se queda con la pose de debajo
 		big = big[:n]
 	split = []  # manchas originales que se partieron (no se vuelven a unir)
-	while len(big) < n and _split_tallest(big, mask, split):
-		pass
+	while len(big) < n:
+		# se parte la mancha más desproporcionada: la más alta (poses una encima de otra) o la más ancha
+		# (poses tumbadas pegadas de lado)
+		hs = sorted(q[3] - q[1] for q in big)
+		ws = sorted(q[2] - q[0] for q in big)
+		tall = max(q[3] - q[1] for q in big) / hs[len(hs) // 2]
+		wide = max(q[2] - q[0] for q in big) / ws[len(ws) // 2]
+		first, second = (_split_widest, _split_tallest) if wide > tall else (_split_tallest, _split_widest)
+		if not (first(big, mask, split) or second(big, mask, split)):
+			break
 	if len(big) != n:
 		raise SystemExit("%s: se esperaban %d poses y hay %d" % (path, n, len(big)))
 	for b in found:
@@ -317,11 +397,13 @@ def clean(im):
 	return im
 
 
-def to_palette(im, pal):
+def to_palette(im, pal, outline=True):
 	"""Pasa la pose a la paleta del soldado (sin tramado) y le pone el contorno oscuro de 1 px."""
 	a = im.getchannel("A")
 	q = im.convert("RGB").quantize(palette=pal, dither=Image.Dither.NONE).convert("RGBA")
 	q.putalpha(a)
+	if not outline:
+		return q
 	out = Image.new("RGBA", im.size, (0, 0, 0, 0))
 	out.paste(Image.new("RGBA", im.size, INK), mask=a.filter(ImageFilter.MaxFilter(3)))
 	out.alpha_composite(q)
@@ -485,7 +567,8 @@ def build(hero):
 	ib = alpha_mask(idle).getbbox()
 	scale = HEIGHT / float(ib[3] - ib[1])
 	loose = {name: loose_frames(hero, name) for name in ANIMS}
-	loose["run"] = None  # la carrera se monta con run_frames (sus piernas vienen de RUN_LEGS)
+	if hero == "eduardo":
+		loose["run"] = None  # heroes/eduardo/run son las piernas (RUN_LEGS) de las carreras de Eduardo y Eder
 	anims = {n: v for n, v in ANIMS.items() if loose[n] or all(s in sheets for s, _, _ in v[0])}
 
 	# 1) cada pose: sin fogonazo, reducida y colocada en su fotograma (aún con todos sus colores)
@@ -497,8 +580,8 @@ def build(hero):
 		for (s, r, c) in frames:
 			cell, mz, size, _ = strip_flash(sheets[s][r][c])
 			b = alpha_mask(cell).getbbox()
-			small = clean(cell.resize((max(1, round(cell.width * scale)), max(1, round(cell.height * scale))), Image.LANCZOS))
-			if name in AIM_ANIMS:
+			small = shrink(cell, scale, hero)
+			if name in AIM_ANIMS or name in ("slide", "slide_up"):
 				small = keep_largest(small)
 			if name in WIDE:
 				ox = round(FW / 2 - (b[0] + b[2]) / 2 * scale)

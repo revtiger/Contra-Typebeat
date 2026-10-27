@@ -173,6 +173,12 @@ func _physics_process(_delta: float) -> void:
 		Input.action_release("left")
 	else:
 		Input.action_press("right")
+		# soldado con barrida (Junnie): de vez en cuando se barre
+		if p._perk("slide", false):
+			if level_frame % 90 == 40:
+				Input.action_press("down")
+			elif level_frame % 90 == 43:
+				Input.action_release("down")
 	Input.action_press("shoot")
 	if level_frame % 150 == 75:
 		Input.action_press("grenade")
