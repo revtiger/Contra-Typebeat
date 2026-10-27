@@ -1,11 +1,7 @@
 {
  "frame": [
-  96,
-  128
- ],
- "pivot": [
-  61,
-  127
+  64,
+  64
  ],
  "anims": {
   "idle": {
@@ -14,31 +10,93 @@
   },
   "walk": {
    "row": 1,
-   "frames": 7
+   "frames": 8
   },
-  "talk": {
+  "grenade": {
    "row": 2,
-   "frames": 9
+   "frames": 22
   },
-  "throw": {
+  "thumbs": {
    "row": 3,
    "frames": 9
   },
-  "thumbs": {
+  "strip": {
    "row": 4,
    "frames": 9
+  },
+  "v_idle": {
+   "row": 5,
+   "frames": 5
+  },
+  "v_walk": {
+   "row": 6,
+   "frames": 8
+  },
+  "v_shoot": {
+   "row": 7,
+   "frames": 4
   }
  },
- "mic": [
-  28,
-  44
+ "pivot": [
+  36,
+  62
  ],
- "hand_throw": [
+ "muzzle": [
+  9,
+  41
+ ],
+ "muzzles_shoot": [
+  [
+   11,
+   39
+  ],
+  [
+   7,
+   41
+  ],
+  [
+   12,
+   39
+  ],
+  [
+   8,
+   41
+  ]
+ ],
+ "grenade_durations": [
+  0.5,
+  0.5,
+  0.9,
+  0.9,
+  0.9,
+  1,
+  1,
+  1.7,
+  1.4,
+  1,
+  0.7,
+  0.9,
+  1.1,
+  0.6,
+  1.5,
+  1.2,
+  1.4,
+  1,
+  0.7,
+  0.7,
+  0.7,
+  0.8
+ ],
+ "grenade_release": [
   8,
-  38
+  16
  ],
- "shoulder": [
-  60,
-  49
+ "hand_r": [
+  6,
+  32
+ ],
+ "hand_l": [
+  6,
+  22
  ]
 }
