@@ -1,6 +1,9 @@
 extends Area2D
 ## Mina terrestre: al pisarla pita y explota 0,4 s después (si sigues corriendo, te salvas). También se puede disparar.
+## Sprite: tools/sprites/objetos.py (ChatGPT): luz apagada y encendida; parpadea despacio y, pisada, muy rápido.
 
+const SpriteUtil = preload("res://scripts/sprite_util.gd")
+const TEX := preload("res://assets/sprites/mina.png")
 const FUSE := 0.4
 
 var main
@@ -16,7 +19,7 @@ func _ready() -> void:
 	collision_mask = 2
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(12, 6)
+	r.size = Vector2(20, 6)
 	cs.shape = r
 	cs.position = Vector2(0, -3)
 	add_child(cs)
@@ -54,8 +57,8 @@ func _explode() -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2(0, 0), 6, Color(0.3, 0.3, 0.28))
-	draw_rect(Rect2(-7, -1, 14, 1), Color(0.2, 0.2, 0.18))
+	var fr := SpriteUtil.v(SpriteUtil.meta("res://assets/sprites/objetos_meta.json")["mina"]["frame"])
 	var speed := 30.0 if fuse >= 0.0 else 4.0
-	if int(t * speed) % 2 == 0:
-		draw_circle(Vector2(0, -4), 1.5, Color(1, 0.1, 0.1))
+	var f := 1 if int(t * speed) % 2 == 0 else 0
+	# medio enterrada: los pies (centro del borde de abajo) 2 px por debajo del suelo
+	draw_texture_rect_region(TEX, Rect2(-fr.x / 2.0, -fr.y + 2.0, fr.x, fr.y), Rect2(f * fr.x, 0, fr.x, fr.y))

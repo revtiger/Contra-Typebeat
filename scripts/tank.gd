@@ -1,7 +1,8 @@
 extends CharacterBody2D
-## Tanque: avanza hacia el jugador y dispara obuses rasantes a la altura del pecho
-## (se esquivan saltando o cuerpo a tierra). Tres tipos muy distintos, con sprites de PixelLab
-## (tools/sprites/tanks.py): comunista (estilo T-34), israelí (estilo Merkava) y estadounidense (estilo Abrams).
+## Tanque: avanza hacia el jugador y dispara obuses hacia su pecho (el cañón está alto: el obús baja un poco; se
+## esquivan saltando o cuerpo a tierra). Tres tipos muy distintos (tools/sprites/tanks.py: dibujo de ChatGPT del
+## alto de Massa, orugas animadas con PixelLab): comunista (estilo T-34), israelí (estilo Merkava) y estadounidense
+## (estilo Abrams). Al destruirlo queda la chatarra en la calle, echando humo y fuego.
 ## El tipo viene del nivel (["tank", x, y, tipo]) o, si no, se alterna según la x.
 
 const Bullet = preload("res://scripts/bullet.gd")
@@ -21,6 +22,8 @@ var kind := ""
 var cfg: Dictionary
 var info: Dictionary
 var tex: Texture2D
+var tex_roto: Texture2D
+var roto := false  # destruido: queda la chatarra
 var max_hp := 20
 var hp := 20
 var dir := -1
@@ -43,12 +46,13 @@ func _ready() -> void:
 	cfg = TYPES[kind]
 	info = SpriteUtil.meta("res://assets/sprites/tanks_meta.json")[kind]
 	tex = load("res://assets/sprites/tank_%s.png" % kind)
+	tex_roto = load("res://assets/sprites/tank_%s_roto.png" % kind)
 	max_hp = cfg["hp"]
 	hp = max_hp
 	var hull := SpriteUtil.v(info["hull"])
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(minf(hull.x - 6, 46), minf(hull.y, 26))
+	r.size = Vector2(hull.x - 10.0, hull.y * 0.8)
 	cs.shape = r
 	cs.position = Vector2(0, -r.size.y / 2)
 	add_child(cs)
@@ -58,6 +62,14 @@ func _physics_process(delta: float) -> void:
 	flash -= delta
 	recoil = maxf(recoil - delta * 20.0, 0.0)
 	velocity.y += 900.0 * delta
+	if roto:
+		anim_t += delta
+		velocity.x = 0.0
+		move_and_slide()
+		if position.x < main.cam_left - 120:
+			queue_free()
+		queue_redraw()
+		return
 	var p = main.player
 	var on_screen: bool = position.x > main.cam_left + 10 and position.x < main.cam_left + 470
 	var dx: float = p.position.x - position.x
@@ -92,28 +104,38 @@ func _shoot() -> void:
 	var b := Bullet.new()
 	b.from_player = false
 	b.kind = "shell"
-	b.vel = Vector2(dir * cfg["shell"], 0)
 	b.position = position + _muzzle()
+	# hacia el pecho del jugador, pero siempre hacia delante y casi horizontal
+	var to: Vector2 = main.player.position + Vector2(0, -22) - b.position
+	var ang := clampf(atan2(to.y, absf(to.x)), -0.12, 0.35)
+	b.vel = Vector2(dir * cos(ang), sin(ang)) * cfg["shell"]
 	get_parent().add_child(b)
 	Game.sfx("cannon", -6.0, 0.8 if kind == "israeli" else 1.0)
 	main.explode(position + _muzzle(), cfg["boom"], false)
 
 
 func take_damage(n: int) -> void:
-	if is_queued_for_deletion():
+	if is_queued_for_deletion() or roto:
 		return
 	hp -= n
 	flash = 0.06
 	Game.sfx("hit", -16.0, 0.7)
 	if hp <= 0:
 		main.add_score(cfg["score"])
-		main.blast(position + Vector2(0, -12), 36.0, false, 8)
-		main.explode(position + Vector2(-10, -20), 20.0, false)
-		main.explode(position + Vector2(12, -6), 16.0, false)
-		queue_free()
+		main.blast(position + Vector2(0, -16), 40.0, false, 8)
+		main.explode(position + Vector2(-16, -30), 22.0, false)
+		main.explode(position + Vector2(18, -10), 18.0, false)
+		# queda la chatarra: ya no choca ni es enemigo
+		roto = true
+		burst_left = 0
+		remove_from_group("enemy")
+		collision_layer = 0
 
 
 func _draw() -> void:
+	if roto:
+		_draw_roto()
+		return
 	var fr := SpriteUtil.v(info["frame"])
 	var n: int = info["frames"]
 	var f := int(anim_t * 10.0) % n
@@ -127,3 +149,22 @@ func _draw() -> void:
 		var top: float = -float(info["hull"][1]) - 6.0
 		draw_rect(Rect2(-14, top, 28, 2), Color(0.2, 0, 0))
 		draw_rect(Rect2(-14, top, 28.0 * hp / max_hp, 2), Color(1, 0.3, 0.2))
+
+
+## Chatarra: el dibujo del tanque destruido, con humo negro que sube y llamitas que titilan.
+func _draw_roto() -> void:
+	var r: Dictionary = info["roto"]
+	var size := SpriteUtil.v(r["size"])
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-dir, 1))
+	draw_texture(tex_roto, Vector2(-r["center_x"], -r["base"]))
+	draw_set_transform(Vector2.ZERO)
+	var top := -float(r["base"]) + size.y * 0.35
+	for i in 6:
+		var k := fmod(anim_t * 0.45 + i / 6.0, 1.0)
+		var x := (-14.0 + (i % 3) * 14.0) * -dir + sin(anim_t * 1.3 + i) * 3.0 + k * 10.0
+		draw_circle(Vector2(x, top - k * 46.0).round(), 4.0 + k * 9.0, Color(0.13, 0.12, 0.12, 0.55 * (1.0 - k)))
+	for i in 3:
+		var fx := (-20.0 + i * 18.0) * -dir
+		var h := 3.0 + absf(sin(anim_t * 11.0 + i * 2.1)) * 4.0
+		draw_circle(Vector2(fx, top + 6.0 - h * 0.5).round(), h * 0.6, Color(1, 0.55, 0.12, 0.85))
+		draw_circle(Vector2(fx, top + 6.0 - h * 0.3).round(), h * 0.3, Color(1, 0.9, 0.4))
