@@ -396,10 +396,14 @@ func explode(pos: Vector2, radius := 12.0, sound := true) -> void:
 	shake(radius * 0.12)
 
 
-## Explosión que hace daño: a enemigos y objetos en el radio y, si hurt_player, al jugador.
-func blast(pos: Vector2, radius: float, hurt_player := true, damage := 5) -> void:
+## Explosión que hace daño: a enemigos (si hurt_enemies) y objetos en el radio y, si hurt_player, al jugador.
+## Las granadas y bombas enemigas no dañan a los suyos (hurt_enemies = false).
+func blast(pos: Vector2, radius: float, hurt_player := true, damage := 5, hurt_enemies := true) -> void:
 	explode(pos, radius)
-	for n in get_tree().get_nodes_in_group("enemy") + get_tree().get_nodes_in_group("prop"):
+	var targets := get_tree().get_nodes_in_group("prop")
+	if hurt_enemies:
+		targets += get_tree().get_nodes_in_group("enemy")
+	for n in targets:
 		if n.has_method("take_damage") and n.global_position.distance_to(pos) < radius + 8.0:
 			n.call_deferred("take_damage", damage)
 	if hurt_player and (player.position + Vector2(0, -10)).distance_to(pos) < radius * 0.75:
