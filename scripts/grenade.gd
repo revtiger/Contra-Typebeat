@@ -36,7 +36,7 @@ func _physics_process(delta: float) -> void:
 		position.y = gy - 3.0
 		vel = Vector2(vel.x * 0.55, -absf(vel.y) * 0.4)
 		Game.sfx("hit", -14.0, 0.5)
-	if position.y > 300.0:
+	if position.y > main.cam_y + 300.0:
 		queue_free()
 	queue_redraw()
 
