@@ -11,7 +11,8 @@ var fuse := -1.0
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("level")
 	add_to_group("prop")
-	collision_layer = 16
+	# peligro del mapa (HitboxEnemigo, 16) que también se puede disparar (EnemyHurtbox, 4); detecta al jugador
+	collision_layer = 16 | 4
 	collision_mask = 2
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()

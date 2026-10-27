@@ -18,8 +18,22 @@ var level := 0
 var hero := "eduardo"
 var record := 0
 var autoplay := false
+## Modo test (scripts/modo_test.gd): teclas F1-F5 y sin enemigos que salgan solos. Se activa con el .exe de
+## test (preset "Windows Test", etiqueta "test") o abriendo el juego con: godot --path . -- test
+var test := OS.has_feature("test") or "test" in OS.get_cmdline_user_args()
+## Greybox (scripts/greybox.gd): la fase se ve con bloques grises etiquetados. Empieza activo en modo test
+## (F1 lo cambia); en producción siempre se ve el arte.
+var greybox := test
 ## Cinemáticas ya vistas en esta partida (no se repiten al reintentar una fase)
 var seen_cine := {}
+## Ruta dentro de la fase (edificios grandes con interior, zona.gd): {"interior": id, "salida": x} mientras se
+## está dentro; {"vuelta_x": x} al volver a la calle. Vacío = la fase desde el principio.
+var route := {}
+## Arma, munición, bombas y vida del héroe al cambiar entre la calle y un interior (player.carry / apply_carry)
+var carry := {}
+## Habilidades compradas en la tienda (pendiente) durante la partida: {"slide": true}. En modo test se tienen
+## todas. Por ahora: "slide" (barrida con Shift, player.gd).
+var skills := {}
 
 var _players: Array[AudioStreamPlayer] = []
 var _next_player := 0
@@ -75,13 +89,14 @@ func _setup_input() -> void:
 		"left": [KEY_LEFT, KEY_A], "right": [KEY_RIGHT, KEY_D],
 		"up": [KEY_UP, KEY_W], "down": [KEY_DOWN, KEY_S],
 		"jump": [KEY_Z, KEY_SPACE, KEY_K], "shoot": [KEY_X, KEY_J],
-		"grenade": [KEY_C, KEY_L],
+		"grenade": [KEY_C, KEY_L], "slide": [KEY_SHIFT],
 		"restart": [KEY_ENTER, KEY_R], "pause": [KEY_ESCAPE, KEY_P], "quit_menu": [KEY_Q],
 	}
 	var pad := {
 		"left": [JOY_BUTTON_DPAD_LEFT], "right": [JOY_BUTTON_DPAD_RIGHT],
 		"up": [JOY_BUTTON_DPAD_UP], "down": [JOY_BUTTON_DPAD_DOWN],
 		"jump": [JOY_BUTTON_A], "shoot": [JOY_BUTTON_X], "grenade": [JOY_BUTTON_B, JOY_BUTTON_Y],
+		"slide": [JOY_BUTTON_RIGHT_SHOULDER],
 		"restart": [JOY_BUTTON_START], "pause": [JOY_BUTTON_START], "quit_menu": [JOY_BUTTON_BACK],
 	}
 	for action in keys:
@@ -118,7 +133,14 @@ func start_game(lv := 0) -> void:
 	lives = START_LIVES
 	level = lv
 	seen_cine = {}
+	skills = {}
+	_clear_route()
 	_go("res://scenes/select.tscn")
+
+
+## ¿Tiene el héroe la habilidad id? (comprada en la tienda, o todas en modo test)
+func has_skill(id: String) -> bool:
+	return test or skills.has(id)
 
 
 func choose_hero(id: String) -> void:
@@ -127,7 +149,20 @@ func choose_hero(id: String) -> void:
 
 
 func go_level() -> void:
+	_clear_route()
 	_go("res://scenes/level.tscn")
+
+
+## Entra a un interior o vuelve a la calle (la misma fase): guarda el estado del héroe y recarga la escena.
+func go_route(r: Dictionary, player) -> void:
+	route = r
+	carry = player.carry()
+	_go("res://scenes/level.tscn")
+
+
+func _clear_route() -> void:
+	route = {}
+	carry = {}
 
 
 func go_intro() -> void:
@@ -137,6 +172,7 @@ func go_intro() -> void:
 func retry_level() -> void:
 	score = 0
 	lives = START_LIVES
+	_clear_route()
 	_go("res://scenes/level.tscn")
 
 
@@ -147,11 +183,13 @@ func has_next_level() -> bool:
 ## Tras cumplir una misión: al mapa, que lleva a la siguiente (o avisa de que aún no existe).
 func next_level() -> void:
 	level += 1
+	_clear_route()
 	_go("res://scenes/map.tscn")
 
 
 func to_menu() -> void:
 	save_record()
+	_clear_route()
 	_go("res://scenes/menu.tscn")
 
 

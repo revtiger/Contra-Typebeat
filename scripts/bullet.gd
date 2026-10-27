@@ -22,8 +22,9 @@ const RADIUS := {"laser": 3.0, "fire": 4.0, "shell": 3.0, "flame": 7.0, "shotgun
 
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("level")
-	collision_layer = 0
-	collision_mask = (1 | 4 | 16) if from_player else (1 | 2)
+	# HitboxJugador (8) contra Terreno y EnemyHurtbox; HitboxEnemigo (16) contra Terreno y MainHurtbox
+	collision_layer = 8 if from_player else 16
+	collision_mask = (1 | 4) if from_player else (1 | 2)
 	var cs := CollisionShape2D.new()
 	var c := CircleShape2D.new()
 	c.radius = RADIUS.get(kind, 2.0 if from_player else 2.5)
@@ -71,7 +72,7 @@ func _steer(delta: float) -> void:
 
 
 func _on_hit(other: Node) -> void:
-	if is_queued_for_deletion() or other in _hit:
+	if is_queued_for_deletion() or other in _hit or other.is_in_group("plataforma"):
 		return
 	if kind == "rocket":
 		# daño directo al blanco (los jefes grandes quedan fuera del radio) y explosión alrededor

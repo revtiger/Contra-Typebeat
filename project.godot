@@ -20,6 +20,16 @@ window/size/window_width_override=1440
 window/size/window_height_override=810
 window/stretch/mode="viewport"
 
+[layer_names]
+
+2d_physics/layer_1="Terreno"
+2d_physics/layer_2="MainHurtbox"
+2d_physics/layer_3="EnemyHurtbox"
+2d_physics/layer_4="HitboxJugador"
+2d_physics/layer_5="HitboxEnemigo"
+2d_physics/layer_6="Interactivos"
+2d_physics/layer_7="Zonas"
+
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0

@@ -9,7 +9,7 @@ var main
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("level")
 	add_to_group("prop")
-	collision_layer = 16
+	collision_layer = 4  # EnemyHurtbox: recibe los ataques del jugador
 	collision_mask = 0
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()

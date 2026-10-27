@@ -17,8 +17,12 @@ extends RefCounted
 ##   vecino: civil que pasea frente a su casa y se mete en ella cuando llega la pelea (civilian.gd);
 ##           extra = índice de la casa en scripts/pueblo_casas.gd. En el pueblo se ponen solos, uno por casa.
 ## Referencia de alturas: el salto sube ~70 px; los tramos de suelo pueden subir hasta ~35 px.
+## Largos (ARQUITECTURA.md, ARQ-40): todo "end" es un múltiplo exacto de SCREEN_W (480 px, una pantalla).
 
-const END := 3000
+const SCREEN_W := 480
+## Largo de las plantillas sin "end" propio: 7 pantallas (26-10-2026: antes 3000, 6,25 pantallas; se alargó
+## para no meter a ningún enemigo en la arena del jefe, que es la última pantalla)
+const END := 7 * SCREEN_W
 
 ## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe, ambientación opcional]
 ## La ambientación (fondo, suelo) es la plantilla salvo que se indique otra: la 1.2 y la 1.3 usan el
@@ -109,20 +113,29 @@ const TEMPLATES := {
 	},
 	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
 	# Más larga que las demás ("end" = largo de la calle que imprime tools/sprites/pueblo.py); la capilla al final.
+	# Desde el 25-10-2026 la calle va a escala 1.2 (ESCALA en pueblo.py): un 20 % más larga, y las x de los
+	# enemigos se multiplicaron por 1.2 para que cada uno siga delante del mismo edificio.
+	# Fase alargada a 31 pantallas (14880 px; 26-10-2026: antes 15000, 31,25 pantallas) para trabajar la
+	# jugabilidad: el arte de la calle llega hasta 5856 px; de ahí al final solo hay suelo (se ve en el greybox).
+	# Massa sigue al final.
 	"pueblo": {
-		"end": 4879,
-		"ground": [[0, 4879, 230]],
+		"end": 31 * SCREEN_W,
+		"buildings": 7,  # semilla de los edificios del greybox (scripts/edificios.gd); otra semilla, otra ciudad
+		# edificio grande con otra ruta dentro: Arriba en la puerta entra al interior (INTERIORES), que sale a la
+		# calle en "salida" (atajo de ~3200 px a cambio de un tramo corto y difícil)
+		"big": {"x": 7008, "w": 720, "pisos": 5, "nombre": "MUSEO", "interior": "museo", "salida": 10208},
+		"ground": [[0, 31 * SCREEN_W, 230]],
 		"platforms": [],
 		"entities": [
-			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
-			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
-			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230], ["sniper", 2150, 230],
-			["turret", 2300, 230], ["capsule", 2300, 60, "S"], ["grenadier", 2400, 230],
+			["sniper", 408, 230], ["turret", 840, 230], ["capsule", 1080, 60, "H"], ["sniper", 1356, 230],
+			["grenadier", 1416, 230], ["turret", 1584, 230], ["sniper", 1800, 230], ["sniper", 1944, 230],
+			["capsule", 2040, 60, "B"], ["turret", 2160, 230], ["grenadier", 2460, 230], ["sniper", 2580, 230],
+			["turret", 2760, 230], ["capsule", 2760, 60, "S"], ["grenadier", 2880, 230],
 			# comercios y casas nuevas (tramos 4 y 5)
-			["sniper", 2650, 230], ["tank", 2900, 230, "comunista"], ["capsule", 2950, 60, "R"],
-			["grenadier", 3150, 230], ["turret", 3350, 230], ["sniper", 3500, 230], ["capsule", 3650, 60, "H"],
-			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230], ["grenadier", 4250, 230],
-			["sniper", 4380, 230],
+			["sniper", 3180, 230], ["tank", 3480, 230, "comunista"], ["capsule", 3540, 60, "R"],
+			["grenadier", 3780, 230], ["turret", 4020, 230], ["sniper", 4200, 230], ["capsule", 4380, 60, "H"],
+			["grenadier", 4560, 230], ["sniper", 4740, 230], ["turret", 4920, 230], ["grenadier", 5100, 230],
+			["sniper", 5256, 230],
 		],
 	},
 	"jungle": {
@@ -195,7 +208,41 @@ const TEMPLATES := {
 	},
 }
 
+## Interiores de los edificios grandes (zona.gd "puerta"): más cortos y difíciles que la calle, con recompensa
+## (cápsulas y +5000 al salir). Mismo formato que las plantillas; la salida la pone level.gd al final.
+## En modo test sus enemigos sí salen: son el reto diseñado del interior.
+const INTERIORES := {
+	"museo": {
+		"name": "INTERIOR: MUSEO",
+		"theme": "base",
+		"music": "city",
+		"end": 3 * SCREEN_W,  # 1440 px (26-10-2026: antes 1500)
+		"ground": [[0, 3 * SCREEN_W, 230]],
+		# vitrinas y entrepisos: a 48 px (salto normal) y 64 px
+		"platforms": [[180, 96, 182], [360, 112, 166], [600, 96, 182], [820, 128, 166], [1060, 96, 182]],
+		"entities": [
+			["sniper", 220, 182], ["grenadier", 400, 166], ["turret", 560, 230], ["sniper", 640, 182],
+			["grenadier", 760, 230], ["sniper", 860, 166], ["turret", 1000, 230], ["grenadier", 1100, 182],
+			["sniper", 1250, 230],
+			# recompensa
+			["capsule", 300, 60, "H"], ["capsule", 900, 60, "S"], ["capsule", 1200, 60, "B"],
+		],
+	},
+}
+
 static var LIST := _build()
+
+
+## Datos de un interior como si fuera una fase (para level.gd), con la zona y el país de la fase de la calle.
+static func interior(id: String, fase: Dictionary) -> Dictionary:
+	var i: Dictionary = INTERIORES[id]
+	return {
+		"phase": fase["phase"], "zone": fase["zone"], "freed": fase["freed"], "country": fase["country"],
+		"place": i["name"], "name": "%s %s" % [fase["phase"], i["name"]], "boss_name": "", "boss_role": "interior",
+		"theme": i["theme"], "music": i["music"], "end": i["end"], "ground": i["ground"],
+		"platforms": i["platforms"], "entities": i["entities"].duplicate(), "buildings": -1, "big": {},
+		"interior": true,
+	}
 
 
 static func _build() -> Array:
@@ -235,6 +282,8 @@ static func _build() -> Array:
 				"music": MUSIC[ph[1]],
 				"end": end,
 				"ground": tpl["ground"],
+				"buildings": tpl.get("buildings", -1),
+				"big": tpl.get("big", {}),
 				"platforms": tpl["platforms"],
 				"entities": entities,
 			})

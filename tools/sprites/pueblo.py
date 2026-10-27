@@ -65,6 +65,11 @@ VECINO = {
 	"encomiendas": [5], "casa": [6, 8, 9, 11], "capilla": [7], "casa_2_pisos": [9, 3, 11, 8], "galpon": [10],
 }
 
+## Escala de la calle (edificios, árboles, valla y huecos). 1 = la original de Eduardo; 1.2 (25-10-2026) los
+## acerca un poco (se probó 2 y se redujo un 40 %); los más altos pueden quedar cortados por arriba de la
+## pantalla. Las medidas de PUERTA, ZONAS, ARBOLES, VALLA_ALTO y los huecos de CALLE están a escala 1 y se
+## multiplican por ESCALA (redondeando a px enteros).
+ESCALA = 1.2
 PUERTA = 52
 PUERTA_GRANDE = {"galpon": 70, "capilla": 62}
 BASE = 207  # y donde apoyan los edificios (borde de arriba de la vereda)
@@ -120,34 +125,45 @@ def build_sky() -> None:
 	print("bg_pueblo.png", sky.size)
 
 
+VALLA_H = round(VALLA_ALTO * ESCALA)
+
+
+def pegar(out: Image.Image, im: Image.Image, x: int, y: int) -> None:
+	"""alpha_composite que recorta lo que se sale por arriba (los edificios altos con ESCALA > 1)."""
+	if y < 0:
+		im = im.crop((0, -y, im.width, im.height))
+		y = 0
+	out.alpha_composite(im, (x, y))
+
+
 def edificio(name: str) -> Image.Image:
 	im = opaco(Image.open(SRC / "edificios" / f"{name}.png").convert("RGBA"))
-	s = PUERTA_GRANDE.get(name, PUERTA) / EDIFICIOS[name]
+	s = PUERTA_GRANDE.get(name, PUERTA) * ESCALA / EDIFICIOS[name]
 	return nitido(im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS))
 
 
 def arbol(name: str) -> Image.Image:
 	im = opaco(Image.open(SRC / "arboles" / f"{name}.png").convert("RGBA"))
-	s = ARBOLES[name] / im.height
-	return nitido(im.resize((round(im.width * s), ARBOLES[name]), Image.LANCZOS))
+	h = round(ARBOLES[name] * ESCALA)
+	return nitido(im.resize((round(im.width * h / im.height), h), Image.LANCZOS))
 
 
 def valla_piezas() -> tuple:
 	"""(tramo que se repite, poste derecho) a la escala del juego."""
 	src = Image.open(SRC / "valla.png").convert("RGBA")
 	x0, y0, x1, y1 = VALLA_BOX
-	s = VALLA_ALTO / (y1 - y0)
+	s = VALLA_H / (y1 - y0)
 	def esc(box):
 		im = src.crop(box)
-		return nitido(im.resize((max(1, round(im.width * s)), VALLA_ALTO), Image.LANCZOS))
+		return nitido(im.resize((max(1, round(im.width * s)), VALLA_H), Image.LANCZOS))
 	return esc((VALLA_REPITE[0], y0, VALLA_REPITE[1], y1)), esc((VALLA_REPITE[1], y0, x1, y1))
 
 
 def valla(w: int, rep: Image.Image, poste: Image.Image) -> Image.Image:
-	out = Image.new("RGBA", (w, VALLA_ALTO), (0, 0, 0, 0))
+	out = Image.new("RGBA", (w, VALLA_H), (0, 0, 0, 0))
 	x = 0
 	while x < w:
-		out.alpha_composite(rep.crop((0, 0, min(rep.width, w - x), VALLA_ALTO)), (x, 0))
+		out.alpha_composite(rep.crop((0, 0, min(rep.width, w - x), VALLA_H)), (x, 0))
 		x += rep.width
 	out.alpha_composite(poste, (max(0, w - poste.width), 0))
 	return out
@@ -160,19 +176,23 @@ def build_calle() -> None:
 	parts = []
 	for p in CALLE:
 		if isinstance(p, int):
-			parts.append(("hueco", p, None))
+			parts.append(("hueco", round(p * ESCALA), None, ""))
 		elif isinstance(p, tuple):
-			parts.append(("hueco", p[1], arbol(p[0])))
+			parts.append(("hueco", round(p[1] * ESCALA), arbol(p[0]), p[0]))
 		else:
 			im = edificio(p)
-			parts.append(("edificio", im.width, im))
+			parts.append(("edificio", im.width, im, p))
 	w = sum(p[1] for p in parts)
 	out = Image.new("RGBA", (w, H), (0, 0, 0, 0))
+	# rectángulo de cada pieza en el mundo (para el greybox: scripts/greybox.gd)
+	piezas = []
 	# 1) árboles (detrás de todo), centrados en su hueco
 	x = 0
-	for kind, pw, im in parts:
+	for kind, pw, im, nombre in parts:
 		if kind == "hueco" and im is not None:
-			out.alpha_composite(im, (x + pw // 2 - im.width // 2, BASE + 2 - im.height))
+			ax, ay = x + pw // 2 - im.width // 2, BASE + 2 - im.height
+			pegar(out, im, ax, ay)
+			piezas.append(("arbol", nombre, [ax, ay, ax + im.width, ay + im.height]))
 		x += pw
 	# 2) la vereda y los adoquines
 	for sx in range(0, w, street.width):
@@ -183,23 +203,25 @@ def build_calle() -> None:
 	turno = {}
 	names = [p for p in CALLE if isinstance(p, str)]
 	ni = 0
-	for kind, pw, im in parts:
+	for kind, pw, im, nombre in parts:
 		if kind == "hueco":
-			out.alpha_composite(valla(pw, rep, poste), (x, BASE + 1 - VALLA_ALTO))
+			pegar(out, valla(pw, rep, poste), x, BASE + 1 - VALLA_H)
+			piezas.append(("valla", "", [x, BASE + 1 - VALLA_H, x + pw, BASE + 1]))
 		else:
-			out.alpha_composite(im, (x, BASE - im.height))
+			pegar(out, im, x, BASE - im.height)
+			piezas.append(("edificio", nombre, [x, BASE - im.height, x + im.width, BASE]))
 			name = names[ni]
 			ni += 1
 			top = BASE - im.height
 			z = ZONAS[name]
 			def mundo(r):
-				return [x + r[0], top + r[1], x + r[2], top + r[3]]
+				return [x + round(r[0] * ESCALA), top + round(r[1] * ESCALA), x + round(r[2] * ESCALA), top + round(r[3] * ESCALA)]
 			vs = VECINO.get(name, [-1])
 			k = vs[turno.get(name, 0) % len(vs)]
 			turno[name] = turno.get(name, 0) + 1
 			casas.append((name, mundo(z["puerta"]), [mundo(v) for v in z["ventanas"]], k))
 		x += pw
-	_write_casas(casas)
+	_write_casas(casas, piezas)
 	# 4) se corta en trozos para el juego
 	for old in OUT.glob("pueblo_tramo_*.png"):
 		old.unlink()
@@ -208,7 +230,7 @@ def build_calle() -> None:
 	print("calle del pueblo:", w, "px en", (w + TROZO - 1) // TROZO, "trozos")
 
 
-def _write_casas(casas) -> None:
+def _write_casas(casas, piezas) -> None:
 	lines = [
 		"extends RefCounted",
 		"## Generado por tools/sprites/pueblo.py: no editar a mano.",
@@ -218,6 +240,11 @@ def _write_casas(casas) -> None:
 	]
 	for name, door, wins, k in casas:
 		lines.append(f'\t["{name}", {door}, {wins}, {k}],')
+	lines.append("]")
+	lines.append("## Piezas de la calle (para el greybox): [tipo (edificio, arbol, valla), nombre, [x0, y0, x1, y1]]")
+	lines.append("const PIEZAS := [")
+	for tipo, nombre, r in piezas:
+		lines.append(f'\t["{tipo}", "{nombre}", {r}],')
 	lines.append("]")
 	(ROOT / "scripts/pueblo_casas.gd").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 	print("pueblo_casas.gd:", len(casas), "edificios")

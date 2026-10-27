@@ -71,13 +71,14 @@ func _physics_process(delta: float) -> void:
 	if ahead:
 		# en diagonal si está claramente por encima; si no, al frente
 		dir = 1 if to.y / -to.x < -0.45 else 0
-	var on_screen: bool = position.x > main.cam_left + 10 and position.x < main.cam_left + 470
+	var on_screen: bool = position.x > main.cam_left + 10 and position.x < main.cam_left + 470 \
+		and position.y - 20.0 < main.cam_top + 270.0  # con la cámara arriba (azoteas) no dispara sin verse
 	shoot_t -= delta
 	if shoot_t <= 0.0 and on_screen and ahead and not p.dead:
 		shoot_t = 1.5
 		var b := Bullet.new()
 		b.from_player = false
-		b.vel = AIMS[dir] * 110.0
+		b.vel = AIMS[dir] * 150.0  # 25-10-2026: +40 px/s (antes 110)
 		b.position = position + _local(meta["muzzles"][dir])
 		get_parent().add_child(b)
 		muzzle_flash = 0.07

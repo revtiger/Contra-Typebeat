@@ -1,6 +1,6 @@
 # Documento de diseño: ONU: Outbreak
 
-Autores: Gwyn y Eduardo · Última revisión: 09-10-2026 (v0.7 en `main`; propuestas al día)
+Autores: Gwyn y Eduardo · Última revisión: 26-10-2026 (jugabilidad de la 1.1 en greybox: modo test, azoteas, edificio grande; ver más abajo)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
@@ -41,6 +41,34 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 
 **HUD estilo Metal Slug:** arriba a la izquierda la puntuación, `1UP=` con las vidas y el recuadro metálico **ARMS** (munición, ∞ con la pistola) / **BOMB** (granadas), más el icono con la letra del arma especial; arriba al centro **TIME** con números cromados; arriba a la derecha el récord. Carteles con letra grande de degradado amarillo a rojo.
 
+**Cámara (25-10-2026):** centrada en el jugador, estilo Cuphead; se puede retroceder. Al principio y al final de la fase se queda en el borde y el jugador se mueve libre por esa mitad de pantalla (el paracaídas aterriza en la mitad izquierda). En la arena de un jefe se cierra por los dos lados hasta que cae. Al reaparecer, el jugador cae en el centro de la pantalla. **En vertical**, al saltar (o subido a algo) sube el 80 % de lo que sube el jugador, suavizado, para ver lo que hay arriba (`CAM_UP` en `level.gd`).
+
+**Valores de jugabilidad (25-10-2026, se afinan en modo test sobre el greybox):**
+
+| Valor | Ahora | Antes |
+|---|---|---|
+| Correr | 130 px/s (cruza la pantalla en 3,7 s) | 90 |
+| Salto completo / corto (soltar Saltar) | 72 px / ~11 px | igual |
+| Impulso de un jump hitbox | 64 px | — |
+| Caja del héroe de pie / en el aire / tumbado | 14x40 / 14x24 / 14x12 (de pie, igual que el soldado) | 12x30 / 12x24 / 12x12 |
+| Balas del héroe | pistola 360, H 420, L 560, S 340 px/s | 320, 380, 520, 300 |
+| Balas enemigas | francotirador 180, nido 150, Massa 210 px/s | 120, 110, 170 |
+| Granadas (héroe y enemigas) | ×1,25 de velocidad con el mismo arco; explotan solo al tocar el Terreno, sin rebote | rebotaban |
+| Largo de la 1.1 | 14880 px (31 pantallas exactas, 26-10-2026) | 15000 (31,25), antes 4879 |
+
+Unidad para diseñar niveles: la **pantalla** (480 px) y casillas de 16 px contadas desde el suelo. Referencia: el héroe mide 48 px (≈1,75 m) y un piso, 80 px.
+
+☐ **IA de enemigos:** se sienten "computarizados" (ven al instante, atacan con relojes fijos, no se mueven al pelear). Ideas propuestas: tiempo de reacción y aviso, personalidad por soldado, distancia preferida, reacciones (agacharse, huir de granadas), actividades sin detectar al jugador, ataque por turnos y emboscadas diseñadas. Pendiente de analizar.
+
+**Edificios del greybox (25-10-2026):** la 1.1 se ve en greybox con edificios generados al azar con semilla fija (`scripts/edificios.gd`, semilla `"buildings"` en la plantilla): casas de 1 piso, edificios de 2 a 4, torres de 5 a 7 y rascacielos de 12 a 18 (el primero hacia los 1100 px). Un piso mide 80 px. Cada edificio tiene un número (#1, #2…) para colocar después triggers, caminos e interacciones. Los edificios no tienen colisión; sus techos y balcones sí (plataformas).
+
+**Azoteas: riesgo y recompensa (25-10-2026).** La calle es segura pero lenta y llena de enemigos; los techos son rápidos y recompensan, pero exigen precisión.
+- **En altura** (de pie en una plataforma a 80 px o más sobre la calle): por la calle salen 4 veces menos soldados.
+- **Emboscadas** mientras se está arriba, cada 4 a 7 s, con aviso corto: **tirador de ventana** (la ventana se ilumina con "!" 0,6 s, se asoma, dispara una ráfaga de 3 y se esconde; solo se le puede dar asomado) y **asaltante** (marca con "!" en tu techo 0,6 s, cae desde arriba a tu lado, se pone rojo 0,4 s y lanza un cuchillazo rápido; no daña al tocarlo). En modo test se activan con F9.
+- **Barrio de azoteas** (1800 a 4400 px, unas 5 pantallas): casas y edificios de 2 pisos pegados, todos con el techo como plataforma y jump hitbox para subir al de al lado; se puede recorrer sin bajar a la calle.
+
+**Edificios grandes con otra ruta (25-10-2026).** En la 1.1, un **MUSEO** de 720 px (x 7008). En su puerta hay una zona (capa 7): **Arriba** para entrar. El interior es otro mapa (`INTERIORES` en `levels.gd`): **más corto y más difícil** (1440 px (3 pantallas), francotiradores en vitrinas, granaderos y dos nidos) con **recompensa** (cápsulas H, S y bombas, y +5000 al salir). La salida devuelve a la calle en x 10208: un **atajo** de unos 3200 px. El héroe conserva arma, munición, bombas y vida al entrar y salir. ☐ Idea para el arte final: **enemigos temáticos** de cada interior (en una biblioteca, un enemigo parapetado tras un estante que lanza libros como proyectiles).
+
 **TIME:** empieza en 60 y baja 1 cada 4 segundos. En los últimos 10 parpadea en rojo y pita; a 0 el jugador muere. Se reinicia al reaparecer, al aparecer un mini jefe y al llegar al jefe final.
 
 **Flujo de pantallas:** intro estilo Metal Slug 2 (se salta con cualquier botón) → menú (Jugar, Elegir fase, Controles, Ver intro, Salir) → **ELIGE TU SOLDADO** (estilo Metal Slug X, cuenta atrás de 30) → **mapa mundial** con la ruta y el jefe de la fase → fase → "¡Fase X.Y superada!" (o "¡País liberado!" tras el jefe final) → **mapa** → … → tras la fase 5.3, "¡Apocalipsis detenido!" y el mapa con "¡Mundo salvado!" vuelve al menú. Esc pausa la partida.
@@ -61,9 +89,18 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | Bajar de un puente | Abajo + Saltar | Abajo + A |
 | Disparar (mantener) / cuchillo automático de cerca | X / J | X |
 | Granada | C / L | B / Y |
+| Barrida (habilidad de la tienda) | Shift | RB |
 | Pausa | Esc / P | Start |
 | Reintentar tras Game Over | Enter / R | Start |
 | Salir al menú (en pausa o Game Over) | Q | Select |
+
+## Habilidades (tienda)
+
+La tienda (☐ pendiente) venderá habilidades que el héroe conserva durante la partida (`Game.skills`, se vacían al empezar una partida nueva; en modo test se tienen todas, `Game.has_skill()`).
+
+| Habilidad | Tecla | Qué hace | Estado |
+|---|---|---|---|
+| Barrida (`slide`) | Shift / RB | Se desliza por el suelo hacia donde mira (0,45 s a 260 px/s fijos, sin frenar); va a ras del suelo (las balas le pasan por encima), derriba a los soldados que toca y no dispara mientras tanto. **Combo:** saltar durante la barrida o hasta 0,15 s después da el **salto en carrera**: salto normal con 150 px/s extra hacia delante que se apagan en 0,5 s, y ya puede disparar en el aire. Junnie la trae de serie (y también la hace corriendo + Abajo) | ✅ |
 
 ## Enemigos, armas y objetos
 
@@ -94,7 +131,9 @@ Al morir se pierde el arma especial y se reaparece en el mismo punto con 2 s de 
 | F: llamas | Arma | 30 llamaradas cortas que crecen y atraviesan | ✅ |
 | L: láser | Arma | 200 disparos que atraviesan enemigos | ✅ |
 | S: escopeta | Arma | 30 disparos en abanico de corto alcance, mucho daño | ✅ |
-| Granada | Arma | 10 por vida; rebota una vez y explota; no daña al jugador | ✅ |
+| Granada | Arma | 10 por vida; explota solo al tocar el Terreno (sin rebote ni explotar al chocar con enemigos); no daña al jugador. Desde el 25-10-2026 vuela un 25 % más rápido con el mismo arco. Las enemigas también explotan solo al tocar el Terreno (no al tocar al jugador, para que dé tiempo a devolverlas) | ✅ |
+| Jump hitbox (doble salto) | Mecánica | Puntos del mapa (capa Interactivos; en el arte final serán lámparas, carteles, cornisas…). En el aire, si la zona de agarre del héroe (encima y delante de la cabeza) o su propio cuerpo (26-10-2026) toca uno y se pulsa disparar, recibe otro impulso de 64 px (el salto completo sube 72); soltar Saltar no lo corta. Sirven para llegar a techos y pisos superiores (103 px sobre la calle: el salto normal no llega) y se pueden encadenar. **Imán del agarre:** en el aire, la zona de agarre (bolita cian del greybox) se inclina hasta 4 px hacia el jump hitbox más cercano si está a 10 px o menos de su borde (el alcance del brazo), y el impulso sale hacia ese lado (empuje lateral de hasta 110 px/s que se apaga en 0,4 s); si está justo encima, sube recto. Provisional: el greybox los pone al azar en techos de casas y balcones (`edificios.gd`, `jump_hitbox.gd`, `player._try_jump_hitbox()`) | ✅ |
+| Devolver granadas | Mecánica | Una de cada cuatro granadas enemigas (25 %) parpadea en blanco todo el trayecto: esas se pueden devolver. Si entra en la zona de parry del héroe (círculo de radio 12 a 6 px del pecho hacia donde apunta: abarca el pecho y lo que tiene delante) y se pulsa disparar justo entonces, el héroe la golpea y vuelve por el mismo arco y con la misma velocidad hacia quien la lanzó, y explota al tocar el suelo (no al llegar al enemigo), dañando a los enemigos (`bomb.gd`, `player._try_parry()`) | ✅ |
 | Cuchillo | Arma | Automático al disparar con un soldado pegado delante | ✅ |
 
 Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la pistola. Recoger la misma arma suma munición. Al morir se pierde el arma y las bombas vuelven a 10.
@@ -103,11 +142,11 @@ Las armas especiales tienen **munición limitada**: al acabarse se vuelve a la p
 
 ## Niveles
 
-15 fases en `scripts/levels.gd` (5 zonas x 3). Cada fase usa una de 5 plantillas de terreno (selva, desierto, ciudad, nieve, base) con variaciones de enemigos y armas, mide 3000 px y termina en la arena del jefe. Banderas y carteles de propaganda cambian según el país.
+15 fases en `scripts/levels.gd` (5 zonas x 3). Cada fase usa una de 5 plantillas de terreno (selva, desierto, ciudad, nieve, base) con variaciones de enemigos y armas, mide 3360 px (7 pantallas exactas; antes 3000) y termina en la arena del jefe. Banderas y carteles de propaganda cambian según el país.
 
 | Fase | Escenario | Jefe |
 |---|---|---|
-| 1.1 | Argentina: Pueblo de la pampa al atardecer, 4879 px, calle llana armada pieza por pieza con los edificios, árboles y valla de Eduardo, aves en el cielo (`tools/sprites/pueblo.py`, `aves.py`) | Minijefe Sergio Massa, frente a la capilla |
+| 1.1 | Argentina: Pueblo de la pampa al atardecer, 14880 px (31 pantallas exactas; desde el 25-10-2026 se alargó y el 26-10-2026 se ajustó desde 15000, para trabajar la jugabilidad en greybox: el arte de la calle llega a 5856 px y el resto es solo suelo), calle a escala 1.2 desde el 25-10-2026: edificios, árboles y valla un 20 % más grandes para que se sientan más cercanos; `ESCALA` en `pueblo.py`), calle llana armada pieza por pieza con los edificios, árboles y valla de Eduardo, aves en el cielo (`tools/sprites/pueblo.py`, `aves.py`) | Minijefe Sergio Massa, frente a la capilla |
 | 1.2 | Argentina: Quebrada de Humahuaca (desierto) | Minijefa Cristina Kirchner |
 | 1.3 | Argentina: Buenos Aires, Casa Rosada (ciudad) | **Javier Milei** |
 | 2.1 | México: Selva del Sureste | Minijefe AMLO |
@@ -176,7 +215,7 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 
 **Arte de la 1.2 y la 1.3 (17-10-2026, PixelLab):** la Quebrada de Humahuaca (cerros de colores, cardones, suelo de roca roja) y Buenos Aires (edificios antiguos y la Casa Rosada al final, donde espera el jefe) tienen fondo panorámico y suelo propios (`tools/sprites/argentina.py`). Usan el terreno de las plantillas `desert` y `city` con la ambientación `quebrada` y `baires` (cuarto dato de la fase en `ZONES`).
 
-**Ventajas de cada soldado (Gwyn, 17-10-2026, `PERKS` en `player.gd`):** Eduardo aguanta 3 golpes antes de perder una vida, con barra de vida bajo el 1UP (caer a un foso mata igual). Eder lleva doble pistola (la pistola dispara dos balas paralelas) y empieza con 20 granadas (también al reaparecer). El Presi y La Tenienta, sin cambios. **Junnie se barre** (18-10-2026): corriendo, Abajo la hace deslizarse por el suelo medio segundo; va a ras del suelo (las balas le pasan por encima), derriba a los soldados que toca y no puede disparar mientras tanto; al terminar se levanta (o queda cuerpo a tierra si sigue pulsando Abajo); saltar corta la barrida. Poses de barrida y levantarse de la hoja 4 de ChatGPT.
+**Ventajas de cada soldado (Gwyn, 17-10-2026, `PERKS` en `player.gd`):** Eduardo aguanta 3 golpes antes de perder una vida, con barra de vida bajo el 1UP (caer a un foso mata igual). Eder lleva doble pistola (la pistola dispara dos balas paralelas) y empieza con 20 granadas (también al reaparecer). El Presi y La Tenienta, sin cambios. **Junnie se barre** (18-10-2026): corriendo, Abajo la hace deslizarse por el suelo medio segundo; va a ras del suelo (las balas le pasan por encima), derriba a los soldados que toca y no puede disparar mientras tanto; al terminar se levanta (o queda cuerpo a tierra si sigue pulsando Abajo); saltar corta la barrida. **Desde el 26-10-2026 la barrida es una habilidad de la tienda** (ver «Habilidades»): Junnie la trae de serie. Poses de barrida y levantarse de la hoja 4 de ChatGPT.
 
 **Tanques y torretas (17-10-2026, PixelLab):** tres tanques muy distintos (`tank.gd`, `tools/sprites/tanks.py`): **comunista** (estilo T-34, verde con estrella roja; vida 20, velocidad normal, un obús cada 2,3 s), **israelí** (estilo Merkava, gris arena, sin símbolos; vida 34, lento, obús pesado cada 3,2 s) y **estadounidense** (estilo Abrams, arena con estrella blanca; vida 16, el doble de rápido, ráfaga de 2 obuses cada 1,4 s). El nivel puede fijar el tipo (`["tank", x, y, tipo]`); si no, se alternan según la x. La torreta es un **nido de ametralladora**: un soldado agachado tras un búnker de sacos terreros maneja una ametralladora montada (`turret.gd`, `tools/sprites/turret.py`, dibujo de Eduardo con ChatGPT). Solo dispara hacia la izquierda, al frente o en diagonal hacia arriba según dónde esté el jugador; no puede voltearse, así que si el jugador le pasa por detrás deja de disparar (19-10-2026, idea de Eduardo). Desde el 24-10-2026: los sacos se van rompiendo con los golpes (intacto → dañado → destrozado, PixelLab) y sueltan arena; tocarlos no hace daño, así que el héroe puede acercarse y matar al soldado con el cuchillo de una puñalada; al morir el soldado sale despedido y el nido queda vacío y roto en la calle. Las granadas y bombas enemigas ya no dañan a los suyos (`level.blast(..., hurt_enemies = false)`).
 

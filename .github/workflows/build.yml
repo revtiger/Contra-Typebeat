@@ -51,14 +51,23 @@ jobs:
           mkdir -p build
           ~/godot/godot --headless --path . --import || true
           ~/godot/godot --headless --path . --export-release "Windows" build/ONU-Outbreak.exe
+          ~/godot/godot --headless --path . --export-release "Windows Test" build/ONU-Outbreak-Test.exe
           test -f build/ONU-Outbreak.exe
-          cd build && zip -q ONU-Outbreak-windows.zip ONU-Outbreak.exe
+          test -f build/ONU-Outbreak-Test.exe
+          cd build && zip -q ONU-Outbreak-windows.zip ONU-Outbreak.exe && zip -q ONU-Outbreak-test-windows.zip ONU-Outbreak-Test.exe
 
       - name: Subir artifact
         uses: actions/upload-artifact@v4
         with:
           name: ONU-Outbreak-windows-${{ github.sha }}
           path: build/ONU-Outbreak-windows.zip
+
+      # modo test (teclas F1-F5, sin enemigos que salgan solos): solo como artifact, nunca en Releases
+      - name: Subir artifact de test
+        uses: actions/upload-artifact@v4
+        with:
+          name: ONU-Outbreak-test-windows-${{ github.sha }}
+          path: build/ONU-Outbreak-test-windows.zip
 
       - name: Publicar "ultima-version" (solo main)
         if: github.ref == 'refs/heads/main'

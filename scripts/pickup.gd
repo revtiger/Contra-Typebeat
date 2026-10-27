@@ -23,10 +23,10 @@ func _ready() -> void:
 	add_child(cs)
 	z_index = 4
 	if mode == "capsule":
-		collision_layer = 4
+		collision_layer = 4  # EnemyHurtbox: se le dispara
 		collision_mask = 0
 	else:
-		collision_layer = 0
+		collision_layer = 32  # Interactivos: solo detecta al jugador
 		collision_mask = 2
 		body_entered.connect(_on_body)
 

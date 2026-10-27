@@ -13,9 +13,9 @@ const CONTROLS := [
 	["Moverse", "Flechas / WASD"], ["Apuntar arriba", "Arriba"], ["Disparar abajo (aire)", "Abajo"],
 	["Disparar en diagonal", "Arriba/Abajo + lado"],
 	["Saltar", "Z / Espacio / K"], ["Disparar / cuchillo", "X / J"], ["Granada", "C / L"],
-	["Agacharse", "Abajo"], ["Bajar de un puente", "Abajo + Saltar"], ["Pausa", "Esc"],
+	["Barrida (habilidad)", "Shift"], ["Agacharse", "Abajo"],["Bajar de un puente", "Abajo + Saltar"], ["Pausa", "Esc"],
 ]
-const PAD_TEXT := "Mando: cruceta o stick - A saltar - X disparar - B/Y granada - Start pausa"
+const PAD_TEXT := "Mando: cruceta o stick - A saltar - X disparar - B/Y granada - RB barrida - Start pausa"
 
 var city := City.new()
 var page := "main"
@@ -76,7 +76,7 @@ func _ready() -> void:
 	info_right.position.x = 80 + 24 * 6
 	pad.text = PAD_TEXT
 	PixelFont.apply(pad, "label")
-	pad.position.y = 172
+	pad.position.y = 178  # 11 filas de controles de 12 px desde y 40
 	footer.text = "RÉCORD %06d          G·E STUDIOS - 2026 - v0.6" % Game.record
 	PixelFont.apply(footer, "label")
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM

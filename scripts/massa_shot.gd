@@ -15,7 +15,7 @@ var spin := 0.0
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("level")
 	z_index = 5
-	collision_layer = 0
+	collision_layer = 0 if harmless else 16  # HitboxEnemigo
 	collision_mask = 0 if harmless else 2
 	var cs := CollisionShape2D.new()
 	var c := CircleShape2D.new()

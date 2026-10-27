@@ -280,7 +280,7 @@ func _rifle(delta: float, p) -> void:
 			var muzzle := _point_v(SpriteUtil.v(meta["muzzles_shoot"][1]))
 			var b := Bullet.new()
 			b.from_player = false
-			b.vel = Vector2(dir * 170.0, 0.0)
+			b.vel = Vector2(dir * 210.0, 0.0)  # 25-10-2026: +40 px/s (antes 170)
 			b.position = muzzle
 			main.add_child(b)
 			Game.sfx("shot", -12.0, 0.8)

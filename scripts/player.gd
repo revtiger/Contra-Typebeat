@@ -5,7 +5,7 @@ extends CharacterBody2D
 ## - se agacha y avanza agachado; baja de los puentes con Abajo + Saltar
 ## - granadas con botón propio (10 por vida); cuchillo automático si hay un soldado pegado
 ## - armas especiales con munición limitada: al acabarse vuelve la pistola
-## - barrida (ventaja de Junnie): corriendo, Abajo la tira al suelo deslizándose hacia delante
+## - barrida (habilidad de la tienda; Junnie la trae de serie): Shift, y saltando al acabarla, salto en carrera
 
 signal died
 
@@ -15,12 +15,15 @@ const SpriteUtil = preload("res://scripts/sprite_util.gd")
 const Polvo = preload("res://scripts/polvo.gd")
 const META_PATH := "res://assets/sprites/player_meta.json"
 
-const SPEED := 90.0
+const SPEED := 130.0  # 25-10-2026: antes 90 (más rápido que Metal Slug)
+const TURBO_SPEED := 400.0  # modo test (F6): para recorrer la fase deprisa
 const CROUCH_SPEED := 38.0
 const JUMP_V := -360.0
 const GRAVITY := 900.0
-const W := 12.0
-const STAND_H := 30.0
+## Caja de pie igual que la del soldado de Argentina (14x40, 25-10-2026; antes 12x30): hoy el cuerpo es también
+## la MainHurtbox (ARQUITECTURA.md, pendiente 2), así que es la zona donde le dan las balas.
+const W := 14.0
+const STAND_H := 40.0
 const CROUCH_H := 18.0
 const JUMP_H := 24.0
 const START_BOMBS := 10
@@ -28,18 +31,41 @@ const START_BOMBS := 10
 ## - hp: golpes que aguanta antes de perder una vida, con barra de vida en el HUD (Eduardo, como un tanque de Metal Slug)
 ## - bombs: granadas al empezar y al reaparecer (Eder)
 ## - dual: la pistola dispara dos balas paralelas (Eder, doble pistola)
-## - slide: barrida (Junnie, 18-10-2026): corriendo, Abajo la hace deslizarse por el suelo SLIDE_T s; va a ras
-##   del suelo (las balas le pasan por encima), derriba a los soldados que toca y no puede disparar. Al
-##   terminar se levanta (o se queda cuerpo a tierra si sigue pulsando Abajo). Saltar la corta.
+## - slide: Junnie trae de serie la barrida (que los demás compran en la tienda) y además la hace corriendo + Abajo
 const PERKS := {
 	"eduardo": {"hp": 3},
 	"eder": {"bombs": 20, "dual": true},
 	"junnie": {"slide": true},
 }
+## Barrida (habilidad "slide" de la tienda, 26-10-2026; antes solo Junnie): Shift la tira al suelo deslizándose
+## hacia donde mira SLIDE_T s; va a ras del suelo (las balas le pasan por encima), derriba a los soldados que toca
+## y no puede disparar. Al terminar se levanta (o se queda cuerpo a tierra si sigue pulsando Abajo).
+## Combo: saltar durante la barrida o hasta SLIDE_COMBO_T s después da el salto en carrera, con SLIDE_JUMP_PUSH
+## px/s extra hacia delante que se apagan en SLIDE_JUMP_T s.
 const SLIDE_T := 0.45
-const SLIDE_SPEED := 240.0
+const SLIDE_SPEED := 260.0  # 26-10-2026: antes 240
 const SLIDE_UP_T := 0.22
+const SLIDE_COMBO_T := 0.15
+const SLIDE_JUMP_PUSH := 150.0
+const SLIDE_JUMP_T := 0.5
 const KNIFE_RANGE := 24.0
+## Zona para devolver granadas: círculo de radio PARRY_R delante del pecho, a PARRY_FWD px en la dirección
+## en la que apunta (la punta de la línea de tiro del greybox)
+const PARRY_R := 12.0  # 25-10-2026: más ancha (antes 8 a 10 px): ahora abarca también el pecho
+const PARRY_FWD := 6.0
+## Jump hitbox (jump_hitbox.gd): zona de agarre encima y delante de la cabeza (GRAB_OFF desde los pies, x hacia
+## donde mira) y el impulso que da: algo menos que el salto completo (64 px contra 72)
+const GRAB_OFF := Vector2(8, -36)
+const GRAB_R := 6.0
+const BOOST_V := -340.0
+## Imán del agarre (26-10-2026): en el aire, si un jump hitbox queda a GRAB_REACH px o menos del borde de la zona
+## de agarre (lo que el héroe podría "estirar el brazo"), la zona se inclina hacia él como mucho GRAB_PULL px, a
+## GRAB_LEAN_SPEED px/s. El impulso sale hacia donde se inclina: BOOST_PUSH px/s de lado que se apagan en BOOST_PUSH_T s
+const GRAB_REACH := 10.0
+const GRAB_PULL := 4.0
+const GRAB_LEAN_SPEED := 60.0
+const BOOST_PUSH := 110.0
+const BOOST_PUSH_T := 0.4
 
 ## Armas: cadencia en segundos y munición al recogerlas (-1 = infinita).
 const WEAPONS := {
@@ -57,9 +83,17 @@ var crouching := false
 var shoot_cd := 0.0
 var grenade_cd := 0.0
 var invuln := 1.5
+## Inmortal (modo test, F5): no recibe daño; si cae a un foso vuelve a aparecer arriba.
+var god := false
+var turbo := false  # modo test (F6): corre a TURBO_SPEED
+var boosting := false  # subiendo por el impulso de un jump hitbox (soltar Saltar no lo corta)
+var grab_lean := Vector2.ZERO  # cuánto se inclina la zona de agarre hacia el jump hitbox más cercano
+var boost_push := 0.0  # empuje de lado en el aire (jump hitbox o salto en carrera): se suma a velocity.x
+var push_decay := 0.0  # px/s² con los que se apaga boost_push
 var dead := false
 var death_t := 0.0
 var drop_t := 0.0
+var drop_from: CollisionObject2D  # plataforma que está atravesando hacia abajo
 var weapon := "P"
 var ammo := -1
 var bombs := START_BOMBS
@@ -96,6 +130,7 @@ var shoot_pose_t := 0.0
 var slide_t := 0.0     # barrida en curso (s que quedan)
 var slide_up_t := 0.0  # levantándose de la barrida
 var slide_cd := 0.0
+var slide_combo_t := 0.0  # margen tras la barrida para enlazar el salto en carrera
 ## aterrizaje: un instante agachado (amortigua la caída) y polvo a los pies
 const LAND_T := 0.09
 var land_t := 0.0
@@ -105,8 +140,9 @@ var fall_vy := 0.0
 
 func _ready() -> void:
 	add_to_group("player")
+	# capas en ARQUITECTURA.md: el cuerpo está en MainHurtbox (2) y pisa el Terreno (1)
 	collision_layer = 2
-	collision_mask = 1 | 8
+	collision_mask = 1
 	floor_snap_length = 8.0  # pega al suelo al bajar cuestas
 	floor_constant_speed = true
 	col.shape = shape
@@ -151,7 +187,10 @@ func _physics_process(delta: float) -> void:
 	flash_t -= delta
 	invuln = maxf(invuln - delta, 0.0)
 	drop_t -= delta
-	collision_mask = 1 if drop_t > 0.0 else 1 | 8
+	if drop_from and drop_t <= 0.0:
+		if is_instance_valid(drop_from):
+			remove_collision_exception_with(drop_from)
+		drop_from = null
 
 	var dir := Input.get_axis("left", "right")
 	var side := absf(dir) >= 0.3
@@ -168,24 +207,42 @@ func _physics_process(delta: float) -> void:
 
 	slide_cd -= delta
 	slide_up_t -= delta
-	if slide_t <= 0.0 and _perk("slide", false) and on_floor and side and not up 			and Input.is_action_just_pressed("down") and slide_cd <= 0.0:
+	slide_combo_t -= delta
+	# barrida: Shift (habilidad de la tienda); Junnie la trae de serie y además la hace corriendo + Abajo
+	var slide_key: bool = Input.is_action_just_pressed("slide") \
+		or (_perk("slide", false) and side and not up and Input.is_action_just_pressed("down"))
+	if slide_key and slide_t <= 0.0 and on_floor and slide_cd <= 0.0 and _can_slide():
 		_start_slide()
 
-	velocity.x = dir * (CROUCH_SPEED if crouching else SPEED)
+	velocity.x = dir * (CROUCH_SPEED if crouching else (TURBO_SPEED if turbo else SPEED))
 	if slide_t > 0.0:
 		_slide(delta, down)
+	if on_floor:
+		boost_push = 0.0
+	elif boost_push != 0.0:
+		velocity.x += boost_push
+		boost_push = move_toward(boost_push, 0.0, push_decay * delta)
 	if not on_floor:
 		velocity.y += GRAVITY * delta
 	if Input.is_action_just_pressed("jump") and on_floor:
+		var combo := slide_t > 0.0 or slide_combo_t > 0.0
 		slide_t = 0.0  # saltar corta la barrida
 		slide_up_t = 0.0
-		if down and _standing_on_bridge():
+		slide_combo_t = 0.0
+		var bridge := _bridge_below() if down else null
+		if bridge:
+			# atraviesa solo la plataforma que pisa durante drop_t
 			drop_t = 0.35
-			collision_mask = 1
+			drop_from = bridge
+			add_collision_exception_with(bridge)
+		elif combo:
+			_slide_jump()
 		else:
 			velocity.y = JUMP_V
 			Game.sfx("jump", -14.0)
-	if Input.is_action_just_released("jump") and velocity.y < -140.0:
+	if velocity.y >= 0.0 or on_floor:
+		boosting = false
+	if Input.is_action_just_released("jump") and velocity.y < -140.0 and not boosting:
 		velocity.y = -140.0
 
 	var low := PRONE_H if body else CROUCH_H
@@ -209,8 +266,13 @@ func _physics_process(delta: float) -> void:
 	elif not now_floor and was_on_floor and velocity.y < -100.0:
 		Polvo.levantar(get_parent(), position, 4)  # despegue del salto
 	was_on_floor = now_floor
+	_update_grab_lean(delta, now_floor)
 
-	if Input.is_action_pressed("shoot") and shoot_cd <= 0.0 and slide_t <= 0.0 and slide_up_t <= 0.0:
+	# al pulsar disparar, primero devuelve una granada enemiga si hay una a tiro; si no, en el aire, se impulsa
+	# en un jump hitbox si lo toca la zona de agarre
+	var shoot_now := Input.is_action_just_pressed("shoot") and slide_t <= 0.0
+	var parried := shoot_now and (_try_parry() or (not now_floor and _try_jump_hitbox()))
+	if not parried and Input.is_action_pressed("shoot") and shoot_cd <= 0.0 and slide_t <= 0.0 and slide_up_t <= 0.0:
 		if not _try_knife():
 			_fire()
 	if Input.is_action_just_pressed("grenade") and grenade_cd <= 0.0 and bombs > 0:
@@ -225,7 +287,12 @@ func _physics_process(delta: float) -> void:
 				hit()
 				break
 	if position.y > 300:
-		hit(true)
+		if god:
+			var lvl = get_tree().get_first_node_in_group("level")
+			position = Vector2(lvl.safe_x(cam_left + 50), 20)
+			velocity = Vector2.ZERO
+		else:
+			hit(true)
 	queue_redraw()
 
 
@@ -236,18 +303,34 @@ func _start_slide() -> void:
 	Game.sfx("knife", -8.0, 0.6)
 
 
-## Barrida: se desliza hacia delante frenando poco a poco; al acabar se levanta o se queda tumbada.
+## Barrida: se desliza hacia delante a velocidad fija (SLIDE_SPEED); al acabar se levanta o se queda tumbada.
 func _slide(delta: float, down: bool) -> void:
 	slide_t -= delta
 	crouching = false
-	velocity.x = facing * SLIDE_SPEED * (0.35 + 0.65 * slide_t / SLIDE_T)
+	velocity.x = facing * SLIDE_SPEED  # 26-10-2026: velocidad fija (antes frenaba hasta el 35 %)
 	if slide_t <= 0.0:
 		slide_t = 0.0
+		slide_combo_t = SLIDE_COMBO_T
 		if down:
 			crouching = true
 			prone_t = GO_PRONE_T  # ya está en el suelo: sin la pose de tirarse
 		else:
 			slide_up_t = SLIDE_UP_T
+
+
+## ¿Puede hacer la barrida? Habilidad comprada (Game.skills) o ventaja de Junnie.
+func _can_slide() -> bool:
+	return _perk("slide", false) or Game.has_skill("slide")
+
+
+## Salto en carrera (combo de la barrida): sale con el impulso de la barrida hacia delante (boost_push), que se
+## apaga en SLIDE_JUMP_T s. Ya puede disparar en el aire (no hay que levantarse).
+func _slide_jump() -> void:
+	velocity.y = JUMP_V
+	boost_push = facing * SLIDE_JUMP_PUSH
+	push_decay = SLIDE_JUMP_PUSH / SLIDE_JUMP_T
+	Game.sfx("jump", -12.0, 1.15)
+	Polvo.levantar(get_parent(), position, 6)
 
 
 ## Durante la barrida derriba a los soldados que toca (los que se pueden acuchillar).
@@ -268,13 +351,14 @@ func _aim_key() -> String:
 	return "fwd"
 
 
-func _standing_on_bridge() -> bool:
+## Plataforma atravesable (grupo "plataforma") sobre la que está parado, o null.
+func _bridge_below() -> CollisionObject2D:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		var o := c.get_collider() as CollisionObject2D
-		if c.get_normal().y < -0.5 and o and (o.collision_layer & 8):
-			return true
-	return false
+		if c.get_normal().y < -0.5 and o and o.is_in_group("plataforma"):
+			return o
+	return null
 
 
 func _muzzle() -> Vector2:
@@ -285,6 +369,86 @@ func _muzzle() -> Vector2:
 		key = "crouch_fwd"
 	var m := SpriteUtil.v(meta["muzzle"][key])
 	return Vector2(m.x * facing, m.y + torso.position.y)
+
+
+## Centro de la zona de agarre de los jump hitbox (en el mundo): encima y delante de la cabeza, inclinada hacia
+## el jump hitbox más cercano (grab_lean).
+func grab_point() -> Vector2:
+	return _grab_base() + grab_lean
+
+
+## Zona de agarre sin inclinar.
+func _grab_base() -> Vector2:
+	return position + Vector2(GRAB_OFF.x * facing, GRAB_OFF.y)
+
+
+## Imán del agarre: en el aire, la zona se inclina poco a poco hacia el centro del jump hitbox más cercano que
+## esté al alcance del brazo (GRAB_REACH desde el borde de la zona); si no hay ninguno, vuelve a su sitio.
+func _update_grab_lean(delta: float, now_floor: bool) -> void:
+	var want := Vector2.ZERO
+	if not now_floor:
+		var base := _grab_base()
+		var best := GRAB_R + GRAB_REACH
+		for h in get_tree().get_nodes_in_group("jump_hitbox"):
+			var c: Vector2 = h.global_position
+			var half: Vector2 = h.SIZE / 2.0
+			var d := base.distance_to(base.clamp(c - half, c + half))  # distancia al borde del rectángulo
+			if d <= best:
+				best = d
+				want = (c - base).limit_length(GRAB_PULL)
+	grab_lean = grab_lean.move_toward(want, GRAB_LEAN_SPEED * delta)
+
+
+## Jump hitbox: en el aire, si la zona de agarre o el cuerpo del héroe (26-10-2026) toca uno (capa 6
+## Interactivos) al pulsar disparar, otro impulso hacia arriba (BOOST_V), con un empuje de lado hacia donde se
+## inclinaba el agarre (boost_push). Se pueden encadenar si el mapa pone varios.
+func _try_jump_hitbox() -> bool:
+	var c := CircleShape2D.new()
+	c.radius = GRAB_R
+	if not (_touches_jump_hitbox(c, grab_point()) or _touches_jump_hitbox(shape, position + col.position)):
+		return false
+	velocity.y = BOOST_V
+	boost_push = grab_lean.x / GRAB_PULL * BOOST_PUSH
+	push_decay = BOOST_PUSH / BOOST_PUSH_T
+	boosting = true
+	shoot_cd = 0.2
+	Game.sfx("jump", -10.0, 1.3)
+	Polvo.levantar(get_parent(), grab_point(), 4)
+	return true
+
+
+## ¿La forma s, centrada en pos (en el mundo), toca algún jump hitbox?
+func _touches_jump_hitbox(s: Shape2D, pos: Vector2) -> bool:
+	var q := PhysicsShapeQueryParameters2D.new()
+	q.shape = s
+	q.transform = Transform2D(0.0, pos)
+	q.collision_mask = 32
+	q.collide_with_areas = true
+	q.collide_with_bodies = false
+	for hit in get_world_2d().direct_space_state.intersect_shape(q, 4):
+		if hit["collider"].is_in_group("jump_hitbox"):
+			return true
+	return false
+
+
+## Centro de la zona para devolver granadas (en el mundo): delante del pecho, hacia donde apunta.
+func parry_point() -> Vector2:
+	var h := shape.size.y
+	return position + Vector2(0, -h + minf(10.0, h / 3.0)) + aim * PARRY_FWD
+
+
+## Devolver granadas: si una granada que se puede devolver (parpadea en blanco, bomb.gd) entra en la zona de
+## parry y se pulsa disparar justo entonces, se le da un golpe y vuelve por el mismo arco hacia quien la lanzó.
+func _try_parry() -> bool:
+	for g in get_tree().get_nodes_in_group("granada_enemiga"):
+		if g.can_parry():
+			g.parry()
+			knife_t = 0.18  # el golpe usa la pose del cuchillo
+			shoot_cd = 0.25
+			Juice.hitstop(0.05)
+			Juice.shake(1.5)
+			return true
+	return false
 
 
 ## Cuchillo: si hay un soldado pegado delante, se le apuñala en vez de disparar.
@@ -331,13 +495,13 @@ func _fire() -> void:
 			if _perk("dual", false):
 				# doble pistola: dos balas paralelas, a 3 px a cada lado de la línea de tiro
 				var side := aim.orthogonal() * 3.0
-				_bullet(aim * 320.0, "normal", 1, false, 1.6, side)
-				_bullet(aim * 320.0, "normal", 1, false, 1.6, -side)
+				_bullet(aim * 360.0, "normal", 1, false, 1.6, side)
+				_bullet(aim * 360.0, "normal", 1, false, 1.6, -side)
 			else:
-				_bullet(aim * 320.0, "normal", 1)
+				_bullet(aim * 360.0, "normal", 1)  # 25-10-2026: +40 px/s en las balas (antes 320)
 			Game.sfx("shot", -16.0)
 		"H":
-			_bullet(aim.rotated(randf_range(-0.05, 0.05)) * 380.0, "heavy", 1)
+			_bullet(aim.rotated(randf_range(-0.05, 0.05)) * 420.0, "heavy", 1)
 			Game.sfx("shot", -18.0, 1.35)
 		"R":
 			_bullet(aim * 150.0, "rocket", 0, false, 2.5)
@@ -346,11 +510,11 @@ func _fire() -> void:
 			_bullet(aim * 210.0, "flame", 3, true, 0.6)
 			Game.sfx("fire", -8.0)
 		"L":
-			_bullet(aim * 520.0, "laser", 2, true)
+			_bullet(aim * 560.0, "laser", 2, true)
 			Game.sfx("laser", -16.0, 1.3)
 		"S":
 			for a in [-0.3, -0.15, 0.0, 0.15, 0.3]:
-				_bullet(aim.rotated(a) * 300.0, "shotgun", 3, true, 0.22)
+				_bullet(aim.rotated(a) * 340.0, "shotgun", 3, true, 0.22)
 			Game.sfx("cannon", -6.0, 1.5)
 			Juice.shake(1.5)
 	if ammo > 0:
@@ -367,13 +531,14 @@ func _throw_grenade() -> void:
 	throw_t = 0.2
 	var g := Grenade.new()
 	g.position = position + Vector2(facing * 6, -10 if crouching else -20)
-	g.vel = Vector2(facing * 140.0 + velocity.x * 0.4, -230.0)
+	# 25-10-2026: ×1,25 (antes 140 y -230; gravedad en grenade.gd): mismo arco, llega antes
+	g.vel = Vector2(facing * 175.0 + velocity.x * 0.4, -288.0)
 	get_parent().add_child(g)
 	Game.sfx("jump", -10.0, 0.7)
 
 
 func hit(force := false) -> void:
-	if dead or (invuln > 0.0 and not force):
+	if dead or god or (invuln > 0.0 and not force):
 		return
 	# con barra de vida: los golpes restan vida (caer a un foso mata siempre)
 	if hp > 1 and not force:
@@ -404,6 +569,20 @@ func respawn(pos: Vector2) -> void:
 	hp = max_hp
 	col.set_deferred("disabled", false)
 	hurt.set_deferred("monitoring", true)
+
+
+## Estado que se lleva al entrar o salir de un interior (Game.go_route): la escena se recarga.
+func carry() -> Dictionary:
+	return {"weapon": weapon, "ammo": ammo, "bombs": bombs, "hp": hp, "god": god, "turbo": turbo}
+
+
+func apply_carry(c: Dictionary) -> void:
+	weapon = c["weapon"]
+	ammo = c["ammo"]
+	bombs = c["bombs"]
+	hp = c["hp"]
+	god = c["god"]
+	turbo = c["turbo"]
 
 
 ## Recoger un arma: si es la misma, suma munición.

@@ -30,7 +30,7 @@ var t := 0.0
 
 const WIDTH := 5400.0
 const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
-const PUEBLO_TRAMOS := 12
+const PUEBLO_TRAMOS := 32  # máximo de trozos que se buscan (se para en el primero que no existe)
 const AVES_TEX := preload("res://assets/sprites/aves.png")
 ## Orden de los fotogramas al aletear (0 alas arriba … 4 alas abajo); el 2 es el planeo.
 const AVES_ALETEO := [0, 1, 2, 3, 4, 3, 2, 1]

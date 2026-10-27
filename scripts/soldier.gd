@@ -3,6 +3,9 @@ extends CharacterBody2D
 ## - "run": corre en línea recta y salta escalones; si te ve cerca a veces se asusta (brazos arriba) y huye
 ## - "sniper": se queda quieto y dispara al jugador en 8 direcciones
 ## - "grenadier": se para a lanzar granadas en arco (con marca de aviso en el suelo)
+## - "asalto": emboscada de azotea (level._emboscada): marca en el techo con "!" (aviso), cae desde arriba de la
+##   pantalla junto al héroe, se pone rojo un instante (WINDUP) y se lanza con un cuchillazo rápido. No daña al
+##   tocarlo, solo con el cuchillazo.
 ## Al morir sale despedido hacia atrás girando, en vez de desaparecer. En Argentina (soldier_ar.png, de
 ## tools/sprites/soldados.py) recibe el disparo, cae de espaldas y queda tirado en el suelo un momento.
 
@@ -13,6 +16,11 @@ const Sangre = preload("res://scripts/sangre.gd")
 const PANIC_TIME := 0.7
 const THROW_FPS := 14.0  # lanzamiento de granada del soldado de Argentina (prepara, lanza y vuelve)
 const AR_CARAS := 4  # variantes de cara de soldier_ar.png
+## asalto: aviso antes de caer, preparación del cuchillazo, y el cuchillazo (duración y velocidad)
+const ASALTO_AVISO := 0.6
+const WINDUP := 0.4
+const LUNGE_T := 0.18
+const LUNGE_V := 260.0
 
 var mode := "run"
 var dir := -1
@@ -23,7 +31,13 @@ var anim_t := 0.0
 var main
 var aim := Vector2.LEFT
 var knifeable := true
-var state := "normal"  # normal | panic | flee | dead
+var state := "normal"  # aviso | enter | normal | panic | flee | dead
+var touch_damage := true  # tocarlo daña al héroe (el asaltante no: solo su cuchillazo)
+var windup_t := 0.0
+var lunge_t := 0.0
+var lunge_hit := false
+## enter: entra corriendo hasta plant_x y ahí se planta a atacar (francotiradores y granaderos de F2, modo test)
+var plant_x := 0.0
 var state_t := 0.0
 var flash := 0.0
 var can_panic := true
@@ -43,8 +57,8 @@ var throw_target := 0.0
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("main")
 	add_to_group("enemy")
-	collision_layer = 4
-	collision_mask = 1 | 8
+	collision_layer = 4  # EnemyHurtbox
+	collision_mask = 1  # Terreno (plataformas incluidas)
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
 	r.size = Vector2(12, 28)
@@ -66,12 +80,31 @@ func _ready() -> void:
 			shoot_t = randf_range(0.6, 1.6)
 		"grenadier":
 			shoot_t = randf_range(0.8, 1.5)
+		"asalto":
+			hp = 2
+			touch_damage = false
+			state = "aviso"
+			state_t = ASALTO_AVISO
+			collision_layer = 0
+			spr.visible = false
 
 
 func _physics_process(delta: float) -> void:
 	anim_t += delta
 	flash -= delta
 	fire_t -= delta
+	if state == "aviso":
+		# asalto: la marca está en el techo donde va a caer; al acabar el aviso cae desde encima de la pantalla
+		state_t -= delta
+		if state_t <= 0.0:
+			state = "normal"
+			spr.visible = true
+			collision_layer = 4
+			position.y = main.cam_top - 30.0
+			velocity = Vector2(0, 120)
+			shoot_t = 0.0
+		fx.queue_redraw()
+		return
 	velocity.y += 900.0 * delta
 	if state == "dead":
 		_dead_process(delta)
@@ -79,8 +112,14 @@ func _physics_process(delta: float) -> void:
 		return
 	var p = main.player
 	var dx: float = p.position.x - position.x
-	var on_screen: bool = position.x > main.cam_left and position.x < main.cam_left + 480
+	# en pantalla también en vertical: con la cámara arriba (azoteas) los de la calle no disparan sin verse
+	var on_screen: bool = position.x > main.cam_left and position.x < main.cam_left + 480 \
+		and position.y > main.cam_top and position.y - 20.0 < main.cam_top + 270.0
 	match state:
+		"enter":
+			velocity.x = dir * speed
+			if (position.x - plant_x) * dir >= 0.0:
+				state = "normal"
 		"panic":
 			velocity.x = 0.0
 			state_t -= delta
@@ -108,7 +147,7 @@ func _physics_process(delta: float) -> void:
 						shoot_t = randf_range(1.3, 2.2)
 						var b := Bullet.new()
 						b.from_player = false
-						b.vel = aim * 120.0
+						b.vel = aim * 180.0  # 25-10-2026: +60 px/s (antes 120)
 						b.position = position + Vector2(0, -22) + aim * 14
 						if ar:
 							var m: Array = ar_meta["muzzles"][_aim_idx()]
@@ -116,6 +155,29 @@ func _physics_process(delta: float) -> void:
 						get_parent().add_child(b)
 						fire_t = 0.07
 						Game.sfx("shot", -20.0, 0.7)
+				"asalto":
+					if not is_on_floor():
+						velocity.x = 0.0
+					elif windup_t > 0.0:
+						velocity.x = 0.0
+						windup_t -= delta
+						if windup_t <= 0.0:
+							lunge_t = LUNGE_T
+							lunge_hit = false
+							Game.sfx("knife", -6.0, 0.8)
+					elif lunge_t > 0.0:
+						lunge_t -= delta
+						velocity.x = dir * LUNGE_V
+						if not lunge_hit and absf(dx) < 22.0 and absf(p.position.y - position.y) < 30.0:
+							lunge_hit = true
+							p.hit()
+					else:
+						velocity.x = 0.0
+						dir = 1 if dx > 0 else -1
+						shoot_t -= delta
+						if shoot_t <= 0.0 and not p.dead:
+							shoot_t = 1.1
+							windup_t = WINDUP
 				"grenadier":
 					dir = 1 if dx > 0 else -1
 					velocity.x = 0.0
@@ -231,11 +293,13 @@ func _setup_sprite() -> void:
 
 func _animate() -> void:
 	spr.scale.x = dir
-	spr.modulate = Color(4, 4, 4) if flash > 0.0 else Color.WHITE
+	spr.modulate = Color(4, 4, 4) if flash > 0.0 else (Color(1.8, 0.6, 0.6) if windup_t > 0.0 else Color.WHITE)
 	# culatazo al disparar: 1 px hacia atrás
 	spr.position.x = -dir if fire_t > 0.0 and state == "normal" else 0
 	fx.queue_redraw()
 	match state:
+		"enter":
+			_play("run")
 		"panic":
 			_play("panic")
 		"flee":
@@ -251,6 +315,14 @@ func _animate() -> void:
 				spr.frame = 1
 		_:
 			match mode:
+				"asalto":
+					if lunge_t > 0.0:
+						_play("run")
+					elif windup_t > 0.0:
+						spr.animation = "aim"
+						spr.frame = 0
+					else:
+						_play("idle")
 				"run":
 					_play("run" if is_on_floor() else "idle")
 				"sniper":
@@ -292,6 +364,13 @@ func _play(anim: String) -> void:
 
 ## Fogonazo del francotirador en la boca del fusil (las poses de apuntar no lo traen dibujado).
 func _draw_fx() -> void:
+	if state == "aviso":
+		# asalto: marca de aviso donde va a caer
+		if int(state_t * 12.0) % 2 == 0:
+			fx.draw_colored_polygon(PackedVector2Array([Vector2(-6, 0), Vector2(6, 0), Vector2(0, -10)]), Color(1, 0.15, 0.1))
+			fx.draw_rect(Rect2(-0.5, -7, 1.5, 4), Color.WHITE)
+			fx.draw_rect(Rect2(-0.5, -2, 1.5, 1), Color.WHITE)
+		return
 	if fire_t <= 0.0 or state != "normal" or mode != "sniper":
 		return
 	var m := Vector2(0, -22) + aim * 14

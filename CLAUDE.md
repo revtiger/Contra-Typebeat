@@ -29,6 +29,16 @@ Para evitar conflictos, antes de editar un archivo que el otro tiene en un PR ab
 - `project.godot`: solo cambiarlo cuando haga falta; Godot lo reescribe al abrir el editor, revisar el diff antes de hacer commit.
 - `.tscn` / `.tres`: son texto, pero los conflictos son difíciles de resolver. Una escena la edita una sola persona a la vez.
 
+## Reglas de arquitectura (obligatorias)
+
+[`ARQUITECTURA.md`](ARQUITECTURA.md) fija las reglas del proyecto, numeradas `ARQ-NN`: capas de colisión, capas visuales, arte, largo de los mapas en escenas de 480 px, archivos y nombres, la carpeta `referencias/` y las fusiones. Claude Code (y cualquier IA del equipo) debe:
+
+- comprobar las reglas **antes** de escribir código o tocar arte;
+- si un cambio rompe una regla ✅, detenerse con un **🛑 BLOQUEO** citando la regla y ofrecer la alternativa; no hacerlo aunque se insista (las reglas se cambian primero en `ARQUITECTURA.md`, no se saltan);
+- avisar con un **⚠ WARNING** y esperar confirmación ante cambios drásticos de arte, temas por definir, renombrar o mover archivos o cambiar el largo de un mapa;
+- dejar los antes/después que se pidan en `referencias/antes-despues/<AAAA-MM-DD>_<tema>/`;
+- antes de fusionar, listar los riesgos de fusión (ARQ-70).
+
 ## Diseño
 
 El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier decisión de juego (controles, enemigos, niveles, armas) se refleja ahí en el mismo PR que la implementa. Las dudas abiertas van al final del documento o como Issue con la etiqueta `diseño`.
@@ -38,7 +48,9 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 - Godot 4.7.2 exacto en los dos equipos (versiones distintas reescriben archivos del proyecto).
 - GDScript con tabuladores, tipado estático cuando se pueda, comentarios en español.
 - Sin `class_name` por ahora: los scripts se cargan con `preload`.
-- Capas de colisión: 1 suelo, 2 jugador, 4 enemigos, 8 puentes (se atraviesan desde abajo), 16 objetos (barriles, minas).
+- **Modo test** (`Game.test`, `scripts/modo_test.gd`): se abre con `godot --path . -- test` o con el `.exe` de test (preset "Windows Test", etiqueta `test`). No salen enemigos solos (`TEST_SKIP` en `level.gd`), no hay cinemática y hay teclas: **F1** greybox/arte, **F2** francotirador o granadero que entra, se planta y ataca, **F3** jefe de la fase aquí mismo (la fase no termina al vencerlo), **F4** cápsula con arma al azar, **F5** inmortal, **F6** turbo (corre a 400 px/s), **F7** granadero, **F8** francotirador, **F9** emboscadas de azotea (empiezan apagadas). Los enemigos de los interiores (edificios grandes) sí salen en modo test. El juego normal (producción) no tiene estas teclas.
+- **Greybox:** en modo test las fases se ven con bloques grises etiquetados y las cajas de colisión coloreadas por capa (`scripts/greybox.gd`, `Game.greybox`). La jugabilidad (medidas, cajas, saltos, distribución) se prueba sobre el greybox, sin pedir arte nuevo.
+- Capas de colisión y visuales: ver [`ARQUITECTURA.md`](ARQUITECTURA.md) (1 Terreno, 2 MainHurtbox, 3 EnemyHurtbox, 4 HitboxJugador, 5 HitboxEnemigo, 6 Interactivos, 7 Zonas).
 - Autoload `Game` (`scripts/game.gd`): vidas, puntos, récord, misión actual, controles, sonido (`Game.sfx("boom")`) y pausa.
 - Autoload `Juice` (`scripts/juice.gd`): `Juice.hitstop(segundos)` y `Juice.shake(cantidad)` para la sensación de impacto.
 - Estilo Metal Slug: el plan y las fases están en `docs/plan-metal-slug.md`. Se permiten caricaturas de políticos reales (parodia política, idea de Eduardo); ver `docs/historia.md`.
