@@ -1,0 +1,53 @@
+{
+ "comunista": {
+  "frame": [
+   64,
+   48
+  ],
+  "frames": 5,
+  "base": 40,
+  "center_x": 33,
+  "hull": [
+   53,
+   31
+  ],
+  "muzzle": [
+   -29,
+   -24
+  ]
+ },
+ "israeli": {
+  "frame": [
+   64,
+   48
+  ],
+  "frames": 5,
+  "base": 40,
+  "center_x": 36,
+  "hull": [
+   53,
+   28
+  ],
+  "muzzle": [
+   -36,
+   -17
+  ]
+ },
+ "usa": {
+  "frame": [
+   64,
+   48
+  ],
+  "frames": 5,
+  "base": 40,
+  "center_x": 32,
+  "hull": [
+   64,
+   33
+  ],
+  "muzzle": [
+   -32,
+   -20
+  ]
+ }
+}

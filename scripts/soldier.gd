@@ -140,7 +140,7 @@ func take_damage(n: int) -> void:
 func _setup_sprite() -> void:
 	var meta := SpriteUtil.meta("res://assets/sprites/soldier_meta.json")
 	var R: Dictionary = meta["rows"]
-	var theme_name: String = "desert" if main.theme == "desert" else "jungle"
+	var theme_name: String = "desert" if main.theme in ["desert", "quebrada"] else "jungle"
 	spr = SpriteUtil.sprite(SpriteUtil.frames("res://assets/sprites/soldier_%s.png" % theme_name, 48, 48, {
 		"idle": [R["idle"], 1, 1, true], "run": [R["run"], 8, 14, true], "panic": [R["panic"], 2, 6, true],
 		"throw": [R["throw"], 2, 1, false], "aim": [R["aim"], 4, 1, false], "flee": [R["flee"], 8, 18, true]}),

@@ -18,12 +18,14 @@ extends RefCounted
 
 const END := 3000
 
-## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe]
+## zona, bandera (country), música, y las 3 fases: [lugar, plantilla, jefe, ambientación opcional]
+## La ambientación (fondo, suelo) es la plantilla salvo que se indique otra: la 1.2 y la 1.3 usan el
+## terreno de "desert" y "city" con arte propio de Argentina hecho con PixelLab (tools/sprites/argentina.py).
 const ZONES := [
 	{"zone": "ARGENTINA", "country": "ar", "freed": "LIBERADA", "phases": [
 		["PUEBLO DE LA PAMPA", "pueblo", "massa"],
-		["QUEBRADA DE HUMAHUACA", "desert", "kirchner"],
-		["BUENOS AIRES · CASA ROSADA", "city", "milei"],
+		["QUEBRADA DE HUMAHUACA", "quebrada", "kirchner"],
+		["BUENOS AIRES · CASA ROSADA", "baires", "milei"],
 	]},
 	{"zone": "MÉXICO", "country": "mx", "phases": [
 		["SELVA DEL SURESTE", "jungle", "amlo"],
@@ -47,9 +49,62 @@ const ZONES := [
 	]},
 ]
 
-const MUSIC := {"pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
+const MUSIC := {"baires": "city", "quebrada": "desert", "pueblo": "level", "jungle": "level", "desert": "desert", "city": "city", "snow": "level", "base": "city"}
 
 const TEMPLATES := {
+	# Quebrada de Humahuaca (1.2), al estilo Metal Slug (Gwyn, 17-10-2026): colina, escalones de roca,
+	# rampa a una meseta alta y, en la segunda mitad, DOS CAMINOS a la vez en pantalla que se juntan antes
+	# del jefe: arriba, cornisas de roca con francotiradores y las cápsulas; abajo, el fondo del cañón
+	# (más hundido) con tanques, minas y barriles. Suelo [x0, x1, y] plano o [x0, x1, y_inicio, y_fin] cuesta.
+	# Buenos Aires (1.3): rampas a una plaza elevada y a una terraza; después la avenida se hunde y hay dos
+	# caminos: abajo la avenida con tanques; arriba cornisas y balcones con francotiradores y cápsulas.
+	"baires": {
+		"ground": [
+			[0, 400, 230], [400, 480, 230, 195], [480, 760, 195], [760, 800, 195, 230], [800, 860, 230],
+			[900, 1100, 230], [1100, 1200, 230, 185], [1200, 1400, 185], [1400, 1460, 185, 240],
+			[1460, 2200, 240], [2200, 2300, 240, 230], [2300, END, 230],
+		],
+		"platforms": [
+			[560, 120, 140], [1250, 120, 120], [1440, 200, 125], [1690, 180, 118], [1920, 200, 125],
+			[2150, 110, 160],
+		],
+		"entities": [
+			["sniper", 300, 230], ["barrel", 380, 230], ["grenadier", 600, 195], ["sniper", 620, 140],
+			["capsule", 700, 60, "H"], ["mine", 830, 230], ["turret", 1000, 230], ["jet", 900, 0],
+			["sniper", 1300, 120], ["grenadier", 1350, 185],
+			# camino de arriba (cornisas y balcones)
+			["sniper", 1520, 125], ["capsule", 1600, 40, "S"], ["sniper", 1760, 118], ["grenadier", 1990, 125],
+			["capsule", 2000, 40, "B"],
+			# camino de abajo (avenida)
+			["barrel", 1500, 240], ["barrel", 1514, 240], ["tank", 1700, 240, "comunista"], ["mine", 1850, 240],
+			["grenadier", 1900, 240], ["tank", 2120, 240, "usa"],
+			# se juntan
+			["sniper", 2350, 230], ["barrel", 2420, 230],
+		],
+	},
+	"quebrada": {
+		"ground": [
+			[0, 260, 230], [260, 340, 230, 205], [340, 460, 205], [460, 540, 205, 230], [540, 640, 230],
+			[680, 760, 230], [760, 880, 200], [880, 920, 230], [920, 1020, 230, 170], [1020, 1260, 170],
+			[1260, 1340, 170, 245], [1340, 2160, 245], [2160, 2270, 245, 230], [2270, END, 230],
+		],
+		"platforms": [
+			[1250, 210, 135], [1500, 190, 128], [1730, 200, 135], [1975, 170, 142], [2190, 90, 175],
+		],
+		"entities": [
+			["sniper", 380, 205], ["barrel", 580, 230], ["capsule", 620, 60, "H"], ["mine", 710, 230],
+			["grenadier", 820, 200], ["sniper", 1060, 170], ["turret", 1150, 170], ["jet", 1100, 0],
+			["sniper", 1230, 170],
+			# camino de arriba (cornisas)
+			["sniper", 1420, 135], ["capsule", 1580, 40, "L"], ["sniper", 1640, 128], ["grenadier", 1860, 135],
+			["sniper", 2080, 142], ["capsule", 2060, 40, "B"],
+			# camino de abajo (fondo del cañón)
+			["barrel", 1420, 245], ["barrel", 1434, 245], ["mine", 1520, 245], ["tank", 1700, 245, "israeli"],
+			["grenadier", 1800, 245], ["mine", 1930, 245], ["tank", 2060, 245, "usa"],
+			# se juntan
+			["sniper", 2300, 230], ["barrel", 2380, 230],
+		],
+	},
 	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
 	"pueblo": {
 		"ground": [[0, END, 230]],
@@ -160,7 +215,7 @@ static func _build() -> Array:
 				"name": "%d.%d %s: %s" % [zi + 1, pi + 1, z["zone"], ph[0]],
 				"boss_name": boss_name,
 				"boss_role": role,
-				"theme": ph[1],
+				"theme": ph[3] if ph.size() > 3 else ph[1],
 				"music": MUSIC[ph[1]],
 				"end": END,
 				"ground": tpl["ground"],

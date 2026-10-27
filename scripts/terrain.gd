@@ -3,12 +3,26 @@ extends Node2D
 
 var size := Vector2.ZERO
 var one_way := false
+## Cuestas: altura (local) del borde de arriba al principio y al final del tramo. En los bloques planos,
+## los dos son 0 (el borde de arriba es la y del bloque).
+var top0 := 0.0
+var top1 := 0.0
+## Grosor que se ve de los salientes (la colisión es solo la superficie): parecen roca o tejado macizo
+const LEDGE_DEPTH := 22.0
 var theme := "jungle"
 
 const PUEBLO_GROUND := preload("res://assets/sprites/ground_pueblo.png")
+## Suelos de PixelLab de la 1.2 y la 1.3 (tools/sprites/argentina.py): tira que se repite y color de relleno debajo
+const STRIPS := {
+	"quebrada": [preload("res://assets/sprites/ground_quebrada.png"), Color(0.16, 0.06, 0.08)],
+	"baires": [preload("res://assets/sprites/ground_baires.png"), Color(0.08, 0.05, 0.1)],
+}
 
 
 func _draw() -> void:
+	if top0 != top1 and not STRIPS.has(theme):
+		_draw_slope_plain()
+		return
 	var desert := theme == "desert"
 	if theme == "city":
 		_draw_city()
@@ -21,6 +35,9 @@ func _draw() -> void:
 		return
 	if theme == "pueblo":
 		_draw_pueblo()
+		return
+	if STRIPS.has(theme):
+		_draw_strip(STRIPS[theme][0], STRIPS[theme][1])
 		return
 	if one_way:
 		if desert:
@@ -149,3 +166,47 @@ func _draw_base() -> void:
 		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.15, 0.16, 0.2), 1)
 	draw_rect(Rect2(0, 0, 2, size.y), Color(0.12, 0.13, 0.16))
 	draw_rect(Rect2(size.x - 2, 0, 2, size.y), Color(0.12, 0.13, 0.16))
+
+
+## Suelo hecho con una tira de imagen alineada con la x del mundo (sin cortes entre bloques).
+## Los salientes (one_way) usan solo la parte de arriba de la tira y un borde oscuro debajo.
+func _draw_strip(tex: Texture2D, fill: Color) -> void:
+	if top0 != top1:
+		_draw_slope_strip(tex, fill)
+		return
+	var tw := float(tex.get_width())
+	var th := minf(float(tex.get_height()), LEDGE_DEPTH if one_way else size.y)
+	if not one_way:
+		draw_rect(Rect2(Vector2.ZERO, size), fill)
+	var x := -fposmod(global_position.x, tw)
+	while x < size.x:
+		var sx := maxf(0.0, -x)
+		var w := minf(tw - sx, size.x - maxf(x, 0.0))
+		draw_texture_rect_region(tex, Rect2(maxf(x, 0.0), 0, w, th), Rect2(sx, 0, w, th))
+		x += tw
+	var edge := fill.darkened(0.3)
+	if one_way:
+		draw_rect(Rect2(0, th - 2, size.x, 2), edge)
+	draw_rect(Rect2(0, 0, 2, size.y), edge)
+	draw_rect(Rect2(size.x - 2, 0, 2, size.y), edge)
+
+
+## Cuesta con la tira de suelo: columnas de 2 px que siguen la pendiente (alineadas con la x del mundo).
+func _draw_slope_strip(tex: Texture2D, fill: Color) -> void:
+	var tw := float(tex.get_width())
+	var th := float(tex.get_height())
+	draw_colored_polygon(PackedVector2Array([Vector2(0, top0), Vector2(size.x, top1), Vector2(size.x, size.y), Vector2(0, size.y)]), fill)
+	var x := 0.0
+	while x < size.x:
+		var w := minf(2.0, size.x - x)
+		var y := roundf(lerpf(top0, top1, x / size.x))
+		var sx := fposmod(global_position.x + x, tw)
+		draw_texture_rect_region(tex, Rect2(x, y, w, th), Rect2(sx, 0, minf(w, tw - sx), th))
+		x += w
+
+
+## Cuesta en los temas dibujados por código: relleno con un borde claro arriba.
+func _draw_slope_plain() -> void:
+	var body := Color(0.72, 0.45, 0.28) if theme == "desert" else Color(0.36, 0.25, 0.16)
+	draw_colored_polygon(PackedVector2Array([Vector2(0, top0), Vector2(size.x, top1), Vector2(size.x, size.y), Vector2(0, size.y)]), body)
+	draw_line(Vector2(0, top0), Vector2(size.x, top1), body.lightened(0.35), 4)
