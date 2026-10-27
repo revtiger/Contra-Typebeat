@@ -184,3 +184,17 @@ Carpetas en [`propuestas/`](propuestas/) (con `.gdignore`: Godot no importa sus 
 
 **Vecinos y soldados de Argentina (18-10-2026, Eduardo):** en la 1.1 viven 12 vecinos (ChatGPT, animados con PixelLab; `tools/sprites/vecinos.py`, `scripts/civilian.gd`), uno por edificio: pasean frente a su puerta y, cuando llega la pelea, entran a su casa y se asoman por las ventanas; no corren por la calle ni reciben balas. Las puertas y ventanas de cada edificio salen de `tools/sprites/pueblo.py` (`scripts/pueblo_casas.gd`). Los soldados enemigos de Argentina (1.1 a 1.3) son un soldado nuevo con las proporciones de los héroes y parche argentino (`tools/sprites/soldados.py` → `soldier_ar.png`): correr (PixelLab), apuntar en 4 direcciones, granada, susto y una muerte en 3 poses (cae de espaldas y queda tirado). Cada soldado sale con una de 5 caras al azar (las de `tools/sprites/chatgpt/soldados/caras_v2.png`): el joven original y 4 variantes pintadas en cada fotograma por `soldados.py caras` (`soldier_ar_1..4.png`: bigote, moreno, canoso con barba, pelirrojo). ☐ Versiones para los demás países.
 
+**Pulido de la 1.1 (23-10-2026, Eduardo):**
+- **Soldados de Argentina (PixelLab):**
+  - respiran en guardia (4 fotogramas en bucle, cada uno a su ritmo);
+  - tiemblan asustados con las manos arriba (5 fotogramas);
+  - lanzan la granada en 12 fotogramas: la sacan, echan el brazo atrás, la sueltan con el brazo adelante (sale de la mano en ese fotograma) y vuelven a la guardia.
+  - Los francotiradores tienen fogonazo en la boca del fusil y culatazo de 1 px.
+  - Los soldados que entran por los lados lo hacen por el suelo, ya no caen del cielo.
+- **Sangre de arcade** (`scripts/sangre.gd`): gotas pixeladas que salen hacia el lado contrario al disparo y quedan un momento en el suelo; en los soldados al recibir el disparo (más al morir) y en Massa.
+- **Héroes:**
+  - pose nueva en el aire apuntando recto hacia abajo (`air_down`, PixelLab sobre su pose de salto; `tools/sprites/heroes_extra.py`), con la bala saliendo de la punta del arma;
+  - al aterrizar de un salto se agachan un instante y levantan polvo (`scripts/polvo.gd`), también al despegar.
+- **Massa:** al morir ya no gira como una tarjeta. Recibe el golpe, suelta el rifle y cae de espaldas (`v_die`, PixelLab), salpica sangre y se queda tirado mientras le revientan los bolsillos.
+- **Balas** con una estela corta detrás.
+

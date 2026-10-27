@@ -77,6 +77,8 @@ ANIMS = {
 	# barrida (ventaja de Junnie: SLIDE en player.gd) y levantarse de ella
 	"slide": ([(4, 2, c) for c in range(4)], 12, False),
 	"slide_up": ([(4, 3, c) for c in range(4)], 14, False),
+	# en el aire apuntando recto abajo: solo fotogramas sueltos (PixelLab, tools/sprites/heroes_extra.py)
+	"air_down": ([], 1, False),
 }
 # boca del arma de cada dirección: animación de la que sale (la pose con el fogonazo más grande)
 MUZZLE_FROM = {"shoot": "shoot", "up": "up", "diag_up": "diag_up", "diag_down": "diag_down", "prone": "prone"}
@@ -103,6 +105,7 @@ FLASH_CELL = 40
 TIP_DIR = {
 	"idle": (1, 0), "run": (1, 0), "shoot": (1, 0), "jump": (1, 0), "prone": (1, 0), "crawl": (1, 0),
 	"up": (0, -1), "up_run": (0, -1), "diag_up": (1, -1), "diag_up_run": (1, -1), "diag_down": (1, 1),
+	"air_down": (0, 1),
 }       # cada fogonazo en una casilla de 40x40 con la boca del arma en el centro
 
 # animaciones hechas con fotogramas sueltos: fps y duración relativa de cada fotograma (sustituyen a ANIMS)
@@ -489,10 +492,11 @@ def run_frames(torso, hero):
 
 def gun_tip(frame, d):
 	"""Punta del cañón: el píxel gris del arma (o su contorno) más lejos en la dirección d, sin contar
-	las botas. Coordenadas relativas a los pies."""
+	las botas (salvo apuntando abajo en el aire: ahí el arma pasa por debajo de ellas). Coordenadas relativas a
+	los pies."""
 	px = frame.load()
 	best, best_v = None, None
-	for y in range(FEET[1] - 5):
+	for y in range(FH if d == (0, 1) else FEET[1] - 5):
 		for x in range(FW):
 			r, g, b, a = px[x, y]
 			if a == 0 or max(r, g, b) - min(r, g, b) > 28 or (r + g + b) / 3 > 130:
@@ -608,7 +612,7 @@ def build(hero):
 	loose = {name: loose_frames(hero, name) for name in ANIMS}
 	if hero == "eduardo":
 		loose["run"] = None  # heroes/eduardo/run son las piernas (RUN_LEGS) de las carreras de Eduardo y Eder
-	anims = {n: v for n, v in ANIMS.items() if loose[n] or all(s in sheets for s, _, _ in v[0])}
+	anims = {n: v for n, v in ANIMS.items() if loose[n] or (v[0] and all(s in sheets for s, _, _ in v[0]))}
 
 	# 1) cada pose: sin fogonazo, reducida y colocada en su fotograma (aún con todos sus colores)
 	placed = {}   # nombre -> [(fotograma, boca en coordenadas del fotograma o None)]

@@ -5,8 +5,16 @@ transparente; caras.png / caras_v2.png son las 5 caras de referencia):
   poses_1: correr, apuntar al frente, en diagonal hacia arriba, hacia arriba
   poses_2: en guardia (fusil en diagonal hacia abajo), preparar granada, lanzar granada, asustado
   poses_3: recibe el disparo, cae de espaldas, muerto en el suelo
-Ciclo de correr: PixelLab (animate_image) a partir de la pose de correr: tools/sprites/pixellab/soldados/
-run_base.png -> run.png (tira de 9 fotogramas de BASE x BASE; el 0 es la base).
+Animaciones de PixelLab (animate_image) a partir de las poses colocadas en lienzos de BASE x BASE
+(`python soldados.py base` -> tools/sprites/pixellab/soldados/<pose>_base.png). Cada tira trae la base en el
+fotograma 0:
+  run.png                 correr (9 fotogramas)
+  guardia_idle.png        respirando en guardia (de la guardia a la guardia, en bucle)
+  susto.png               asustado con las manos arriba, temblando
+  granada_1_prepara.png   de la guardia a sacar la granada y echar el brazo atrás
+  granada_2_lanza.png     el lanzamiento (suelta la granada con el brazo adelante)
+  granada_3_vuelve.png    vuelve a la guardia
+PixelLab dibuja a veces la granada volando o chispas sueltas: se quedan fuera (solo la figura más grande).
 
 Salida: assets/sprites/soldier_ar.png + soldier_ar_meta.json (filas como soldier_meta.json, más "die",
 y la boca del fusil de cada pose de apuntar). Mirando a la derecha, como el resto de sprites.
@@ -19,7 +27,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(Path(__file__).parent))
-from heroes_sheets import blobs  # noqa: E402
+from heroes_sheets import blobs, keep_largest  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "tools/sprites/chatgpt/soldados"
@@ -90,15 +98,39 @@ def boca(c, d):
 	return [bp[0] - FEET[0], bp[1] - FEET[1]]
 
 
-def base():
-	PL.mkdir(parents=True, exist_ok=True)
-	run = poses(1)[0]
-	s = ESCALA * BASE / FH
-	f = escala(run, s)
+def _base_celda(f, tumbado=False):
+	"""Pose de ChatGPT -> lienzo BASE x BASE (el doble de la escala del juego, mirando a la izquierda) con los pies
+	centrados en x y en la línea BASE-4, como run_base: así las tiras de PixelLab se reducen enteras sin temblar."""
+	f = escala(f, ESCALA * BASE / FH)
 	c = Image.new("RGBA", (BASE, BASE), (0, 0, 0, 0))
-	c.alpha_composite(f, ((BASE - f.width) // 2, BASE - 4 - f.height))
-	c.save(PL / "run_base.png")
-	print("run_base.png", f.size)
+	c.alpha_composite(f, (round(BASE / 2 - pies_x(f, tumbado)), BASE - 4 - f.height))
+	return c
+
+
+def base():
+	"""Lienzos para PixelLab (tools/sprites/pixellab/soldados/<pose>_base.png)."""
+	PL.mkdir(parents=True, exist_ok=True)
+	p1, p2 = poses(1), poses(2)
+	for name, f in (("run", p1[0]), ("guardia", p2[0]), ("granada_prepara", p2[1]), ("granada_lanza", p2[2]),
+			("susto", p2[3]), ("apunta", p1[1]), ("apunta_diag", p1[2]), ("apunta_arriba", p1[3])):
+		_base_celda(f).save(PL / f"{name}_base.png")
+		print(f"{name}_base.png")
+
+
+def tira(nombre, desde=1):
+	"""Fotogramas de una tira de PixelLab -> celdas FWxFH mirando a la derecha (como las de correr)."""
+	path = PL / f"{nombre}.png"
+	if not path.exists():
+		return None
+	strip = Image.open(path).convert("RGBA")
+	out = []
+	for i in range(desde, strip.width // BASE):
+		fr = nitido(strip.crop((i * BASE, 0, (i + 1) * BASE, BASE)).resize((FH, FH), Image.LANCZOS))
+		fr = keep_largest(fr)  # fuera la granada volando y las chispas sueltas
+		c = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		c.alpha_composite(fr.transpose(Image.FLIP_LEFT_RIGHT), ((FW - FH) // 2, 0))
+		out.append(c)
+	return out
 
 
 def juego():
@@ -121,26 +153,47 @@ def juego():
 	else:
 		run = [cell(p1[0])]
 	run = (run * 8)[:8]
-	panic = cell(p2[3])
-	panic2 = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
-	panic2.alpha_composite(panic.crop((0, 0, FW, FH - 1)), (0, 1))  # tiembla 1 px
+	panic = tira("susto", 0)
+	if not panic:
+		panic = [cell(p2[3])]
+		panic2 = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+		panic2.alpha_composite(panic[0].crop((0, 0, FW, FH - 1)), (0, 1))  # tiembla 1 px
+		panic.append(panic2)
+	idle = tira("guardia_idle", 0) or [guardia]
+	if len(idle) > 1:
+		idle = idle[:-1]  # el último es otra vez la guardia: el bucle no repite fotograma
+	# granada: prepara (4) + lanza (4; la suelta en el 2.º) + vuelve (4)
+	partes = [tira("granada_1_prepara"), tira("granada_2_lanza"), tira("granada_3_vuelve")]
+	if all(partes):
+		throw = partes[0] + partes[1] + partes[2]
+		release = len(partes[0]) + 2  # el brazo ya va adelante
+	else:
+		throw, release = [cell(p2[1]), cell(p2[2])], 1
 	rows = {
-		"idle": [guardia],
+		"idle": idle,
 		"run": run,
-		"panic": [panic, panic2],
-		"throw": [cell(p2[1]), cell(p2[2])],
+		"panic": panic,
+		"throw": throw,
 		"aim": aims,
 		"flee": run,
 		"die": [cell(p3[0]), cell(p3[1], True), cell(p3[2], True)],
 	}
-	sheet = Image.new("RGBA", (FW * 8, FH * len(rows)), (0, 0, 0, 0))
+	cols = max(len(v) for v in rows.values())
+	sheet = Image.new("RGBA", (FW * cols, FH * len(rows)), (0, 0, 0, 0))
 	meta = {"frame": [FW, FH], "feet": list(FEET), "rows": {}, "aim_degrees": [0, -45, -90, 45]}
+	meta["counts"] = {name: len(frames) for name, frames in rows.items()}
 	for r, (name, frames) in enumerate(rows.items()):
 		meta["rows"][name] = r
 		for i, fr in enumerate(frames):
 			sheet.alpha_composite(fr, (i * FW, r * FH))
 	meta["muzzles"] = [boca(aims[0], (1, 0)), boca(aims[1], (1, -1)), boca(aims[2], (0, -1)), boca(aims[3], (1, 1))]
-	meta["hand"] = [20, -30]  # de dónde sale la granada (mano adelantada al lanzar)
+	# de dónde sale la granada: la mano adelantada (lo más a la derecha por encima de la cintura) en el fotograma
+	# en que la suelta
+	meta["throw_release"] = release
+	rel = throw[release].getchannel("A").load()
+	hx, hy = max(((x, y) for y in range(FEET[1] - 46, FEET[1] - 22) for x in range(FW) if rel[x, y] > 128),
+		key=lambda q: q[0])
+	meta["hand"] = [hx - FEET[0], hy - FEET[1]]
 	sheet.save(OUT / "soldier_ar.png")
 	(OUT / "soldier_ar_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8", newline="\n")
 	print("soldier_ar.png", sheet.size, "bocas", meta["muzzles"])

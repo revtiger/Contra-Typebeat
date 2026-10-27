@@ -16,6 +16,7 @@ const SpriteUtil = preload("res://scripts/sprite_util.gd")
 const Shot = preload("res://scripts/massa_shot.gd")
 const Soldier = preload("res://scripts/soldier.gd")
 const Bullet = preload("res://scripts/bullet.gd")
+const Sangre = preload("res://scripts/sangre.gd")
 const DIR := "res://assets/sprites/"
 const MAX_HP := 70
 const BOSS_NAME := "SERGIO MASSA"
@@ -23,7 +24,7 @@ const HEIGHT := 60.0
 # fps de cada animación de boss_massa_meta.json y si se repite
 const ANIM_FPS := {
 	"idle": [6, true], "walk": [11, true], "grenade": [14, false], "thumbs": [9, false],
-	"strip": [7, false], "v_idle": [6, true], "v_walk": [13, true], "v_shoot": [16, true],
+	"strip": [7, false], "v_idle": [6, true], "v_walk": [13, true], "v_shoot": [16, true], "v_die": [9, false],
 }
 
 var main
@@ -293,6 +294,8 @@ func take_damage(n: int) -> void:
 	hp -= n
 	flash = 0.05
 	hurt_acc += n
+	if randf() < 0.35:
+		Sangre.salpicar(main, global_position + Vector2(0, -HEIGHT * 0.6), Vector2(-dir, 0), 4, global_position.y)
 	Game.sfx("hit", -16.0, 0.8)
 	if hurt_acc >= 10 and mode in ["idle", "walk"]:
 		# retrocede un paso al acumular daño
@@ -320,8 +323,11 @@ func _die() -> void:
 	main.shake(5.0)
 	main.explode(global_position + Vector2(0, -HEIGHT / 2.0), 20.0)
 	Game.sfx("death", -4.0, 0.7)
-	body.stop()
-	velocity = Vector2(-dir * 140.0, -320.0)
+	# recibe el golpe, suelta el rifle y cae de espaldas (sale un poco despedido hacia atrás)
+	body.rotation = 0.0
+	_play("v_die")
+	velocity = Vector2(-dir * 60.0, -150.0)
+	Sangre.salpicar(main, global_position + Vector2(0, -HEIGHT * 0.6), Vector2(-dir, 0), 26, global_position.y)
 	main.show_banner("¡RECIBIÓ SU MERECIDO!\n" + BOSS_NAME, 1.6)
 	# al recibir el golpe final le revientan los bolsillos: un puñado de billetes de golpe
 	for i in 14:
@@ -329,17 +335,20 @@ func _die() -> void:
 
 
 func _dying(delta: float) -> void:
-	body.rotation += delta * 9.0 * -dir
-	velocity.y += 500.0 * delta
+	velocity.y += 700.0 * delta
 	position += velocity * delta
+	if position.y >= base_y:
+		# en el suelo: se queda tirado y frena
+		position.y = base_y
+		velocity.y = 0.0
+		velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
 	if int(mode_t * 6.0) != int((mode_t - delta) * 6.0):
 		main.explode(global_position + Vector2(randf_range(-14, 14), randf_range(-HEIGHT, -10)), randf_range(6, 12), false)
 		# y mientras vuela se le siguen cayendo
 		for i in 3:
 			_bill(Vector2(randf_range(-70, 70), randf_range(-140, -40)))
-	if mode_t > 1.6:
-		main.stage_clear()
-		queue_free()
+	if mode_t > 1.6 and main.state == "play":
+		main.stage_clear()  # se queda tirado en el suelo
 
 
 ## Billete que se le cae de los bolsillos (solo decorado, no hace daño).

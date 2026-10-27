@@ -12,6 +12,7 @@ signal died
 const Bullet = preload("res://scripts/bullet.gd")
 const Grenade = preload("res://scripts/grenade.gd")
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
+const Polvo = preload("res://scripts/polvo.gd")
 const META_PATH := "res://assets/sprites/player_meta.json"
 
 const SPEED := 90.0
@@ -95,6 +96,11 @@ var shoot_pose_t := 0.0
 var slide_t := 0.0     # barrida en curso (s que quedan)
 var slide_up_t := 0.0  # levantándose de la barrida
 var slide_cd := 0.0
+## aterrizaje: un instante agachado (amortigua la caída) y polvo a los pies
+const LAND_T := 0.09
+var land_t := 0.0
+var was_on_floor := true
+var fall_vy := 0.0
 
 
 func _ready() -> void:
@@ -192,8 +198,17 @@ func _physics_process(delta: float) -> void:
 	else:
 		aim = Vector2(facing, 0)
 
+	fall_vy = velocity.y
 	move_and_slide()
 	position.x = clampf(position.x, cam_left + 6, cam_left + 480 - 6)
+	land_t -= delta
+	var now_floor := is_on_floor()
+	if now_floor and not was_on_floor and fall_vy > 160.0:
+		land_t = LAND_T
+		Polvo.levantar(get_parent(), position, 6)
+	elif not now_floor and was_on_floor and velocity.y < -100.0:
+		Polvo.levantar(get_parent(), position, 4)  # despegue del salto
+	was_on_floor = now_floor
 
 	if Input.is_action_pressed("shoot") and shoot_cd <= 0.0 and slide_t <= 0.0 and slide_up_t <= 0.0:
 		if not _try_knife():
@@ -523,9 +538,13 @@ func _setup_body(path: String) -> void:
 func _body_muzzle() -> Vector2:
 	var m: Dictionary = body_meta["muzzle"]
 	var key := _aim_key()
-	if key == "down":
-		return Vector2(2 * facing, -2)  # sin pose de disparar hacia abajo: sale de entre los pies
 	var tips: Dictionary = body_meta.get("tips", {})
+	if key == "down":
+		# en el aire apuntando abajo: la punta del arma de la pose air_down (si no hay, sale de entre los pies)
+		if body.animation == "air_down" and tips.has("air_down"):
+			var t := SpriteUtil.v(tips["air_down"][0])
+			return Vector2(t.x * facing, t.y)
+		return Vector2(2 * facing, -2)
 	var p := SpriteUtil.v(m["fwd"])
 	if tips.has(body.animation) and body.frame < tips[body.animation].size():
 		p = SpriteUtil.v(tips[body.animation][body.frame])
@@ -574,6 +593,8 @@ func _process_body(delta: float) -> void:
 	elif not on_floor:
 		body.animation = "jump"
 		body.frame = 0 if velocity.y < 0.0 else 1
+	elif land_t > 0.0 and not moving and shoot_pose_t <= 0.0:
+		body.animation = "crouch"  # amortigua la caída
 	elif moving:
 		_play(body, "run")
 	elif shoot_pose_t > 0.0:
@@ -602,10 +623,14 @@ func _draw_body_flash(m: Vector2) -> bool:
 	return true
 
 
-## Poses de apuntar arriba, en diagonal hacia arriba o (en el aire) en diagonal hacia abajo, si la hoja las tiene.
-## Quieto o en el aire: fotograma 0 en reposo y 1 con el retroceso del disparo. Corriendo: <pose>_run en bucle.
+## Poses de apuntar arriba, en diagonal hacia arriba o (en el aire) en diagonal o recto hacia abajo, si la hoja
+## las tiene. Quieto o en el aire: fotograma 0 en reposo y 1 con el retroceso del disparo. Corriendo: <pose>_run.
 func _aim_pose(on_floor: bool, moving: bool) -> bool:
 	var key := _aim_key()
+	if key == "down" and not on_floor and body.sprite_frames.has_animation("air_down"):
+		body.animation = "air_down"
+		body.frame = 0
+		return true
 	if key == "fwd" or key == "down" or not body.sprite_frames.has_animation(key):
 		return false
 	if moving and on_floor and body.sprite_frames.has_animation(key + "_run"):
