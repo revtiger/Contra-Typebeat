@@ -1,16 +1,17 @@
 ---
 name: contra-typebeat
-description: Contexto completo del juego ONU: Outbreak, antes Contra-Typebeat (run and gun estilo Metal Slug en Godot 4.7.2, de Gwyn y Eduardo). Úsala siempre que se trabaje en este juego: código, niveles, jefes, sprites, HUD, historia, diseño, PRs o dudas sobre decisiones ya tomadas.
+description: Contexto completo del juego ONU: Outbreak, antes Contra-Typebeat (run and gun estilo Metal Slug en Godot 4.7.2, de Gwyn, Eduardo y Rodrigo). Úsala siempre que se trabaje en este juego: código, niveles, jefes, sprites, HUD, historia, diseño, PRs o dudas sobre decisiones ya tomadas.
 ---
 
 # ONU: Outbreak (antes Contra-Typebeat): contexto del proyecto
 
-El juego se llama **ONU: Outbreak** (el repo sigue llamándose Contra-Typebeat). Juego 2D de acción **estilo Metal Slug** hecho en **Godot 4.7.2** (GDScript) por dos personas, cada una con su Claude Code. Repo privado: https://github.com/revtiger/Contra-Typebeat (carpeta local de Gwyn: `C:\Users\Gwyn\Gwyn\Contra-Typebeat`).
+El juego se llama **ONU: Outbreak** (el repo sigue llamándose Contra-Typebeat). Juego 2D de acción **estilo Metal Slug** hecho en **Godot 4.7.2** (GDScript) por tres personas, cada una con su Claude Code. Repo privado: https://github.com/revtiger/Contra-Typebeat (carpeta local de Gwyn: `C:\Users\Gwyn\Gwyn\Contra-Typebeat`).
 
 | Persona | GitHub | Notas |
 |---|---|---|
 | Gwyn | `revtiger` (dueño) | Habla español; quiere respuestas en español |
 | Eduardo | `eduardord596` | Colaborador con permiso de escritura |
+| Rodrigo | `elrodo99` | Colaborador (desde el 26-10-2026): jugabilidad de la 1.1, greybox, modo test y reglas de `ARQUITECTURA.md` |
 
 Lee también `CLAUDE.md` (reglas de trabajo) y `docs/diseno.md` (diseño vivo) y `docs/plan-metal-slug.md` (hoja de ruta). Esta skill resume lo que no está escrito en otro sitio.
 
