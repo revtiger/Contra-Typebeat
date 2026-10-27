@@ -6,7 +6,8 @@ const PixelFont = preload("res://scripts/pixel_font.gd")
 ## Nieve (Alemania): sky, alps, pines, ice y snowfall (copos delante, fijos en pantalla).
 ## Base secreta (ONU): sky, vault (muro con emblemas y pantallas), machines (servidores y carteles), abyss.
 ## Pueblo de la pampa (1.1): pueblo (cielo del atardecer y pampa de Eduardo, bg_pueblo.png), casas (tramos del
-## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo). Sin fosos.
+## pueblo uno tras otro, pueblo_tramo_NN.png, a la misma velocidad que el suelo) y aves (bandadas lejanas que
+## cruzan el cielo aleteando, aves.png de tools/sprites/aves.py). Sin fosos.
 ## country (ar, mx, us, de, un) elige la bandera que ondea y los lemas de los carteles.
 ## Con screen_scroll = true el fondo se desplaza solo (menú e intro, sin cámara).
 
@@ -30,6 +31,22 @@ var t := 0.0
 const WIDTH := 5400.0
 const PUEBLO_TEX := preload("res://assets/sprites/bg_pueblo.png")
 const PUEBLO_TRAMOS := 12
+const AVES_TEX := preload("res://assets/sprites/aves.png")
+## Orden de los fotogramas al aletear (0 alas arriba … 4 alas abajo); el 2 es el planeo.
+const AVES_ALETEO := [0, 1, 2, 3, 4, 3, 2, 1]
+## Bandadas: [x, y, velocidad (px/s, + a la derecha), tamaño (0 lejana, 1 cerca), posiciones de cada ave]
+const BANDADAS := [
+	[60.0, 40.0, 14.0, 0, [Vector2(0, 0), Vector2(-9, 5), Vector2(-18, 10), Vector2(9, 5), Vector2(18, 10)]],
+	[300.0, 70.0, -10.0, 0, [Vector2(0, 0), Vector2(10, 4), Vector2(20, 9)]],
+	[200.0, 25.0, 20.0, 0, [Vector2(0, 0), Vector2(-11, 6)]],
+	[420.0, 95.0, -18.0, 1, [Vector2(0, 0)]],
+	[-40.0, 55.0, 26.0, 1, [Vector2(0, 0), Vector2(-26, 9)]],
+]
+## px que se corren las aves por cada px que avanza la cámara (las lejanas casi nada)
+const AVES_PARALLAX := [0.08, 0.2]
+
+var aves := []
+var last_cam := 0.0
 ## Fondos panorámicos de PixelLab (tools/sprites/argentina.py): "tile" se repite y avanza despacio;
 ## "pan" avanza lo justo para que su final (la Casa Rosada) quede en pantalla al llegar al jefe.
 const PANORAMAS := {
@@ -48,6 +65,9 @@ func _process(delta: float) -> void:
 	if kind == "sky":
 		return
 	t += delta
+	if kind == "aves":
+		_process_aves(delta)
+		return
 	if kind == "pueblo":
 		# el cielo avanza muy despacio: justo lo necesario para que su final llegue a la arena del jefe
 		var span: float = maxf(1.0, main.boss_arena)
@@ -219,6 +239,21 @@ func _draw() -> void:
 				draw_texture(tex, Vector2.ZERO)
 				if PANORAMAS[theme][1] == "tile":
 					draw_texture(tex, Vector2(tex.get_width(), 0))
+		"aves":
+			for f in aves:
+				var big: int = f["size"]
+				var cw := 24 if big else 12
+				var ch := 16 if big else 8
+				for i in f["birds"].size():
+					var b: Vector2 = f["birds"][i]
+					var ph: float = f["phase"] + i * 0.7
+					# aletea un rato y planea otro (cada ave a su ritmo)
+					var frame := 2
+					if sin(t * 0.8 + ph) > -0.3:
+						frame = AVES_ALETEO[int(t * (9.0 if big else 11.0) + ph * 3.0) % AVES_ALETEO.size()]
+					var p := Vector2(f["x"], f["y"]) + b + Vector2(0, sin(t * 1.6 + ph) * 1.5)
+					draw_texture_rect_region(AVES_TEX, Rect2(p.round() - Vector2(cw, ch) / 2.0, Vector2(cw, ch)),
+						Rect2(frame * cw, 8 if big else 0, cw, ch))
 		"casas":
 			var x := 0.0
 			for tex in _tramos():
@@ -233,6 +268,28 @@ func _draw() -> void:
 			draw_polygon(
 				PackedVector2Array([Vector2(-60, 225), Vector2(WIDTH, 225), Vector2(WIDTH, 275), Vector2(-60, 275)]),
 				PackedColorArray([Color(0.45, 0.25, 0.15), Color(0.45, 0.25, 0.15), Color(0.08, 0.04, 0.03), Color(0.08, 0.04, 0.03)]))
+
+
+## Aves: se mueven en coordenadas de pantalla (la capa sigue a la cámara), con un poco de parallax, y al
+## salir por un lado vuelven a entrar por el otro a otra altura.
+func _process_aves(delta: float) -> void:
+	if aves.is_empty():
+		for i in BANDADAS.size():
+			var b: Array = BANDADAS[i]
+			aves.append({"x": b[0], "y": b[1], "vx": b[2], "size": b[3], "birds": b[4], "phase": i * 1.3})
+		last_cam = main.cam_left
+	var dcam: float = main.cam_left - last_cam
+	last_cam = main.cam_left
+	position.x = main.cam_left
+	for f in aves:
+		f["x"] += f["vx"] * delta - dcam * AVES_PARALLAX[f["size"]]
+		if f["x"] < -70.0:
+			f["x"] = 550.0
+			f["y"] = randf_range(20.0, 100.0)
+		elif f["x"] > 550.0:
+			f["x"] = -70.0
+			f["y"] = randf_range(20.0, 100.0)
+	queue_redraw()
 
 
 ## Tramos del pueblo que existen (pueblo_tramo_01.png, _02…), en orden. Se guardan en la variable

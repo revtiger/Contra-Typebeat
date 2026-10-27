@@ -14,6 +14,8 @@ extends RefCounted
 ##   jet: bombardeo aéreo que apunta a donde está el jugador
 ##   boss: extra = "pol:<id>" (politician.gd), "wall", "heli" o "mecha"
 ##   door: extra = número de puerta (nivel secreto)
+##   vecino: civil que pasea frente a su casa y se mete en ella cuando llega la pelea (civilian.gd);
+##           extra = índice de la casa en scripts/pueblo_casas.gd. En el pueblo se ponen solos, uno por casa.
 ## Referencia de alturas: el salto sube ~70 px; los tramos de suelo pueden subir hasta ~35 px.
 
 const END := 3000
@@ -105,15 +107,22 @@ const TEMPLATES := {
 			["sniper", 2300, 230], ["barrel", 2380, 230],
 		],
 	},
-	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas
+	# Pueblo de la pampa (1.1): calle llana, sin fosos ni tablones, para que se vean bien las casas.
+	# Más larga que las demás ("end" = largo de la calle que imprime tools/sprites/pueblo.py); la capilla al final.
 	"pueblo": {
-		"ground": [[0, END, 230]],
+		"end": 4879,
+		"ground": [[0, 4879, 230]],
 		"platforms": [],
 		"entities": [
 			["sniper", 340, 230], ["turret", 700, 230], ["capsule", 900, 60, "H"], ["sniper", 1130, 230],
 			["grenadier", 1180, 230], ["turret", 1320, 230], ["sniper", 1500, 230], ["sniper", 1620, 230],
 			["capsule", 1700, 60, "B"], ["turret", 1800, 230], ["grenadier", 2050, 230], ["sniper", 2150, 230],
 			["turret", 2300, 230], ["capsule", 2300, 60, "S"], ["grenadier", 2400, 230],
+			# comercios y casas nuevas (tramos 4 y 5)
+			["sniper", 2650, 230], ["tank", 2900, 230, "comunista"], ["capsule", 2950, 60, "R"],
+			["grenadier", 3150, 230], ["turret", 3350, 230], ["sniper", 3500, 230], ["capsule", 3650, 60, "H"],
+			["grenadier", 3800, 230], ["sniper", 3950, 230], ["turret", 4100, 230], ["grenadier", 4250, 230],
+			["sniper", 4380, 230],
 		],
 	},
 	"jungle": {
@@ -197,15 +206,22 @@ static func _build() -> Array:
 			var ph: Array = z["phases"][pi]
 			var tpl: Dictionary = TEMPLATES[ph[1]]
 			var boss_id: String = ph[2]
+			var end: int = tpl.get("end", END)
 			var entities: Array = _vary(tpl["entities"], zi + pi)
 			var role := "final" if pi == 2 else "mini"
 			var boss_name := ""
 			if boss_id.begins_with("door:"):
 				role = "door"
-				entities.append(["door", END - 80, 230, int(boss_id.substr(5))])
+				entities.append(["door", end - 80, 230, int(boss_id.substr(5))])
 			else:
 				boss_name = preload("res://scripts/politician.gd").POLS[boss_id]["name"]
-				entities.append(["boss", END - 110, 230, "pol:" + boss_id])
+				entities.append(["boss", end - 110, 230, "pol:" + boss_id])
+			if ph[1] == "pueblo":
+				var casas: Array = preload("res://scripts/pueblo_casas.gd").CASAS
+				for hi in casas.size():
+					if casas[hi][3] >= 0:
+						entities.append(["vecino", (casas[hi][1][0] + casas[hi][1][2]) / 2, 210, hi])
+				entities.sort_custom(func(a, b): return a[1] < b[1])
 			out.append({
 				"phase": "%d.%d" % [zi + 1, pi + 1],
 				"zone": z["zone"],
@@ -217,7 +233,7 @@ static func _build() -> Array:
 				"boss_role": role,
 				"theme": ph[3] if ph.size() > 3 else ph[1],
 				"music": MUSIC[ph[1]],
-				"end": END,
+				"end": end,
 				"ground": tpl["ground"],
 				"platforms": tpl["platforms"],
 				"entities": entities,
