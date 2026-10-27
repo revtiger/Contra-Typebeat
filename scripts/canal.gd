@@ -6,24 +6,29 @@ extends Node2D
 ## desagüe que echan agua, el agua del canal (solo decorado: no se puede caer) y la franja del piso de adoquines que
 ## se ve por encima de los pies. Está delante de las casas (que se alejan, background.gd) y detrás del suelo, del
 ## jugador y de los enemigos. Antes de la rampa, una flecha avisa que hay que bajar.
-## Sprites: tools/sprites/canal_kit.py (kit de piezas de ChatGPT).
+## Sprites: tools/sprites/canal_kit.py (kit de piezas de ChatGPT) y tools/sprites/agua.py (agua, chorro y espuma de
+## ChatGPT; el chorro y la espuma animados con PixelLab).
 
 const SpriteUtil = preload("res://scripts/sprite_util.gd")
 const MURO := preload("res://assets/sprites/canal_muro.png")
-const ARCO_ANIM := preload("res://assets/sprites/canal_arco_anim.png")
+const ARCO := preload("res://assets/sprites/canal_arco.png")
+const AGUA := preload("res://assets/sprites/canal_agua.png")
+const CHORRO := preload("res://assets/sprites/canal_chorro.png")
+const ESPUMA := preload("res://assets/sprites/canal_espuma.png")
 const BARANDA := preload("res://assets/sprites/canal_baranda.png")
 const PISO_TEX := preload("res://assets/sprites/canal_piso.png")
 const CALLE_Y := 230.0
 const ARCO_CADA := 190.0  # un arco de desagüe cada tantos px (en levels.gd los nidos van entre los arcos)
 const ARCO_MARGEN := 40.0  # los arcos van sobre el tramo llano del paseo, a esta distancia de las rampas
-const ARCO_FPS := 14.0
-const CORRIENTE := 14.0  # px/s a los que corre el agua del canal (hacia la derecha); delante, más rápido
+const AGUA_FPS := 12.0   # fotogramas por segundo del chorro y la espuma
+const CORRIENTE := 12.0  # px/s a los que corre el agua del canal (hacia la derecha)
 
 var x0 := 0.0
 var x1 := 0.0
 ## y del paseo de abajo (donde camina el jugador)
 var bajo := 337.0
 var meta: Dictionary
+var agua_meta: Dictionary
 var main
 var flecha := Node2D.new()
 var t := 0.0
@@ -32,6 +37,7 @@ var t := 0.0
 func _ready() -> void:
 	main = get_tree().get_first_node_in_group("level")
 	meta = SpriteUtil.meta("res://assets/sprites/canal_meta.json")
+	agua_meta = SpriteUtil.meta("res://assets/sprites/canal_agua_meta.json")
 	z_index = -7
 	# la flecha va delante de todo
 	flecha.z_index = 4
@@ -62,22 +68,23 @@ func _draw() -> void:
 	var arcos := _arcos()
 	# muro de la terraza, del borde de la calle al agua
 	_tile(MURO, r, CALLE_Y, mh)
-	# agua del canal, con la espuma donde caen los chorros
+	# agua del canal
 	_draw_agua(r, CALLE_Y + mh, bajo - piso)
+	# arcos de desagüe; encima de cada uno, el chorro que cae y, en el agua, la espuma (cada arco a destiempo)
 	var chorro := SpriteUtil.v(meta["arco_chorro"])
-	for x in arcos:
-		if x + chorro.x + 30.0 > r.x and x + chorro.x - 30.0 < r.y:
-			_draw_espuma(Vector2(x + chorro.x, CALLE_Y + chorro.y + 2.0), bajo - piso)
-	# arcos de desagüe con el chorro que baja (canal_arco_anim.png, un fotograma por paso)
-	var nf: int = meta["arco_frames"]
-	var aw := float(ARCO_ANIM.get_width()) / nf
-	var ah := float(ARCO_ANIM.get_height())
+	var aw := float(ARCO.get_width())
 	for k in arcos.size():
 		var x: float = arcos[k]
-		if x + aw > r.x and x < r.y:
-			# cada arco a destiempo, para que no caigan todos igual
-			var f := (int(t * ARCO_FPS) + k * 3) % nf
-			draw_texture_rect_region(ARCO_ANIM, Rect2(x, CALLE_Y, aw, ah), Rect2(f * aw, 0, aw, ah))
+		if x + aw <= r.x or x >= r.y:
+			continue
+		draw_texture(ARCO, Vector2(x, CALLE_Y))
+		var paso := int(t * AGUA_FPS) + k * 3
+		var cf := SpriteUtil.v(agua_meta["chorro"]["frame"])
+		var c_at := Vector2(x + chorro.x - cf.x / 2.0, CALLE_Y + chorro.y - cf.y).round()
+		_frame(CHORRO, cf, paso % int(agua_meta["chorro"]["frames"]), c_at)
+		var ef := SpriteUtil.v(agua_meta["espuma"]["frame"])
+		var e_at := Vector2(x + chorro.x - ef.x / 2.0, bajo - piso - ef.y + 3.0).round()
+		_frame(ESPUMA, ef, (paso + 2) % int(agua_meta["espuma"]["frames"]), e_at)
 	# delante, el piso del paseo (tapa la parte de abajo de la espuma)
 	_tile(PISO_TEX, r, bajo - piso, piso)
 	# baranda sobre el borde de la terraza (tapa la parte de abajo de las casas lejanas)
@@ -89,7 +96,7 @@ func _draw() -> void:
 func _arcos() -> Array:
 	var desde: float = x0 + meta["rampa_largo"] + ARCO_MARGEN
 	var hasta: float = x1 - meta["rampa_largo"] - ARCO_MARGEN
-	var aw := float(ARCO_ANIM.get_width()) / float(meta["arco_frames"])
+	var aw := float(ARCO.get_width())
 	var n := maxi(1, int((hasta - desde) / ARCO_CADA))
 	if n == 1:
 		return [roundf((desde + hasta - aw) * 0.5)]
@@ -98,6 +105,11 @@ func _arcos() -> Array:
 	for k in n:
 		out.append(roundf(desde + k * paso))
 	return out
+
+
+## Fotograma f de una tira de fotogramas en fila.
+func _frame(tex: Texture2D, size: Vector2, f: int, at: Vector2) -> void:
+	draw_texture_rect_region(tex, Rect2(at, size), Rect2(f * size.x, 0, size.x, size.y))
 
 
 ## Textura repetida en horizontal (alineada con la x del mundo) de r.x a r.y, de y a y + h.
@@ -111,62 +123,31 @@ func _tile(tex: Texture2D, r: Vector2, y: float, h: float) -> void:
 		x += tw
 
 
-## Agua del canal: verdeazulada, con la sombra y el reflejo tembloroso del muro arriba, ondas que corren hacia la
-## derecha (las de delante más rápido, como más cerca) y brillos del sol del atardecer que titilan.
+## Agua del canal (tira de ChatGPT): corre hacia la derecha y, encima, la misma tira en espejo, más tenue y más
+## rápida, hace que los reflejos se muevan y centelleen. Arriba, la sombra del muro y su reflejo que tiembla.
 func _draw_agua(r: Vector2, y0: float, y1: float) -> void:
-	var w := r.y - r.x
-	draw_rect(Rect2(r.x, y0, w, y1 - y0), Color(0.15, 0.36, 0.38))
-	draw_rect(Rect2(r.x, y1 - 4.0, w, 4.0), Color(0.18, 0.42, 0.43))
-	draw_rect(Rect2(r.x, y0, w, 3), Color(0.09, 0.22, 0.24))
-	# reflejo del remate del muro: una línea clara que se ondula
+	var h := minf(y1 - y0, float(AGUA.get_height()))
+	draw_rect(Rect2(r.x, y0, r.y - r.x, y1 - y0), Color(0.12, 0.3, 0.32))
+	_tile_corre(AGUA, r, y0, h, roundf(t * CORRIENTE), Color.WHITE)
+	# capa en espejo: se dibuja con la x invertida (x -> -x), así que va hacia el otro lado del dibujo
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-1, 1))
+	_tile_corre(AGUA, Vector2(-r.y, -r.x), y0, h, roundf(-t * CORRIENTE * 1.8), Color(1, 1, 1, 0.38))
+	draw_set_transform(Vector2.ZERO)
+	draw_rect(Rect2(r.x, y0, r.y - r.x, 2), Color(0.06, 0.16, 0.18, 0.8))
 	for x in range(int(r.x), int(r.y), 3):
 		var dy := roundf(sin(x * 0.21 + t * 3.1) * 0.8)
-		draw_rect(Rect2(x, y0 + 3.0 + dy, 3, 1), Color(0.3, 0.55, 0.55, 0.9))
-	# ondas: en cada fila, rayas claras que avanzan con la corriente
-	var fila := 0
-	var y := y0 + 6.0
-	while y < y1 - 1.0:
-		var vel := CORRIENTE * (1.0 + fila * 0.5)
-		var sep := 19.0 + fila * 6.0
-		var off := fposmod(t * vel + fila * 37.0, sep)
-		var x := r.x - fposmod(r.x, sep) - sep + off
-		while x < r.y:
-			var largo := 3.0 + roundf(absf(sin(roundf(x - off) * 0.13 + fila)) * 6.0)
-			var dy := roundf(sin(x * 0.07 + t * 2.0 + fila) * 0.6)
-			var a := maxf(roundf(x), r.x)
-			var b := minf(roundf(x) + largo, r.y)
-			if b > a:
-				draw_rect(Rect2(a, y + dy, b - a, 1), Color(0.55, 0.78, 0.76, 0.55))
-			x += sep
-		y += 4.0
-		fila += 1
-	# brillos que titilan (amarillo del atardecer y blanco)
-	for k in range(int(r.x) - int(r.x) % 7, int(r.y), 7):
-		var s := sin(k * 0.37 + t * 2.4) + sin(k * 0.11 - t * 1.3)
-		var yy := y0 + 6.0 + fposmod(k * 0.5, maxf(1.0, y1 - y0 - 8.0))
-		if s > 1.3:
-			draw_rect(Rect2(k + roundf(fposmod(t * CORRIENTE, 7.0)), yy, 2, 1), Color(0.85, 0.96, 0.9, 0.9))
-		elif s < -1.4:
-			draw_rect(Rect2(k, yy, 3, 1), Color(0.98, 0.72, 0.45, 0.7))
+		draw_rect(Rect2(x, y0 + 2.0 + dy, 3, 1), Color(0.35, 0.6, 0.58, 0.6))
 
 
-## Espuma donde cae un chorro: anillos aplanados que se abren y se apagan, y burbujas que saltan.
-func _draw_espuma(c: Vector2, y_max: float) -> void:
-	for k in 3:
-		var f := fmod(t * 0.9 + k / 3.0, 1.0)
-		var rx := 6.0 + f * 22.0
-		var ry := minf(1.0 + f * 3.0, y_max - c.y)
-		var col := Color(0.85, 0.95, 0.95, 0.75 * (1.0 - f))
-		var pts := PackedVector2Array()
-		for i in 21:
-			var a := PI * i / 20.0  # solo la mitad de delante (la de atrás la tapa el chorro)
-			pts.append((c + Vector2(cos(a) * rx, sin(a) * ry)).round())
-		draw_polyline(pts, col, 1.0)
-	for i in 6:
-		var f := fmod(t * 1.7 + i * 0.37, 1.0)
-		var bx := c.x + roundf(sin(i * 2.3) * 10.0 + (f - 0.5) * 4.0)
-		var by := c.y + roundf(minf(3.0, y_max - c.y - 1.0) * fmod(i * 0.61, 1.0))
-		draw_rect(Rect2(bx, by, 1, 1), Color(0.95, 1, 1, 1.0 - f))
+## Textura repetida en horizontal de r.x a r.y, corrida off px a la derecha (alineada con la x del mundo).
+func _tile_corre(tex: Texture2D, r: Vector2, y: float, h: float, off: float, tint: Color) -> void:
+	var tw := float(tex.get_width())
+	var x := r.x - fposmod(r.x - off, tw)
+	while x < r.y:
+		var a := maxf(x, r.x)
+		var b := minf(x + tw, r.y)
+		draw_texture_rect_region(tex, Rect2(a, y, b - a, h), Rect2(a - x, 0, b - a, h), tint)
+		x += tw
 
 
 ## Flecha que parpadea sobre el principio de la rampa mientras el jugador se acerca por la calle.

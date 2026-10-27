@@ -1,0 +1,17 @@
+{
+ "agua_h": 18,
+ "chorro": {
+  "frame": [
+   40,
+   28
+  ],
+  "frames": 8
+ },
+ "espuma": {
+  "frame": [
+   72,
+   22
+  ],
+  "frames": 8
+ }
+}
