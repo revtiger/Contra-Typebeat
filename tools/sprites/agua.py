@@ -9,7 +9,8 @@ Salida (assets/sprites/):
   canal_agua.png         tira de agua que se repite en horizontal (canal.gd la hace correr en dos capas)
   canal_chorro.png       fotogramas del chorro en fila (va encima del chorro quieto del arco)
   canal_espuma.png       fotogramas de la espuma en fila (va sobre el agua, donde cae el chorro)
-  canal_agua_meta.json   tamaños y número de fotogramas
+  canal_agua_meta.json   tamaños y número de fotogramas; de la espuma, "golpe": el centro de la salpicadura blanca
+                         (canal.gd lo pone justo donde termina el chorro)
 
 Uso:
   python tools/sprites/agua.py base    # recorta las piezas y deja las entradas para PixelLab
@@ -113,12 +114,21 @@ def tira(name, size):
 	return out, len(frs)
 
 
+def golpe(im, size, n):
+	"""Centro (x, y) de la salpicadura blanca, promediado en todos los fotogramas."""
+	a = np.array(im).astype(int)
+	blanco = (a[..., 3] > 0) & (a[..., 0] > 170) & (a[..., 1] > 200) & (a[..., 2] > 200)
+	ys, xs = np.nonzero(blanco)
+	return [round(float((xs % size[0]).mean())), round(float(ys.mean()))]
+
+
 def juego():
 	meta = {"agua_h": AGUA_H}
 	for name, size in (("chorro", CHORRO), ("espuma", ESPUMA)):
 		im, n = tira(name, size)
 		im.save(OUT / f"canal_{name}.png")
 		meta[name] = {"frame": list(size), "frames": n}
+	meta["espuma"]["golpe"] = golpe(Image.open(OUT / "canal_espuma.png"), ESPUMA, meta["espuma"]["frames"])
 	(OUT / "canal_agua_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8", newline="\n")
 	print(meta)
 
