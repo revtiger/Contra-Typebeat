@@ -1,29 +1,30 @@
 # ONU: Outbreak (antes Contra-Typebeat): reglas del proyecto
 
-Juego 2D de acción estilo Contra en **Godot 4.7.2** (GDScript). Equipo de dos personas, cada una con su Claude Code:
+Juego 2D de acción estilo Contra en **Godot 4.7.2** (GDScript). Equipo de tres personas, cada una con su Claude Code:
 
 | Persona | GitHub |
 |---|---|
 | Gwyn | `revtiger` (dueño del repo) |
 | Eduardo | `eduardord596` |
+| Rodrigo | `elrodo99` (jugabilidad, greybox, modo test y `ARQUITECTURA.md`) |
 
-Todo se comparte por GitHub: https://github.com/revtiger/Contra-Typebeat. Lo que no está en el repo no existe para el otro.
+Todo se comparte por GitHub: https://github.com/revtiger/Contra-Typebeat. Lo que no está en el repo no existe para los demás.
 
 ## Flujo de trabajo (obligatorio)
 
-1. **Antes de empezar**: `git checkout main && git pull`. Mira los Issues y PRs abiertos para no pisar el trabajo del otro.
-2. **Una rama por tarea**, nunca trabajar directo en `main`. Nombre: `<persona>/<tema>`, p. ej. `gwyn/sprites-jugador`, `eduardo/nivel-2`.
+1. **Antes de empezar**: `git checkout main && git pull`. Mira los Issues y PRs abiertos para no pisar el trabajo de los demás.
+2. **Una rama por tarea**, nunca trabajar directo en `main`. Nombre: `<persona>/<tema>`, p. ej. `gwyn/sprites-jugador`, `eduardo/nivel-2`, `rodrigo/greybox-1-2`.
 3. **Commits pequeños** con mensaje en español que diga qué y por qué.
 4. **Antes de abrir el PR**, correr la prueba automática y comprobar que no hay errores (ver abajo). Traer `main` a la rama si ha cambiado.
 5. **Abrir un Pull Request** hacia `main` con: qué cambia, cómo probarlo y capturas si hay cambios visuales. Enlazar el Issue (`Closes #N`).
-6. **El otro revisa y fusiona.** Nadie fusiona su propio PR salvo que el otro lo apruebe por el chat.
+6. **Otra persona del equipo revisa y fusiona.** Nadie fusiona su propio PR salvo que otra persona lo apruebe por el chat.
 7. Borrar la rama tras fusionar.
 
-Claude Code: no hagas push a `main`, no fuerces push (`--force`) sobre ramas del otro y no fusiones PRs sin que el usuario lo pida explícitamente.
+Claude Code: no hagas push a `main`, no fuerces push (`--force`) sobre ramas de otra persona y no fusiones PRs sin que el usuario lo pida explícitamente.
 
 ## Quién toca qué
 
-Para evitar conflictos, antes de editar un archivo que el otro tiene en un PR abierto, avisar por el chat. Los archivos que más chocan:
+Para evitar conflictos, antes de editar un archivo que otra persona tiene en un PR abierto, avisar por el chat. Los archivos que más chocan:
 
 - `scripts/main.gd` (datos del nivel y HUD): cambios pequeños y fusionar rápido.
 - `project.godot`: solo cambiarlo cuando haga falta; Godot lo reescribe al abrir el editor, revisar el diff antes de hacer commit.
@@ -45,7 +46,7 @@ El documento de diseño vivo es [`docs/diseno.md`](docs/diseno.md). Cualquier de
 
 ## Código
 
-- Godot 4.7.2 exacto en los dos equipos (versiones distintas reescriben archivos del proyecto).
+- Godot 4.7.2 exacto en todos los equipos (versiones distintas reescriben archivos del proyecto).
 - GDScript con tabuladores, tipado estático cuando se pueda, comentarios en español.
 - Sin `class_name` por ahora: los scripts se cargan con `preload`.
 - **Modo test** (`Game.test`, `scripts/modo_test.gd`): se abre con `godot --path . -- test` o con el `.exe` de test (preset "Windows Test", etiqueta `test`). Sin cinemática. **Sin F1 se ve el juego tal cual** (escenario con su arte, enemigos normales, sin ayuda ni teclas: para trabajar el arte sin ver comandos). **F1** cambia al **mundo del greybox** (recarga la fase en la misma x; arrancar ya en él: `-- test greybox`), donde se ve la ayuda, no salen enemigos solos (`TEST_SKIP` en `level.gd`) y funcionan las demás teclas: **F2** francotirador o granadero que entra, se planta y ataca, **F3** jefe de la fase aquí mismo (la fase no termina al vencerlo), **F4** cápsula con arma al azar, **F5** inmortal, **F6** turbo (corre a 400 px/s), **F7** granadero, **F8** francotirador, **F9** emboscadas de azotea (empiezan apagadas). Los enemigos de los interiores (edificios grandes) sí salen en modo test. El juego normal (producción) no tiene estas teclas.

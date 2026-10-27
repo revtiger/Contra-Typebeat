@@ -49,4 +49,4 @@ Las armas que no se recogen parpadean y desaparecen a los 9 segundos.
 - `tests/autoplay.gd`: prueba automática que juega sola y guarda capturas (ver CLAUDE.md)
 
 ## Equipo
-Gwyn (`revtiger`) y Eduardo (`eduardord596`). Reglas de trabajo en [CLAUDE.md](CLAUDE.md), diseño en [docs/diseno.md](docs/diseno.md).
+Gwyn (`revtiger`), Eduardo (`eduardord596`) y Rodrigo (`elrodo99`). Reglas de trabajo en [CLAUDE.md](CLAUDE.md), diseño en [docs/diseno.md](docs/diseno.md).

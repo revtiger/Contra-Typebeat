@@ -1,6 +1,6 @@
 # Documento de diseño: ONU: Outbreak
 
-Autores: Gwyn y Eduardo · Última revisión: 26-10-2026 (jugabilidad de la 1.1 en greybox: modo test, azoteas, edificio grande; ver más abajo)
+Autores: Gwyn, Eduardo y Rodrigo · Última revisión: 26-10-2026 (jugabilidad de la 1.1 en greybox: modo test, azoteas, edificio grande; ver más abajo)
 
 > **Dirección nueva (27-09-2026):** el juego pasa a estilo Metal Slug. El plan de trabajo está en [`plan-metal-slug.md`](plan-metal-slug.md).
 
