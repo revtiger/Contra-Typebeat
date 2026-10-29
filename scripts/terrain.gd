@@ -19,6 +19,9 @@ const SpriteUtil = preload("res://scripts/sprite_util.gd")
 const CANAL_PIEDRA := preload("res://assets/sprites/canal_piedra.png")
 const CANAL_BORDE := preload("res://assets/sprites/canal_borde.png")
 const CANAL_RAMPA := preload("res://assets/sprites/canal_rampa.png")
+## Andén de la estación del tren (tramo 3b de la 1.1, tools/sprites/tren.py): suelo de ESTACION[0] a ESTACION[1]
+const PuebloCasas = preload("res://scripts/pueblo_casas.gd")
+const ANDEN := preload("res://assets/sprites/estacion_anden.png")
 const CALLE_Y := 230.0  # altura de la calle del pueblo
 ## la piedra de más abajo, un poco más oscura
 const PASEO_TINTE := Color(0.85, 0.82, 0.78)
@@ -99,6 +102,9 @@ func _draw() -> void:
 func _draw_pueblo() -> void:
 	if global_position.y > CALLE_Y + 4.0:
 		_draw_paseo()
+		return
+	if global_position.x >= PuebloCasas.ESTACION[0] and global_position.x < PuebloCasas.ESTACION[1]:
+		_draw_anden()
 		return
 	var tw := float(PUEBLO_GROUND.get_width())
 	var th := float(PUEBLO_GROUND.get_height())
@@ -236,6 +242,14 @@ func _draw_slope_plain() -> void:
 	var body := Color(0.72, 0.45, 0.28) if theme == "desert" else Color(0.36, 0.25, 0.16)
 	draw_colored_polygon(PackedVector2Array([Vector2(0, top0), Vector2(size.x, top1), Vector2(size.x, size.y), Vector2(0, size.y)]), body)
 	draw_line(Vector2(0, top0), Vector2(size.x, top1), body.lightened(0.35), 4)
+
+
+## Andén de la estación: baldosas con el borde amarillo (se pisa sobre ellas) y su muro; debajo, piedra.
+func _draw_anden() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), RELLENO)
+	var ah := float(ANDEN.get_height())
+	_tile_x(ANDEN, -6.0, ah)
+	_fill_piedra(0.0, size.x, ah - 8.0)
 
 
 ## Paseo del canal: el borde de piedra (arriba se pisa) y el muro hasta abajo.

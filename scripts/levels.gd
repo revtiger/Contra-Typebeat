@@ -121,11 +121,14 @@ const TEMPLATES := {
 	#      alejan detrás de la terraza con baranda y el muro con arcos de desagüe (canal.gd; referencia de Eduardo:
 	#      tools/sprites/chatgpt/pueblo/canal/referencia_canal.png). Abajo, soldados y nidos; desde arriba, aviones.
 	#      Al final otra rampa sube a la calle y la cámara vuelve a su altura
-	#   4. calle final (5550-8950): tanque, más nidos y granaderos, tiradores en los techos
+	#   3b. estación del tren (5524-7444, ESTACION de pueblo_casas.gd): andén y, en la 3.ª pantalla, el tren que pasa
+	#      con soldados (tren.gd; 28-10-2026)
+	#   4. calle final (7470-10870): tanque, más nidos y granaderos, tiradores en los techos
 	#   5. plaza de la capilla: Massa
 	# "tiempo" vuelve a poner el reloj en 60 al empezar los tramos 2, 3 y 4.
 	# Largo: 31 escenas (14880 px, ARQUITECTURA.md ARQ-42; 26-10-2026: antes 9408, el largo de la calle). El arte de
-	# la calle llega a 9408 px; de ahí al final solo hay suelo y Massa sigue en la última escena.
+	# la calle llega a 11328 px (28-10-2026, con la estación; antes 9408); de ahí al final solo hay suelo y Massa sigue
+	# en la última escena.
 	# "greybox": el mundo del greybox (F1 en modo test; level.gd lo usa en vez de lo de arriba): calle llana con
 	# los edificios generados (edificios.gd), sus plataformas y jump hitbox, el barrio de azoteas y el MUSEO con
 	# interior. Sin canal, techos ni cajas, que son del escenario del juego. Sus x vienen de la calle a escala 1.2
@@ -135,7 +138,8 @@ const TEMPLATES := {
 		# el canal baja lo que baja la rampa del kit (canal_meta.json: "baja" 107 en "rampa_largo" 416 px)
 		"cam_y_max": 107,
 		"ground": [
-			[0, 3890, 230], [3890, 4306, 230, 337], [4306, 4984, 337], [4984, 5400, 337, 230], [5400, 31 * SCREEN_W, 230],
+			[0, 3890, 230], [3890, 4306, 230, 337], [4306, 4984, 337], [4984, 5400, 337, 230], [5400, 5524, 230],
+			[5524, 7444, 230], [7444, 31 * SCREEN_W, 230],
 		],
 		"platforms": [],
 		"entities": [
@@ -156,14 +160,20 @@ const TEMPLATES := {
 			["capsule", 4400, 60, "H"], ["turret", 4533, 337], ["grenadier", 4620, 337], ["barrel", 4660, 337],
 			["barrel", 4674, 337], ["turret", 4756, 337], ["helicoptero", 4800, 0], ["sniper", 4860, 337],
 			["mine", 4950, 337], ["jet", 4950, 0], ["grenadier", 5050, 320], ["sniper", 5200, 280],
+			# 3b. estación del tren (ESTACION de pueblo_casas.gd: 5524-7444, 4 pantallas; idea de Eduardo, 28-10-2026):
+			# soldados en el andén y, en la 3.ª pantalla, el tren (tren.gd): la pantalla se fija en x = 6484 mientras
+			# pasa; y = 215, donde apoyan las ruedas (estacion.gd VIAS_Y + "riel" de tren_meta.json)
+			["tiempo", 5530, 230], ["sniper", 5760, 230], ["barrel", 5900, 230], ["barrel", 5914, 230],
+			["grenadier", 6080, 230], ["sniper", 6260, 230], ["capsule", 6300, 60, "S"], ["tren", 6484, 215],
+			["grenadier", 7150, 230], ["sniper", 7320, 230],
 			# 4. calle final, la más difícil
-			["tiempo", 5550, 230], ["turret", 5700, 230], ["caja", 5740, 230], ["sniper", 5800, 106],
-			["grenadier", 5900, 230], ["sniper", 6000, 101], ["capsule", 6200, 60, "R"],
-			["tank", 6300, 230, "comunista"], ["turret", 6550, 230], ["sniper", 6650, 90], ["grenadier", 6700, 230],
-			["grenadier", 6850, 230], ["turret", 7000, 230], ["sniper", 7150, 59], ["caja", 7265, 230],
-			["grenadier", 7400, 230], ["mine", 7500, 230], ["sniper", 7600, 230], ["turret", 7850, 230],
-			["grenadier", 8000, 230], ["sniper", 8200, 110], ["capsule", 8300, 60, "H"], ["grenadier", 8450, 230],
-			["turret", 8600, 230], ["sniper", 8750, 230],
+			["tiempo", 7470, 230], ["turret", 7620, 230], ["caja", 7660, 230], ["sniper", 7720, 106],
+			["grenadier", 7820, 230], ["sniper", 7920, 101], ["capsule", 8120, 60, "R"],
+			["tank", 8220, 230, "comunista"], ["turret", 8470, 230], ["sniper", 8570, 90], ["grenadier", 8620, 230],
+			["grenadier", 8770, 230], ["turret", 8920, 230], ["sniper", 9070, 59], ["caja", 9185, 230],
+			["grenadier", 9320, 230], ["mine", 9420, 230], ["sniper", 9520, 230], ["turret", 9770, 230],
+			["grenadier", 9920, 230], ["sniper", 10120, 110], ["capsule", 10220, 60, "H"], ["grenadier", 10370, 230],
+			["turret", 10520, 230], ["sniper", 10670, 230],
 		],
 		"greybox": {
 			"buildings": 7,  # semilla de los edificios (scripts/edificios.gd); otra semilla, otra ciudad

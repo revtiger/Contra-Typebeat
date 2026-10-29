@@ -85,7 +85,7 @@ Aprobadas por el equipo tal como están. Los nombres están en *Project Settings
 | `level.gd` (suelo y plataformas) | Terreno `1` | — |
 | `player.gd` (cuerpo) | MainHurtbox `2` | Terreno `1` |
 | `player.gd` (sensor de contacto `hurt`) | — | EnemyHurtbox `4` |
-| `soldier.gd`, `massa.gd`, `politician.gd`, `miniboss.gd`, `tank.gd`, `turret.gd`, `boss.gd`, `heli.gd`, `boss_part.gd` | EnemyHurtbox `4` | Terreno `1` (o nada si no se mueven) |
+| `soldier.gd`, `massa.gd`, `politician.gd`, `miniboss.gd`, `tank.gd`, `turret.gd`, `boss.gd`, `heli.gd`, `boss_part.gd`, `helicoptero.gd` | EnemyHurtbox `4` | Terreno `1` (o nada si no se mueven) |
 | `barrel.gd` | EnemyHurtbox `4` | — |
 | `mine.gd` | HitboxEnemigo + EnemyHurtbox `16 \| 4` | MainHurtbox `2` |
 | `pickup.gd` (cápsula voladora) | EnemyHurtbox `4` | — |
@@ -93,6 +93,8 @@ Aprobadas por el equipo tal como están. Los nombres están en *Project Settings
 | `jump_hitbox.gd` | Interactivos `32` | — (el héroe lo busca con una consulta desde su zona de agarre y su cuerpo) |
 | `zona.gd` (puerta de edificio grande, salida de interior) | Zonas `64` | MainHurtbox `2` |
 | `tirador_ventana.gd` | EnemyHurtbox `4` solo mientras está asomado | — |
+| `tren_tirador.gd` (soldados del tren) | EnemyHurtbox `4`; el de la ventana, solo mientras está asomado | — |
+| `caja.gd` (cajas de la calle) | Terreno `1` | — |
 | `bullet.gd` del jugador | HitboxJugador `8` | Terreno + EnemyHurtbox `1 \| 4` |
 | `bullet.gd` enemiga | HitboxEnemigo `16` | Terreno + MainHurtbox `1 \| 2` |
 | `grenade.gd` (granada del jugador) | HitboxJugador `8` | — ; explota solo al tocar Terreno (`level.touches_terrain()`) |
@@ -168,7 +170,7 @@ Una **escena** es una pantalla de juego: **480 px** de ancho (`SCREEN_W`).
 | Demás fases (plantillas sin `"end"` propio, `END`) | 7 | 3 360 | Provisional (26-10-2026: antes 3 000, 6,25 escenas; se alargó para no meter enemigos en la arena del jefe) |
 | Interior del MUSEO | 3 | 1 440 | Provisional (26-10-2026: antes 1 500) |
 
-Pendiente ⚠: el arte de la calle de la 1.1 (Eduardo) llega a **9 408 px (19,6 escenas)**, y la plaza de la capilla, que era la arena de Massa, queda a mitad de la fase; de ahí al final solo hay suelo y Massa pelea en la última escena. Para cuadrar en escenas enteras y volver a juntar la capilla con Massa habría que completar el arte hasta 31 escenas (o mover la plaza al final). Es un cambio de arte (ARQ-30) y lo deciden el equipo y Eduardo.
+Pendiente ⚠: el arte de la calle de la 1.1 (Eduardo) llega a **11 328 px (23,6 escenas)** desde que se metió la estación del tren (28-10-2026, 4 escenas; antes 9 408), y la plaza de la capilla, que era la arena de Massa, queda a mitad de la fase; de ahí al final solo hay suelo y Massa pelea en la última escena. Para cuadrar en escenas enteras y volver a juntar la capilla con Massa habría que completar el arte hasta 31 escenas (o mover la plaza al final). Es un cambio de arte (ARQ-30) y lo deciden el equipo y Eduardo.
 
 ---
 
