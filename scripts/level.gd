@@ -33,6 +33,8 @@ const Zona = preload("res://scripts/zona.gd")
 const Caja = preload("res://scripts/caja.gd")
 const PuebloCasas = preload("res://scripts/pueblo_casas.gd")
 const Canal = preload("res://scripts/canal.gd")
+const Estacion = preload("res://scripts/estacion.gd")
+const Tren = preload("res://scripts/tren.gd")
 ## En altura: de pie en una plataforma a ALTURA_MIN px o más sobre la calle. Arriba salen ALTURA_SPAWN veces
 ## menos soldados por la calle, pero hay emboscadas (ventana o asaltante desde arriba) cada EMBOSCADA_T s
 const ALTURA_MIN := 80.0
@@ -189,6 +191,14 @@ func _ready() -> void:
 		canal.x1 = PuebloCasas.CANAL[1]
 		canal.bajo = CALLE_Y + cam_y_max
 		add_child(canal)
+		# estación del tren: la señal y la barrera van en la pantalla fija del tren (la x de la entidad "tren")
+		var estacion := Estacion.new()
+		estacion.x0 = PuebloCasas.ESTACION[0]
+		estacion.x1 = PuebloCasas.ESTACION[1]
+		for e in entities:
+			if e[0] == "tren":
+				estacion.lock_x = e[1]
+		add_child(estacion)
 
 	player = Player.new()
 	player.position = Vector2(60, 200)
@@ -401,6 +411,8 @@ func _spawn_entities() -> void:
 			"miniboss":
 				n = Miniboss.new()
 				n.kind = e[3]
+			"tren":
+				n = Tren.new()  # se queda esperando a que la cámara llegue a su x (tren.gd)
 			"helicoptero":
 				n = Helicoptero.new()  # se pone solo a la derecha de la pantalla, arriba
 			"jet":
@@ -686,10 +698,10 @@ func lock_camera(x: float, title: String) -> void:
 	Game.play_music("boss")
 
 
-func unlock_camera() -> void:
+func unlock_camera(texto := "¡MINI JEFE DERROTADO!") -> void:
 	lock_left = INF
 	cam_min = 0.0
-	show_banner("¡MINI JEFE DERROTADO!", 1.5)
+	show_banner(texto, 1.5)
 	Game.play_music(data["music"])
 
 

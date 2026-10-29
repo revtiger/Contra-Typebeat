@@ -117,6 +117,9 @@ CALLE = [
 	"casa_garaje", ("naranjo", 40), "galpon", ("eucalipto", 52), "casa", ("alamo", 40), "casa_2_pisos",
 	("pino", 54), "casa", ("naranjo", 40), "almacen", ("ombu", 60), "casa_garaje", ("cedro", 52), "casa",
 	("jacaranda", 56),
+	# 3b. estación del tren (ESTACION, 4 pantallas): detrás, solo valla y árboles; la boletería, el tanque de agua, las
+	# vías y el tren los pone scripts/estacion.gd (pedido de Eduardo, 28-10-2026)
+	("eucalipto", 52), 380, ("ombu", 60), 560, ("alamo", 40), 400, ("pino", 54), 374,
 	# 4. calle final
 	"casa_2_pisos", ("sauce", 54), "panaderia", ("ombu", 60), "ferreteria", ("alamo", 40), "casa", ("pino", 54),
 	"galpon", ("eucalipto", 52), "cafe", ("naranjo", 40), "casa_garaje", ("cedro", 52), "casa_2_pisos",
@@ -130,6 +133,8 @@ TROZO = 800
 # el soldado; las casas se alejan (más chicas, detrás de la baranda de la terraza). LEJOS_X: trozo de la calle que se
 # dibuja a escala LEJOS_ESCALA (múltiplo de 5 para que LEJOS_X * 0.8 sea entero).
 CANAL = (3890, 5400)
+# Estación del tren (tramo 3b): de ESTACION[0] a ESTACION[1] (4 pantallas de 480 px, ARQ-41)
+ESTACION = (5524, 5524 + 4 * 480)
 LEJOS_ESCALA = 0.8
 LEJOS_X = (3300, 6000)
 
@@ -276,6 +281,8 @@ def _write_casas(casas, piezas) -> None:
 	lines.append("]")
 	lines.append("## Canal (tramo 3): x donde empieza la rampa que baja y donde termina la que sube")
 	lines.append(f"const CANAL := [{CANAL[0]}, {CANAL[1]}]")
+	lines.append("## Estación del tren: x donde empieza y donde termina (scripts/estacion.gd)")
+	lines.append(f"const ESTACION := [{ESTACION[0]}, {ESTACION[1]}]")
 	lines.append("## pueblo_lejos.png: la calle desde la x LEJOS_X a escala LEJOS_ESCALA")
 	lines.append(f"const LEJOS_X := {LEJOS_X[0]}")
 	lines.append(f"const LEJOS_ESCALA := {LEJOS_ESCALA}")
